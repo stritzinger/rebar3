@@ -8,6 +8,7 @@
          namespace/1,
          module/1,
          impl/1,
+         short_desc/1,
          opts/1,
          desc/1,
          process_deps/2,
@@ -109,6 +110,10 @@ impl(Provider) ->
 -spec opts(t()) -> list().
 opts(Provider) ->
     Provider#provider.opts.
+
+-spec short_desc(t()) -> string().
+short_desc(Provider) ->
+    Provider#provider.short_desc.
 
 -spec desc(t()) -> string().
 desc(Provider) ->

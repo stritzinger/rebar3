@@ -55,15 +55,10 @@ format_error(Reason) ->
 %% print help/usage string
 %%
 help(State) ->
-    ?CONSOLE("Rebar3 is a tool for working with Erlang projects.~n", []),
-    OptSpecList = rebar3:global_option_spec_list(),
-    getopt:usage(OptSpecList, "rebar3", "", []),
-    ?CONSOLE("  Set the environment variable DEBUG=1 for detailed output.~n", []),
-    ?CONSOLE("Several tasks are available:~n", []),
-
-    providers:help(rebar_state:providers(State)),
-
-    ?CONSOLE("~nRun 'rebar3 help <TASK>' for details.", []).
+    io:format("~ts",
+              [argparse:help(
+                  rebar3:global_cli(rebar_state:providers(State)),
+                  #{progname => "rebar3"})]).
 
 task_help(Namespace, Name, State) ->
     Providers = rebar_state:providers(State),

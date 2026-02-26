@@ -40,6 +40,7 @@
          main/1,
          run/1,
          run/2,
+         global_cli/1,
          global_option_spec_list/0,
          init_config/0,
          set_options/2,
@@ -309,6 +310,61 @@ set_options(State, {Options, NonOptArgs}) ->
     Task = proplists:get_value(task, Options, "help"),
 
     {rebar_state:set(State2, task, Task), NonOptArgs}.
+
+-spec global_cli([providers:t()]) -> argparse:command().
+global_cli(Providers) ->
+    #{
+        help => ["Rebar3 is a tool for working with Erlang projects.",
+                 "\n\nUsage: ", usage,
+                 "\n\n", options,
+                 "\n  <task>         Task to run.",
+                 "\n\n  Set the environment variable DEBUG=1 for detailed output.",
+                 "\n\nSeveral tasks are available:\n\n",
+                 format_help_text(task_list_text(Providers)),
+                 "\n\nRun 'rebar3 help <TASK>' for details."],
+        arguments => [
+            #{name => help, short => $h, long => "-help", type => boolean,
+              help => "Print this help."},
+            #{name => version, short => $v, long => "-version", type => boolean,
+              help => "Show version information."},
+            #{name => task, type => string, required => false,
+              help => "Task to run."}
+        ]
+    }.
+
+task_list_text(Providers) ->
+    DefaultTasks =
+        [{atom_to_list(providers:impl(P)), providers:short_desc(P)}
+         || P <- Providers, is_bare_provider(P), providers:namespace(P) =:= default],
+    NamespaceTasks =
+        maps:groups_from_list(
+            fun(P) -> providers:namespace(P) end,
+            [P || P <- Providers, is_bare_provider(P), providers:namespace(P) =/= default]),
+    [format_tasks(DefaultTasks) | format_namespaces(NamespaceTasks)].
+
+format_tasks(Tasks) ->
+    lists:sort([io_lib:format("~-17s ~s~n", [Name, Desc]) || {Name, Desc} <- Tasks]).
+
+format_namespaces(Namespaces) ->
+    lists:append(lists:map(
+      fun(NS) ->
+          Providers = maps:get(NS, Namespaces),
+          NSName = atom_to_list(NS),
+          Tasks = lists:sort(
+                    [io_lib:format("  ~-15s ~s~n",
+                                   [atom_to_list(providers:impl(P)), providers:short_desc(P)])
+                     || P <- Providers]),
+          [io_lib:format("~n~s <task>:~n", [NSName]), Tasks]
+      end,
+      lists:sort(maps:keys(Namespaces)))).
+
+is_bare_provider(P) when is_tuple(P), tuple_size(P) >= 5 ->
+    element(1, P) =:= provider andalso element(5, P) =:= true;
+is_bare_provider(_) ->
+    false.
+
+format_help_text(Text) ->
+    unicode:characters_to_list(unicode:characters_to_binary(Text)).
 
 %% @doc get log level based on getopt options and ENV
 -spec log_level() -> integer().
