@@ -2,6 +2,7 @@
 -behaviour(provider).
 
 -export([init/1,
+         cli/0,
          do/1,
          format_error/1]).
 
@@ -24,13 +25,14 @@ init(State) ->
                           {namespace, ?NAMESPACE},
                           {module, ?MODULE},
                           {bare, true},
-                          {deps, ?DEPS},
-                          {example, ""},
-                          {short_desc, "Turns dependencies into top-level apps"},
-                          {desc, "Turns dependencies into top-level applications"},
-                          {opts, []}])
+                          {deps, ?DEPS}])
     ),
     {ok, State1}.
+
+-spec cli() -> argparse:command().
+cli() ->
+    #{help => "Turns dependencies into top-level apps",
+      arguments => []}. 
 
 -spec do(rebar_state:t()) -> {ok, rebar_state:t()} | {error, string()}.
 do(State) ->

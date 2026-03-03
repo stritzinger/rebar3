@@ -3,6 +3,7 @@
 -behaviour(provider).
 
 -export([init/1,
+         cli/0,
          do/1,
          format_error/1]).
 
@@ -19,15 +20,14 @@ init(State) ->
                     {name, ?PROVIDER},
                     {module, ?MODULE},
                     {bare, true},
-                    {deps, ?DEPS},
-                    {example, "rebar3 deps"},
-                    {short_desc, "List dependencies"},
-                    {desc, "List dependencies. Those not matching "
-                           "the config file are followed by "
-                           "an asterisk (*)."},
-                    {opts, []}])),
+                    {deps, ?DEPS}])),
     {ok, State1}.
 
+
+-spec cli() -> argparse:command().
+cli() ->
+    #{help => "List dependencies.",
+      arguments => []}. 
 
 -spec do(rebar_state:t()) -> {ok, rebar_state:t()} | {error, string()}.
 do(State) ->

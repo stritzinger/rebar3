@@ -6,6 +6,7 @@
 -behaviour(provider).
 
 -export([init/1,
+         cli/0,
          do/1,
          format_error/1]).
 
@@ -22,12 +23,13 @@ init(State) ->
                                  {module, ?MODULE},
                                  {deps, ?DEPS},
                                  {bare, true},
-                                 {example, "rebar3 get-deps"},
-                                 {short_desc, "Fetch dependencies."},
-                                 {desc, "Fetch project dependencies."},
-                                 {opts, []},
                                  {profiles, []}]),
     {ok, rebar_state:add_provider(State, Provider)}.
+
+-spec cli() -> argparse:command().
+cli() ->
+    #{help => "Fetch dependencies.",
+      arguments => []}. 
 
 -spec do(rebar_state:t()) -> {ok, rebar_state:t()}.
 do(State) -> {ok, State}.

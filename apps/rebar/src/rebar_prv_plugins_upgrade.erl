@@ -3,6 +3,7 @@
 -behaviour(provider).
 
 -export([init/1,
+         cli/0,
          do/1,
          format_error/1]).
 
@@ -22,15 +23,23 @@ init(State) ->
                     {module, ?MODULE},
                     {namespace, ?NAMESPACE},
                     {bare, true},
-                    {deps, ?DEPS},
-                    {example, "rebar3 plugins upgrade <plugin>"},
-                    {short_desc, "Upgrade plugins"},
-                    {desc, "List or upgrade plugins. Use the -a/--all option to upgrade"
-                           " all plugins."},
-                    {opts, [{plugin, undefined, undefined, string,
-                             "Plugin to upgrade"},
-                            {all, $a, "all", undefined, "Upgrade all plugins."}]}])),
+                    {deps, ?DEPS}])),
     {ok, State1}.
+
+-spec cli() -> argparse:command().
+cli() ->
+    #{help => "Upgrade plugins",
+      arguments => [
+        #{name => plugin,
+          type => string,
+          required => false,
+          help => "Plugin to upgrade"},
+        #{name => all,
+          short => $a,
+          long => "-all",
+          type => boolean,
+          help => "Upgrade all plugins."}
+    ]}.
 
 -spec do(rebar_state:t()) -> {ok, rebar_state:t()} | {error, string()}.
 do(State) ->

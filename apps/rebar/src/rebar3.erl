@@ -41,6 +41,7 @@
          run/1,
          run/2,
          global_cli/1,
+         namespace_cli/2,
          global_option_spec_list/0,
          init_config/0,
          set_options/2,
@@ -315,56 +316,66 @@ set_options(State, {Options, NonOptArgs}) ->
 global_cli(Providers) ->
     #{
         help => ["Rebar3 is a tool for working with Erlang projects.",
-                 "\n\nUsage: ", usage,
-                 "\n\n", options,
-                 "\n  <task>         Task to run.",
-                 "\n\n  Set the environment variable DEBUG=1 for detailed output.",
-                 "\n\nSeveral tasks are available:\n\n",
-                 format_help_text(task_list_text(Providers)),
-                 "\n\nRun 'rebar3 help <TASK>' for details."],
+                 "\n\nUsage: rebar3 [-h] [-v] <command>",
+                 "\n\n  -h, --help    Print this help.",
+                 "\n  -v, --version Show version information.",
+                 "\n\nSet the environment variable DEBUG=1 for detailed output.",
+                 "\n\nSeveral commands are available:\n\n",
+                 commands,
+                 "\n\nRun 'rebar3 help <command>' for details."],
         arguments => [
             #{name => help, short => $h, long => "-help", type => boolean,
-              help => "Print this help."},
+              help => hidden},
             #{name => version, short => $v, long => "-version", type => boolean,
-              help => "Show version information."},
-            #{name => task, type => string, required => false,
-              help => "Task to run."}
-        ]
+              help => hidden}
+        ],
+        commands => provider_commands(Providers)
     }.
 
-task_list_text(Providers) ->
-    DefaultTasks =
-        [{atom_to_list(providers:impl(P)), providers:short_desc(P)}
-         || P <- Providers, is_bare_provider(P), providers:namespace(P) =:= default],
-    NamespaceTasks =
-        maps:groups_from_list(
-            fun(P) -> providers:namespace(P) end,
-            [P || P <- Providers, is_bare_provider(P), providers:namespace(P) =/= default]),
-    [format_tasks(DefaultTasks) | format_namespaces(NamespaceTasks)].
+provider_commands(Providers) ->
+    BareProviders = [P || P <- Providers, is_bare_provider(P)],
+    Default = maps:from_list(
+        [{atom_to_list(providers:impl(P)), provider_command(P)}
+         || P <- BareProviders, providers:namespace(P) =:= default]),
+    Namespaced = maps:groups_from_list(
+        fun(P) -> providers:namespace(P) end,
+        [P || P <- BareProviders, providers:namespace(P) =/= default]),
+    maps:fold(
+        fun(NS, Ps, Acc) ->
+            NSName = atom_to_list(NS),
+            Acc#{
+              NSName => #{
+                          help => NSName ++ " namespace",
+                          arguments => [],
+                          commands => namespace_commands(NS, Ps)
+                }
+            }
+        end,
+        Default,
+        Namespaced).
 
-format_tasks(Tasks) ->
-    lists:sort([io_lib:format("~-17s ~s~n", [Name, Desc]) || {Name, Desc} <- Tasks]).
+-spec namespace_cli(atom(), [providers:t()]) -> argparse:command().
+namespace_cli(Namespace, Providers) ->
+    #{
+        help => atom_to_list(Namespace) ++ " namespace",
+        arguments => [],
+        commands => namespace_commands(Namespace, Providers)
+    }.
 
-format_namespaces(Namespaces) ->
-    lists:append(lists:map(
-      fun(NS) ->
-          Providers = maps:get(NS, Namespaces),
-          NSName = atom_to_list(NS),
-          Tasks = lists:sort(
-                    [io_lib:format("  ~-15s ~s~n",
-                                   [atom_to_list(providers:impl(P)), providers:short_desc(P)])
-                     || P <- Providers]),
-          [io_lib:format("~n~s <task>:~n", [NSName]), Tasks]
-      end,
-      lists:sort(maps:keys(Namespaces)))).
+namespace_commands(Namespace, Providers) ->
+    maps:from_list(
+        [{atom_to_list(providers:impl(P)), provider_command(P)}
+         || P <- Providers, is_bare_provider(P),
+            providers:namespace(P) =:= Namespace]).
+
+provider_command(Provider) ->
+    Mod = providers:module(Provider),
+    Mod:cli().
 
 is_bare_provider(P) when is_tuple(P), tuple_size(P) >= 5 ->
     element(1, P) =:= provider andalso element(5, P) =:= true;
 is_bare_provider(_) ->
     false.
-
-format_help_text(Text) ->
-    unicode:characters_to_list(unicode:characters_to_binary(Text)).
 
 %% @doc get log level based on getopt options and ENV
 -spec log_level() -> integer().

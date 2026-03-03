@@ -6,6 +6,7 @@
 -behaviour(provider).
 
 -export([init/1,
+         cli/0,
          do/1,
          format_error/1]).
 
@@ -24,14 +25,17 @@ init(State) ->
     State1 = rebar_state:add_provider(State, providers:create([{name, ?PROVIDER},
                                                                {module, ?MODULE},
                                                                {bare, true},
-                                                               {deps, ?DEPS},
-                                                               {example, "rebar3 report \"<task>\""},
-                                                               {short_desc, "Provide a crash report to be sent to the rebar3 issues page."},
-                                                               {desc, "Provide a crash report to be sent to the rebar3 issues page."},
-                                                               {opts, [
-                                                                      {task, undefined, undefined, string, "Task to print details for."}
-                                                                      ]}])),
+                                                               {deps, ?DEPS}])),
     {ok, State1}.
+
+-spec cli() -> argparse:command().
+cli() ->
+    #{help => "Provide a crash report to be sent to the rebar3 issues page.",
+      arguments => [
+        #{name => task,
+          type => string,
+          help => "Task to print details for."}
+    ]}.
 
 -spec do(rebar_state:t()) -> {ok, rebar_state:t()} | {error, string()}.
 do(State) ->

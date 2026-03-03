@@ -6,6 +6,7 @@
 -behaviour(provider).
 
 -export([init/1,
+         cli/0,
          do/1,
          do_tasks/2,
          format_error/1]).
@@ -24,12 +25,19 @@ init(State) ->
     State1 = rebar_state:add_provider(State, providers:create([{name, ?PROVIDER},
                                                                {module, ?MODULE},
                                                                {bare, true},
-                                                               {deps, ?DEPS},
-                                                               {example, "rebar3 do <task1>, <task2>, ..."},
-                                                               {short_desc, "Higher order provider for running multiple tasks in a sequence."},
-                                                               {desc, "Higher order provider for running multiple tasks in a sequence."},
-                                                               {opts, []}])),
+                                                               {deps, ?DEPS}])),
     {ok, State1}.
+
+-spec cli() -> argparse:command().
+cli() ->
+    #{help => "Higher order provider for running multiple tasks in a sequence.",
+      arguments => [
+        #{name => task,
+          type => string,
+          nargs => nonempty_list,
+          required => true,
+          help => "Tasks to run."}
+    ]}.
 
 -spec do(rebar_state:t()) -> {ok, rebar_state:t()} | {error, string()}.
 do(State) ->
@@ -37,8 +45,7 @@ do(State) ->
         [] ->
             AllProviders = rebar_state:providers(State),
             Namespace = rebar_state:namespace(State),
-            Providers = providers:get_providers_by_namespace(Namespace, AllProviders),
-            providers:help(Providers),
+            print_namespace_help(Namespace, AllProviders),
             {ok, State};
         Tasks ->
             do_tasks(Tasks, State)
@@ -115,3 +122,18 @@ maybe_namespace(State, Task, Args) ->
         {error, Reason} ->
             {error, Reason}
     end.
+
+print_namespace_help(default, Providers) ->
+    io:format(
+        "~ts",
+        [argparse:help(rebar3:global_cli(Providers), #{progname => "rebar3"})]
+    );
+print_namespace_help(Namespace, Providers) ->
+    NSProviders = providers:get_providers_by_namespace(Namespace, Providers),
+    io:format(
+        "~ts",
+        [argparse:help(
+             rebar3:namespace_cli(Namespace, NSProviders),
+             #{progname => "rebar3 " ++ atom_to_list(Namespace)}
+         )]
+    ).

@@ -6,6 +6,7 @@
 -behaviour(provider).
 
 -export([init/1,
+         cli/0,
          do/1,
          format_error/1]).
 
@@ -32,12 +33,13 @@ init(State) ->
                                                   {module, ?MODULE},
                                                   {bare, true},
                                                   {namespace, ?NAMESPACE},
-                                                  {deps, ?DEPS},
-                                                  {example, "rebar3 unstable install"},
-                                                  {short_desc, "Extract libs from rebar3 escript along with a run script."},
-                                                  {desc, ""},
-                                                  {opts, []}])),
+                                                  {deps, ?DEPS}])),
     {ok, State1}.
+
+-spec cli() -> argparse:command().
+cli() ->
+    #{help => "Extract libs from rebar3 escript along with a run script.",
+      arguments => []}. 
 
 -spec do(rebar_state:t()) -> {ok, rebar_state:t()} | {error, string()}.
 do(State) ->

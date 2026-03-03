@@ -6,6 +6,7 @@
 -behaviour(provider).
 
 -export([init/1,
+         cli/0,
          do/1,
          maybe_cover_compile/1,
          maybe_cover_compile/2,
@@ -28,12 +29,33 @@ init(State) ->
                                                                {module, ?MODULE},
                                                                {bare, true},
                                                                {deps, ?DEPS},
-                                                               {example, "rebar3 cover"},
-                                                               {short_desc, "Perform coverage analysis."},
-                                                               {desc, "Perform coverage analysis."},
-                                                               {opts, cover_opts(State)},
                                                                {profiles, [test]}])),
     {ok, State1}.
+
+-spec cli() -> argparse:command().
+cli() ->
+    #{help => "Perform coverage analysis.",
+      arguments => [
+        #{name => reset,
+          short => $r,
+          long => "-reset",
+          type => boolean,
+          help => help(reset)},
+        #{name => verbose,
+          long => "-verbose",
+          type => boolean,
+          help => help(verbose)},
+        #{name => min_coverage,
+          short => $m,
+          long => "-min_coverage",
+          type => integer,
+          help => help(min_coverage)},
+        #{name => precision,
+          short => $p,
+          long => "-precision",
+          type => integer,
+          help => help(precision)}
+    ]}.
 
 -spec do(rebar_state:t()) -> {ok, rebar_state:t()} | {error, string()}.
 do(State) ->
@@ -450,12 +472,6 @@ precision(State) ->
 
 cover_dir(State) ->
     filename:join([rebar_dir:base_dir(State), "cover"]).
-
-cover_opts(_State) ->
-    [{reset, $r, "reset", boolean, help(reset)},
-     {verbose, $v, "verbose", boolean, help(verbose)},
-     {min_coverage, $m, "min_coverage", integer, help(min_coverage)},
-     {precision, $p, "precision", integer, help(precision)}].
 
 help(reset) -> "Reset all coverdata.";
 help(verbose) -> "Print coverage analysis.";

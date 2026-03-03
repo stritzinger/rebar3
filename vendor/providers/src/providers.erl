@@ -8,6 +8,7 @@
          namespace/1,
          module/1,
          impl/1,
+         bare/1,
          short_desc/1,
          opts/1,
          desc/1,
@@ -106,6 +107,10 @@ module(Provider) ->
 -spec impl(t()) -> atom().
 impl(Provider) ->
     Provider#provider.name.
+
+-spec bare(t()) -> boolean().
+bare(Provider) ->
+    Provider#provider.bare.
 
 -spec opts(t()) -> list().
 opts(Provider) ->

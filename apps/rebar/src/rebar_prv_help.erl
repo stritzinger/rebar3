@@ -6,6 +6,7 @@
 -behaviour(provider).
 
 -export([init/1,
+         cli/0,
          do/1,
          format_error/1]).
 
@@ -23,14 +24,19 @@ init(State) ->
     State1 = rebar_state:add_provider(State, providers:create([{name, ?PROVIDER},
                                                                {module, ?MODULE},
                                                                {bare, true},
-                                                               {deps, ?DEPS},
-                                                               {example, "rebar3 help <task>"},
-                                                               {short_desc, "Display a list of tasks or help for a given task or subtask."},
-                                                               {desc, "Display a list of tasks or help for a given task or subtask."},
-                                                               {opts, [
-                                                                      {help_task, undefined, undefined, string, "Task to print help for."}
-                                                                      ]}])),
+                                                               {deps, ?DEPS}])),
     {ok, State1}.
+
+-spec cli() -> argparse:command().
+cli() ->
+    #{help => "Display a list of tasks or help for a given task or subtask.",
+      arguments => [
+        #{name => help_task,
+          type => string,
+          nargs => list,
+          required => false,
+          help => "Task to print help for."}
+    ]}.
 
 -spec do(rebar_state:t()) -> {ok, rebar_state:t()} | {error, string()}.
 do(State) ->
@@ -38,10 +44,8 @@ do(State) ->
         [] ->
             help(State),
             {ok, State};
-        [Name] -> % default namespace
-            task_help(default, list_to_atom(Name), State);
-        [Namespace, Name] ->
-            task_help(list_to_atom(Namespace), list_to_atom(Name), State);
+        HelpPath when is_list(HelpPath), length(HelpPath) =< 2 ->
+            command_help(HelpPath, State);
         _ ->
             {error, "Too many arguments given. " ++
                  "Usage: rebar3 help [<namespace>] <task>"}
@@ -60,18 +64,10 @@ help(State) ->
                   rebar3:global_cli(rebar_state:providers(State)),
                   #{progname => "rebar3"})]).
 
-task_help(Namespace, Name, State) ->
-    Providers = rebar_state:providers(State),
-    case providers:get_provider(Name, Providers, Namespace) of
-        not_found ->
-            case providers:get_providers_by_namespace(Name, Providers) of
-                [] ->
-                    {error, io_lib:format("Unknown task ~p", [Name])};
-                NSProviders ->
-                    providers:help(NSProviders),
-                    {ok, State}
-            end;
-        Provider ->
-            providers:help(Provider),
-            {ok, State}
-    end.
+command_help(Path, State) ->
+    Cli = rebar3:global_cli(rebar_state:providers(State)),
+    HelpText = argparse:help(Cli,
+                             #{progname => "rebar3",
+                               command => Path}),
+    io:format("~ts", [HelpText]),
+    {ok, State}.

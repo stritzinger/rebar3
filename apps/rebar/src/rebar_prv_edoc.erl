@@ -3,6 +3,7 @@
 -behaviour(provider).
 
 -export([init/1,
+         cli/0,
          do/1,
          format_error/1]).
 
@@ -22,12 +23,13 @@ init(State) ->
                                                                {module, ?MODULE},
                                                                {bare, true},
                                                                {deps, ?DEPS},
-                                                               {example, "rebar3 edoc"},
-                                                               {short_desc, "Generate documentation using edoc."},
-                                                               {desc, "Generate documentation using edoc."},
-                                                               {opts, []},
                                                                {profiles, [docs]}])),
     {ok, State1}.
+
+-spec cli() -> argparse:command().
+cli() ->
+    #{help => "Generate documentation using edoc.",
+      arguments => []}. 
 
 -spec do(rebar_state:t()) ->
     {ok, rebar_state:t()} | {error, string()} | {error, {module(), any()}}.

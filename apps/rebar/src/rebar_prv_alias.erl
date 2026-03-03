@@ -8,7 +8,7 @@
 
 -behaviour(provider).
 
--export([init/1, do/1, format_error/1]).
+-export([init/1, cli/0, do/1, format_error/1]).
 -include("rebar.hrl").
 
 -define(PROVIDER, alias).
@@ -38,14 +38,15 @@ init(State) ->
     AliasProvider = providers:create([{name, ?PROVIDER},
                                       {module, ?MODULE},
                                       {bare, true},
-                                      {deps, []},
-                                      {example, "rebar3 alias"},
-                                      {short_desc, "List aliases' definitions."},
-                                      {desc, "List aliases' definitions."},
-                                      {opts, []}]),
+                                      {deps, []}]),
     StateWithProvider = rebar_state:add_provider(StateWithAliases, AliasProvider),
     StateWithAliasesDefs = rebar_state:set(StateWithProvider, ?CREATED_ALIASES_KEY, AliasesDefs),
     {ok, StateWithAliasesDefs}.
+
+-spec cli() -> argparse:command().
+cli() ->
+    #{help => "List aliases' definitions.",
+      arguments => []}. 
 
 -spec do(rebar_state:t()) -> {ok, rebar_state:t()}.
 do(State) ->
@@ -78,12 +79,7 @@ init_alias(Alias, Cmds, State) ->
             {name, Alias},
             {module, Module},
             {bare, true},
-            {deps, []},
-            {example, example(Alias)},
-            {opts, []},
-            {short_desc, desc(Cmds)},
-            {desc, desc(Cmds)}
-    ]),
+            {deps, []}]),
     rebar_state:add_provider(State, Provider).
 
 validate_provider(Alias, Cmds, State) ->
@@ -106,15 +102,6 @@ validate_provider(Alias, Cmds, State) ->
                   [Alias]),
             false
     end.
-
--dialyzer({no_unused, example/1}). % required since we suppress warnings for init_alias/3
-example(Alias) ->
-    "rebar3 " ++ atom_to_list(Alias).
-
--dialyzer({no_unused, desc/1}). % required since we suppress warnings for init_alias/3
-desc(Cmds) ->
-    "Equivalent to running: rebar3 do "
-        ++ cmds_string(Cmds).
 
 cmds_string(Cmds) ->
     rebar_string:join(lists:map(fun to_desc/1, Cmds), ",").

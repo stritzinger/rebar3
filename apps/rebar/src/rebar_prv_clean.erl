@@ -6,6 +6,7 @@
 -behaviour(provider).
 
 -export([init/1,
+         cli/0,
          do/1,
          format_error/1]).
 
@@ -23,14 +24,28 @@ init(State) ->
     State1 = rebar_state:add_provider(State, providers:create([{name, ?PROVIDER},
                                                                {module, ?MODULE},
                                                                {bare, true},
-                                                               {deps, ?DEPS},
-                                                               {example, "rebar3 clean"},
-                                                               {short_desc, "Remove compiled beam files from apps."},
-                                                               {desc, "Remove compiled beam files from apps."},
-                                                               {opts, [{all, $a, "all", undefined, "Clean all apps include deps"},
-                                                                       {apps, undefined, "apps", string, "Clean a specific list of apps or dependencies"},
-                                                                       {profile, $p, "profile", string, "Clean under profile. Equivalent to `rebar3 as <profile> clean`"}]}])),
+                                                               {deps, ?DEPS}])),
     {ok, State1}.
+
+-spec cli() -> argparse:command().
+cli() ->
+    #{help => "Remove compiled beam files from apps.",
+      arguments => [
+        #{name => all,
+          short => $a,
+          long => "-all",
+          type => boolean,
+          help => "Clean all apps include deps"},
+        #{name => apps,
+          long => "-apps",
+          type => string,
+          help => "Clean a specific list of apps or dependencies"},
+        #{name => profile,
+          short => $p,
+          long => "-profile",
+          type => string,
+          help => "Clean under profile. Equivalent to `rebar3 as <profile> clean`"}
+    ]}.
 
 -spec do(rebar_state:t()) -> {ok, rebar_state:t()} | {error, string()}.
 do(State) ->

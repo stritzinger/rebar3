@@ -3,6 +3,7 @@
 -behaviour(provider).
 
 -export([init/1,
+         cli/0,
          do/1,
          format_error/1]).
 
@@ -26,13 +27,19 @@ init(State) ->
     State1 = rebar_state:add_provider(State, providers:create([{name, ?PROVIDER},
                                                                {module, ?MODULE},
                                                                {bare, true},
-                                                               {deps, ?DEPS},
-                                                               {example, "rebar3 compile"},
-                                                               {short_desc, "Compile apps .app.src and .erl files."},
-                                                               {desc, "Compile apps .app.src and .erl files."},
-                                                               {opts, [{deps_only, $d, "deps_only", undefined,
-                                                                        "Only compile dependencies, no project apps will be built."}]}])),
+                                                               {deps, ?DEPS}])),
     {ok, State1}.
+
+-spec cli() -> argparse:command().
+cli() ->
+    #{help => "Compile apps .app.src and .erl files.",
+      arguments => [
+        #{name => deps_only,
+          short => $d,
+          long => "-deps_only",
+          type => boolean,
+          help => "Only compile dependencies, no project apps will be built."}
+    ]}.
 
 -spec do(rebar_state:t()) -> {ok, rebar_state:t()} | {error, string()}.
 do(State) ->

@@ -3,6 +3,7 @@
 -behaviour(provider).
 
 -export([init/1,
+         cli/0,
          do/1,
          format_error/1]).
 
@@ -22,14 +23,29 @@ init(State) ->
         {name, ?PROVIDER},
         {module, ?MODULE},
         {bare, true},
-        {deps, ?DEPS},
-        {example, "rebar3 new <template>"},
-        {short_desc, "Create new project from templates."},
-        {desc, info()},
-        {opts, [{force, $f, "force", undefined, "overwrite existing files"}]}
-    ]),
+        {deps, ?DEPS}]),
     State1 = rebar_state:add_provider(State, Provider),
     {ok, State1}.
+
+-spec cli() -> argparse:command().
+cli() ->
+    #{help => "Create new project from templates.",
+      arguments => [
+        #{name => force,
+          short => $f,
+          long => "-force",
+          type => boolean,
+          help => "overwrite existing files"},
+        #{name => template,
+          type => string,
+          required => true,
+          help => "Template name."},
+        #{name => vars,
+          type => string,
+          nargs => list,
+          required => false,
+          help => "Template options."}
+    ]}.
 
 -spec do(rebar_state:t()) -> {ok, rebar_state:t()} | {error, string()}.
 do(State) ->
@@ -80,15 +96,6 @@ list_templates(State) ->
                 ;  (Tpl, Acc) ->
                     [Tpl|Acc]
                 end, [], lists:reverse(rebar_templater:list_templates(State))).
-
-info() ->
-    io_lib:format(
-      "Create rebar3 project based on template and vars.~n"
-      "~n"
-      "Valid command line options:~n"
-      "  <template> [var=foo,...]~n"
-      "~n"
-      "See available templates with: `rebar3 new help`~n", []).
 
 strip_flags([]) -> [];
 strip_flags(["-"++_|Opts]) -> strip_flags(Opts);

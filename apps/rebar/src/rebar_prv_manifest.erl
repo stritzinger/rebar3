@@ -7,6 +7,7 @@
 -behaviour(provider).
 
 -export([init/1,
+         cli/0,
          do/1,
          format_error/1,
          is_json_available/0]).
@@ -44,13 +45,26 @@ init(State) ->
                                                         {namespace, ?NAMESPACE},
                                                         {module, ?MODULE},
                                                         {bare, true},
-                                                        {deps, [{default, install_deps}]},
-                                                        {example, "rebar3 manifest"},
-                                                        {short_desc, short_desc()},
-                                                        {desc, desc()},
-                                                        {opts, options()}
-                                                       ])),
+                                                        {deps, [{default, install_deps}]}])),
     {ok, State1}.
+
+-spec cli() -> argparse:command().
+cli() ->
+    #{help => short_desc(),
+      arguments => [
+        #{name => format,
+          short => $f,
+          long => "-format",
+          type => atom,
+          default => json,
+          help => "Format for the manifest. "
+                  "Supported formats are: erlang, eetf (Erlang External Binary Format), json"},
+        #{name => to,
+          short => $t,
+          long => "-to",
+          type => string,
+          help => "If specified, write the manifest to file"}
+    ]}.
 
 -spec do(rebar_state:t()) -> {ok, rebar_state:t()} | {error, string()}.
 do(State) ->
@@ -87,18 +101,6 @@ format_error(Reason) ->
 -spec short_desc() -> string().
 short_desc() ->
     "Produce a project manifest".
-
--spec desc() -> string().
-desc() ->
-    short_desc().
-
--spec options() -> [tuple()].
-options() ->
-    [{format, $f, "format", {atom, ?DEFAULT_FORMAT},
-      "Format for the manifest. "
-      "Supported formats are: erlang, eetf (Erlang External Binary Format), json"},
-     {to, $t, "to", {string, undefined},
-      "If specified, write the manifest to file"}].
 
 -spec get_manifest(rebar_state:t()) -> manifest().
 get_manifest(State) ->

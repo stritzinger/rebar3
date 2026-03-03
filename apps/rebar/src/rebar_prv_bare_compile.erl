@@ -3,6 +3,7 @@
 -behaviour(provider).
 
 -export([init/1,
+         cli/0,
          do/1,
          format_error/1]).
 
@@ -20,30 +21,40 @@
 -spec init(rebar_state:t()) -> {ok, rebar_state:t()}.
 init(State) ->
     State1 = rebar_state:add_provider(
+
         State,
         providers:create([
             {name, ?PROVIDER},
             {module, ?MODULE},
             {namespace, ?NAMESPACE},
             {bare, false},
-            {deps, ?DEPS},
-            {example, ""},
-            {short_desc, ""},
-            {desc, ""},
-            {opts, [
-                {paths, $p, "paths", string,
-                 "Wildcard paths of ebin directories to add to code path, "
-                 "separated by a colon"},
-                {separator, $s, "separator", string,
-                 "In case of multiple return paths, the separator character "
-                 "to use to join them."},
-                {outdir, $o, "outdir", string,
-                 "Path where build artifacts are located. Defaults to the "
-                 "current directory."}
-            ]}
-        ])
+            {deps, ?DEPS}])
     ),
     {ok, State1}.
+
+-spec cli() -> argparse:command().
+cli() ->
+    #{help => "Compile application code from a bare source directory.",
+      arguments => [
+        #{name => paths,
+          short => $p,
+          long => "-paths",
+          type => string,
+          help => "Wildcard paths of ebin directories to add to code path, "
+                  "separated by a colon"},
+        #{name => separator,
+          short => $s,
+          long => "-separator",
+          type => string,
+          help => "In case of multiple return paths, the separator character "
+                  "to use to join them."},
+        #{name => outdir,
+          short => $o,
+          long => "-outdir",
+          type => string,
+          help => "Path where build artifacts are located. Defaults to the "
+                  "current directory."}
+    ]}.
 
 -spec do(rebar_state:t()) -> {ok, rebar_state:t()} | {error, string()}.
 do(State) ->

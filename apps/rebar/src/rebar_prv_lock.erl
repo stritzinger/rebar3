@@ -3,6 +3,7 @@
 -behaviour(provider).
 
 -export([init/1,
+         cli/0,
          do/1,
          format_error/1]).
 
@@ -20,12 +21,19 @@ init(State) ->
     State1 = rebar_state:add_provider(State, providers:create([{name, ?PROVIDER},
                                                                {module, ?MODULE},
                                                                {bare, false},
-                                                               {deps, ?DEPS},
-                                                               {example, ""},
-                                                               {short_desc, "Locks dependencies."},
-                                                               {desc, "Locks dependencies"},
-                                                               {opts, []}])),
+                                                               {deps, ?DEPS}])),
     {ok, State1}.
+
+-spec cli() -> argparse:command().
+cli() ->
+    #{help => "Locks dependencies.",
+      arguments => [
+        #{name => package,
+          type => string,
+          nargs => list,
+          required => false,
+          help => "Legacy positional args (ignored)."}
+    ]}.
 
 -spec do(rebar_state:t()) -> {ok, rebar_state:t()} | {error, string()}.
 do(State) ->

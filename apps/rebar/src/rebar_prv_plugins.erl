@@ -3,6 +3,7 @@
 -behaviour(provider).
 
 -export([init/1,
+         cli/0,
          do/1,
          format_error/1,
          list_local_plugins/1]).
@@ -23,12 +24,13 @@ init(State) ->
                     {module, ?MODULE},
                     {namespace, ?NAMESPACE},
                     {bare, true},
-                    {deps, ?DEPS},
-                    {example, "rebar3 plugins list"},
-                    {short_desc, "List local and global plugins for this project"},
-                    {desc, "List local and global plugins for this project"},
-                    {opts, []}])),
+                    {deps, ?DEPS}])),
     {ok, State1}.
+
+-spec cli() -> argparse:command().
+cli() ->
+    #{help => "List local and global plugins for this project",
+      arguments => []}. 
 
 -spec do(rebar_state:t()) -> {ok, rebar_state:t()} | {error, string()}.
 do(State) ->
