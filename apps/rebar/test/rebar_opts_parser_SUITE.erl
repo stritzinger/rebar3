@@ -31,7 +31,7 @@ bad_arg_to_flag(Config) ->
     true = meck:validate(getopt),
     ok = meck:unload(getopt),
 
-    "Invalid argument null to option foo" = lists:flatten(Error).
+    "erl: unknown argument: --foo=null" = lists:flatten(Error).
 
 missing_arg_to_flag(Config) ->
     ok = meck:new(getopt),
@@ -51,4 +51,4 @@ missing_arg_to_flag(Config) ->
     true = meck:validate(getopt),
     ok = meck:unload(getopt),
 
-    "Missing argument to option foo" = lists:flatten(Error).
+    "erl: unknown argument: --foo" = lists:flatten(Error).

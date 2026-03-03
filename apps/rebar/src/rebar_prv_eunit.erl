@@ -10,7 +10,7 @@
          do/1,
          format_error/1]).
 %% exported solely for tests
--export([prepare_tests/1, eunit_opts/1, validate_tests/2]).
+-export([prepare_tests/1, validate_tests/2]).
 
 -include("rebar.hrl").
 -include_lib("providers/include/providers.hrl").
@@ -589,26 +589,6 @@ handle_results(error) ->
     {error, unknown_error};
 handle_results({error, Reason}) ->
     {error, {error_running_tests, Reason}}.
-
-% TODO: cleanup 
-% Compatibility for existing tests and getopt-based option parsing paths.
-eunit_opts(_State) ->
-    [{app, undefined, "app", string, help(app)},
-     {application, undefined, "application", string, help(app)},
-     {cover, $c, "cover", boolean, help(cover)},
-     {cover_export_name, undefined, "cover_export_name", string, help(cover_export_name)},
-     {profile, $p, "profile", boolean, help(profile)},
-     {dir, $d, "dir", string, help(dir)},
-     {file, $f, "file", string, help(file)},
-     {module, $m, "module", string, help(module)},
-     {test, $t, "test", string, help(test)},
-     {suite, $s, "suite", string, help(module)},
-     {generator, $g, "generator", string, help(generator)},
-     {verbose, $v, "verbose", boolean, help(verbose)},
-     {name, undefined, "name", atom, help(name)},
-     {sname, undefined, "sname", atom, help(sname)},
-     {sys_config, undefined, "sys_config", string, help(sys_config)}, %% comma-separated list
-     {setcookie, undefined, "setcookie", atom, help(setcookie)}].
 
 help(app)       -> "Comma separated list of application test suites to run. Equivalent to `[{application, App}]`.";
 help(cover)     -> "Generate cover data. Defaults to false.";

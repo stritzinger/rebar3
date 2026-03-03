@@ -390,8 +390,7 @@ single_app_dir(Config) ->
     Namespace = rebar_state:namespace(State1),
     CommandProvider = providers:get_provider(ct, Providers, Namespace),
     GetOptSpec = providers:opts(CommandProvider),
-    {ok, GetOptResult} = getopt:parse(GetOptSpec,
-                                      ["--dir=" ++ filename:join([AppDir,
+    {ok, GetOptResult} = ct_parse(CommandProvider, GetOptSpec, ["--dir=" ++ filename:join([AppDir,
                                                                   "apps",
                                                                   Name1,
                                                                   "test"])]),
@@ -419,7 +418,7 @@ single_extra_dir(Config) ->
     Namespace = rebar_state:namespace(State1),
     CommandProvider = providers:get_provider(ct, Providers, Namespace),
     GetOptSpec = providers:opts(CommandProvider),
-    {ok, GetOptResult} = getopt:parse(GetOptSpec, ["--dir=" ++ filename:join([AppDir,
+    {ok, GetOptResult} = ct_parse(CommandProvider, GetOptSpec, ["--dir=" ++ filename:join([AppDir,
                                                                               "test"])]),
 
     State2 = rebar_state:command_parsed_args(State1, GetOptResult),
@@ -449,7 +448,7 @@ single_unmanaged_dir(Config) ->
     Namespace = rebar_state:namespace(State1),
     CommandProvider = providers:get_provider(ct, Providers, Namespace),
     GetOptSpec = providers:opts(CommandProvider),
-    {ok, GetOptResult} = getopt:parse(GetOptSpec, ["--dir=" ++ filename:absname(filename:join([PrivDir,
+    {ok, GetOptResult} = ct_parse(CommandProvider, GetOptSpec, ["--dir=" ++ filename:absname(filename:join([PrivDir,
                                                                                                "unmanaged_dir"]))]),
 
     State2 = rebar_state:command_parsed_args(State1, GetOptResult),
@@ -476,8 +475,7 @@ single_suite(Config) ->
     Namespace = rebar_state:namespace(State1),
     CommandProvider = providers:get_provider(ct, Providers, Namespace),
     GetOptSpec = providers:opts(CommandProvider),
-    {ok, GetOptResult} = getopt:parse(GetOptSpec,
-                                      ["--suite=" ++ filename:join([AppDir,
+    {ok, GetOptResult} = ct_parse(CommandProvider, GetOptSpec, ["--suite=" ++ filename:join([AppDir,
                                                                     "apps",
                                                                     Name1,
                                                                     "test",
@@ -513,8 +511,7 @@ single_extra_suite(Config) ->
     Namespace = rebar_state:namespace(State1),
     CommandProvider = providers:get_provider(ct, Providers, Namespace),
     GetOptSpec = providers:opts(CommandProvider),
-    {ok, GetOptResult} = getopt:parse(GetOptSpec,
-                                      ["--suite=" ++ filename:join([AppDir,
+    {ok, GetOptResult} = ct_parse(CommandProvider, GetOptSpec, ["--suite=" ++ filename:join([AppDir,
                                                                     "test",
                                                                     "extra_SUITE"])]),
 
@@ -551,8 +548,7 @@ single_unmanaged_suite(Config) ->
     Namespace = rebar_state:namespace(State1),
     CommandProvider = providers:get_provider(ct, Providers, Namespace),
     GetOptSpec = providers:opts(CommandProvider),
-    {ok, GetOptResult} = getopt:parse(GetOptSpec,
-                                      ["--suite=" ++ filename:absname(filename:join([PrivDir,
+    {ok, GetOptResult} = ct_parse(CommandProvider, GetOptSpec, ["--suite=" ++ filename:absname(filename:join([PrivDir,
                                                                                      "unmanaged",
                                                                                      "unmanaged_SUITE"]))]),
 
@@ -582,8 +578,7 @@ multi_suite(Config) ->
     Namespace = rebar_state:namespace(State1),
     CommandProvider = providers:get_provider(ct, Providers, Namespace),
     GetOptSpec = providers:opts(CommandProvider),
-    {ok, GetOptResult} = getopt:parse(GetOptSpec,
-                                      ["--suite=" ++ filename:join([AppDir,
+    {ok, GetOptResult} = ct_parse(CommandProvider, GetOptSpec, ["--suite=" ++ filename:join([AppDir,
                                                                     "apps",
                                                                     Name1,
                                                                     "test",
@@ -630,8 +625,7 @@ all_suite(Config) ->
     Namespace = rebar_state:namespace(State1),
     CommandProvider = providers:get_provider(ct, Providers, Namespace),
     GetOptSpec = providers:opts(CommandProvider),
-    {ok, GetOptResult} = getopt:parse(GetOptSpec,
-                                      ["--suite=" ++ filename:join([AppDir,
+    {ok, GetOptResult} = ct_parse(CommandProvider, GetOptSpec, ["--suite=" ++ filename:join([AppDir,
                                                                     "apps",
                                                                     Name1,
                                                                     "test",
@@ -686,8 +680,7 @@ single_dir_and_single_suite(Config) ->
     Namespace = rebar_state:namespace(State1),
     CommandProvider = providers:get_provider(ct, Providers, Namespace),
     GetOptSpec = providers:opts(CommandProvider),
-    {ok, GetOptResult} = getopt:parse(GetOptSpec,
-                                      ["--dir=" ++ filename:join([AppDir, "test"]),
+    {ok, GetOptResult} = ct_parse(CommandProvider, GetOptSpec, ["--dir=" ++ filename:join([AppDir, "test"]),
                                        "--suite=extra_SUITE"]),
 
     State2 = rebar_state:command_parsed_args(State1, GetOptResult),
@@ -719,7 +712,7 @@ suite_at_root(Config) ->
     Namespace = rebar_state:namespace(State1),
     CommandProvider = providers:get_provider(ct, Providers, Namespace),
     GetOptSpec = providers:opts(CommandProvider),
-    {ok, GetOptResult} = getopt:parse(GetOptSpec, ["--suite=" ++ filename:join([AppDir, "root_SUITE"])]),
+    {ok, GetOptResult} = ct_parse(CommandProvider, GetOptSpec, ["--suite=" ++ filename:join([AppDir, "root_SUITE"])]),
 
     State2 = rebar_state:command_parsed_args(State1, GetOptResult),
 
@@ -750,7 +743,7 @@ suite_at_root(Config) ->
     ok = file:set_cwd(AppDir),
     rebar_file_utils:rm_rf("_build"),
 
-    {ok, GetOptResult2} = getopt:parse(GetOptSpec, ["--suite=" ++ "root_SUITE"]),
+    {ok, GetOptResult2} = ct_parse(CommandProvider, GetOptSpec, ["--suite=" ++ "root_SUITE"]),
 
     State3 = rebar_state:command_parsed_args(State1, GetOptResult2),
 
@@ -782,7 +775,7 @@ suite_at_app_root(Config) ->
     Namespace = rebar_state:namespace(State1),
     CommandProvider = providers:get_provider(ct, Providers, Namespace),
     GetOptSpec = providers:opts(CommandProvider),
-    {ok, GetOptResult} = getopt:parse(GetOptSpec, ["--suite=" ++ filename:join([AppDir, "apps", Name2, "app_root_SUITE"])]),
+    {ok, GetOptResult} = ct_parse(CommandProvider, GetOptSpec, ["--suite=" ++ filename:join([AppDir, "apps", Name2, "app_root_SUITE"])]),
 
     State2 = rebar_state:command_parsed_args(State1, GetOptResult),
 
@@ -818,7 +811,7 @@ suite_at_app_root(Config) ->
     ok = file:set_cwd(AppDir),
     rebar_file_utils:rm_rf("_build"),
 
-    {ok, GetOptResult2} = getopt:parse(GetOptSpec, ["--suite=" ++ filename:join(["apps", Name2, "app_root_SUITE"])]),
+    {ok, GetOptResult2} = ct_parse(CommandProvider, GetOptSpec, ["--suite=" ++ filename:join(["apps", Name2, "app_root_SUITE"])]),
 
     State3 = rebar_state:command_parsed_args(State1, GetOptResult2),
 
@@ -851,8 +844,7 @@ data_in_app_test_folder(Config) ->
     Namespace = rebar_state:namespace(State1),
     CommandProvider = providers:get_provider(ct, Providers, Namespace),
     GetOptSpec = providers:opts(CommandProvider),
-    {ok, GetOptResult} = getopt:parse(GetOptSpec,
-                                       ["--suite=" ++ filename:join([AppDir,
+    {ok, GetOptResult} = ct_parse(CommandProvider, GetOptSpec, ["--suite=" ++ filename:join([AppDir,
                                                                      "apps",
                                                                      Name2,
                                                                      "test",
@@ -899,7 +891,7 @@ cmd_label(Config) ->
     Namespace = rebar_state:namespace(State),
     CommandProvider = providers:get_provider(ct, Providers, Namespace),
     GetOptSpec = providers:opts(CommandProvider),
-    {ok, GetOptResult} = getopt:parse(GetOptSpec, ["--label=this_is_a_label"]),
+    {ok, GetOptResult} = ct_parse(CommandProvider, GetOptSpec, ["--label=this_is_a_label"]),
 
     NewState = rebar_state:command_parsed_args(State, GetOptResult),
 
@@ -914,7 +906,7 @@ cmd_config(Config) ->
     Namespace = rebar_state:namespace(State),
     CommandProvider = providers:get_provider(ct, Providers, Namespace),
     GetOptSpec = providers:opts(CommandProvider),
-    {ok, GetOptResult} = getopt:parse(GetOptSpec, ["--config=config/foo,config/bar,config/baz"]),
+    {ok, GetOptResult} = ct_parse(CommandProvider, GetOptSpec, ["--config=config/foo,config/bar,config/baz"]),
 
     NewState = rebar_state:command_parsed_args(State, GetOptResult),
 
@@ -929,7 +921,7 @@ cmd_spec(Config) ->
     Namespace = rebar_state:namespace(State),
     CommandProvider = providers:get_provider(ct, Providers, Namespace),
     GetOptSpec = providers:opts(CommandProvider),
-    {ok, GetOptResult} = getopt:parse(GetOptSpec, ["--spec=foo.spec,bar.spec,baz.spec"]),
+    {ok, GetOptResult} = ct_parse(CommandProvider, GetOptSpec, ["--spec=foo.spec,bar.spec,baz.spec"]),
 
     NewState = rebar_state:command_parsed_args(State, GetOptResult),
 
@@ -944,7 +936,7 @@ cmd_join_specs(Config) ->
     Namespace = rebar_state:namespace(State),
     CommandProvider = providers:get_provider(ct, Providers, Namespace),
     GetOptSpec = providers:opts(CommandProvider),
-    {ok, GetOptResult} = getopt:parse(GetOptSpec, ["--join_specs=true"]),
+    {ok, GetOptResult} = ct_parse(CommandProvider, GetOptSpec, ["--join_specs=true"]),
 
     NewState = rebar_state:command_parsed_args(State, GetOptResult),
 
@@ -959,7 +951,7 @@ cmd_allow_user_terms(Config) ->
     Namespace = rebar_state:namespace(State),
     CommandProvider = providers:get_provider(ct, Providers, Namespace),
     GetOptSpec = providers:opts(CommandProvider),
-    {ok, GetOptResult} = getopt:parse(GetOptSpec, ["--allow_user_terms=true"]),
+    {ok, GetOptResult} = ct_parse(CommandProvider, GetOptSpec, ["--allow_user_terms=true"]),
 
     NewState = rebar_state:command_parsed_args(State, GetOptResult),
 
@@ -974,7 +966,7 @@ cmd_logdir(Config) ->
     Namespace = rebar_state:namespace(State),
     CommandProvider = providers:get_provider(ct, Providers, Namespace),
     GetOptSpec = providers:opts(CommandProvider),
-    {ok, GetOptResult} = getopt:parse(GetOptSpec, ["--logdir=/tmp/ct_logs"]),
+    {ok, GetOptResult} = ct_parse(CommandProvider, GetOptSpec, ["--logdir=/tmp/ct_logs"]),
 
     NewState = rebar_state:command_parsed_args(State, GetOptResult),
 
@@ -989,7 +981,7 @@ cmd_logopts(Config) ->
     Namespace = rebar_state:namespace(State),
     CommandProvider = providers:get_provider(ct, Providers, Namespace),
     GetOptSpec = providers:opts(CommandProvider),
-    {ok, GetOptResult} = getopt:parse(GetOptSpec, ["--logopts=no_src,no_nl"]),
+    {ok, GetOptResult} = ct_parse(CommandProvider, GetOptSpec, ["--logopts=no_src,no_nl"]),
 
     NewState = rebar_state:command_parsed_args(State, GetOptResult),
 
@@ -1004,7 +996,7 @@ cmd_verbosity(Config) ->
     Namespace = rebar_state:namespace(State),
     CommandProvider = providers:get_provider(ct, Providers, Namespace),
     GetOptSpec = providers:opts(CommandProvider),
-    {ok, GetOptResult} = getopt:parse(GetOptSpec, ["--verbosity=43"]),
+    {ok, GetOptResult} = ct_parse(CommandProvider, GetOptSpec, ["--verbosity=43"]),
 
     NewState = rebar_state:command_parsed_args(State, GetOptResult),
 
@@ -1019,7 +1011,7 @@ cmd_repeat(Config) ->
     Namespace = rebar_state:namespace(State),
     CommandProvider = providers:get_provider(ct, Providers, Namespace),
     GetOptSpec = providers:opts(CommandProvider),
-    {ok, GetOptResult} = getopt:parse(GetOptSpec, ["--repeat=3"]),
+    {ok, GetOptResult} = ct_parse(CommandProvider, GetOptSpec, ["--repeat=3"]),
 
     NewState = rebar_state:command_parsed_args(State, GetOptResult),
 
@@ -1034,7 +1026,7 @@ cmd_duration(Config) ->
     Namespace = rebar_state:namespace(State),
     CommandProvider = providers:get_provider(ct, Providers, Namespace),
     GetOptSpec = providers:opts(CommandProvider),
-    {ok, GetOptResult} = getopt:parse(GetOptSpec, ["--duration=001500"]),
+    {ok, GetOptResult} = ct_parse(CommandProvider, GetOptSpec, ["--duration=001500"]),
 
     NewState = rebar_state:command_parsed_args(State, GetOptResult),
 
@@ -1049,7 +1041,7 @@ cmd_until(Config) ->
     Namespace = rebar_state:namespace(State),
     CommandProvider = providers:get_provider(ct, Providers, Namespace),
     GetOptSpec = providers:opts(CommandProvider),
-    {ok, GetOptResult} = getopt:parse(GetOptSpec, ["--until=001500"]),
+    {ok, GetOptResult} = ct_parse(CommandProvider, GetOptSpec, ["--until=001500"]),
 
     NewState = rebar_state:command_parsed_args(State, GetOptResult),
 
@@ -1064,7 +1056,7 @@ cmd_force_stop(Config) ->
     Namespace = rebar_state:namespace(State),
     CommandProvider = providers:get_provider(ct, Providers, Namespace),
     GetOptSpec = providers:opts(CommandProvider),
-    {ok, GetOptResult} = getopt:parse(GetOptSpec, ["--force_stop=skip_rest"]),
+    {ok, GetOptResult} = ct_parse(CommandProvider, GetOptSpec, ["--force_stop=skip_rest"]),
 
     NewState = rebar_state:command_parsed_args(State, GetOptResult),
 
@@ -1079,7 +1071,7 @@ cmd_basic_html(Config) ->
     Namespace = rebar_state:namespace(State),
     CommandProvider = providers:get_provider(ct, Providers, Namespace),
     GetOptSpec = providers:opts(CommandProvider),
-    {ok, GetOptResult} = getopt:parse(GetOptSpec, ["--basic_html"]),
+    {ok, GetOptResult} = ct_parse(CommandProvider, GetOptSpec, ["--basic_html"]),
 
     NewState = rebar_state:command_parsed_args(State, GetOptResult),
 
@@ -1094,7 +1086,7 @@ cmd_stylesheet(Config) ->
     Namespace = rebar_state:namespace(State),
     CommandProvider = providers:get_provider(ct, Providers, Namespace),
     GetOptSpec = providers:opts(CommandProvider),
-    {ok, GetOptResult} = getopt:parse(GetOptSpec, ["--stylesheet=resources/tests.css"]),
+    {ok, GetOptResult} = ct_parse(CommandProvider, GetOptSpec, ["--stylesheet=resources/tests.css"]),
 
     NewState = rebar_state:command_parsed_args(State, GetOptResult),
 
@@ -1109,7 +1101,7 @@ cmd_decrypt_key(Config) ->
     Namespace = rebar_state:namespace(State),
     CommandProvider = providers:get_provider(ct, Providers, Namespace),
     GetOptSpec = providers:opts(CommandProvider),
-    {ok, GetOptResult} = getopt:parse(GetOptSpec, ["--decrypt_key==ac467e30"]),
+    {ok, GetOptResult} = ct_parse(CommandProvider, GetOptSpec, ["--decrypt_key==ac467e30"]),
 
     NewState = rebar_state:command_parsed_args(State, GetOptResult),
 
@@ -1124,7 +1116,7 @@ cmd_decrypt_file(Config) ->
     Namespace = rebar_state:namespace(State),
     CommandProvider = providers:get_provider(ct, Providers, Namespace),
     GetOptSpec = providers:opts(CommandProvider),
-    {ok, GetOptResult} = getopt:parse(GetOptSpec, ["--decrypt_file=../keyfile.pem"]),
+    {ok, GetOptResult} = ct_parse(CommandProvider, GetOptSpec, ["--decrypt_file=../keyfile.pem"]),
 
     NewState = rebar_state:command_parsed_args(State, GetOptResult),
 
@@ -1139,7 +1131,7 @@ cmd_abort_if_missing_suites(Config) ->
     Namespace = rebar_state:namespace(State),
     CommandProvider = providers:get_provider(ct, Providers, Namespace),
     GetOptSpec = providers:opts(CommandProvider),
-    {ok, GetOptResult} = getopt:parse(GetOptSpec, ["--abort_if_missing_suites"]),
+    {ok, GetOptResult} = ct_parse(CommandProvider, GetOptSpec, ["--abort_if_missing_suites"]),
 
     NewState = rebar_state:command_parsed_args(State, GetOptResult),
 
@@ -1154,7 +1146,7 @@ cmd_multiply_timetraps(Config) ->
     Namespace = rebar_state:namespace(State),
     CommandProvider = providers:get_provider(ct, Providers, Namespace),
     GetOptSpec = providers:opts(CommandProvider),
-    {ok, GetOptResult} = getopt:parse(GetOptSpec, ["--multiply_timetraps=3"]),
+    {ok, GetOptResult} = ct_parse(CommandProvider, GetOptSpec, ["--multiply_timetraps=3"]),
 
     NewState = rebar_state:command_parsed_args(State, GetOptResult),
 
@@ -1169,7 +1161,7 @@ cmd_scale_timetraps(Config) ->
     Namespace = rebar_state:namespace(State),
     CommandProvider = providers:get_provider(ct, Providers, Namespace),
     GetOptSpec = providers:opts(CommandProvider),
-    {ok, GetOptResult} = getopt:parse(GetOptSpec, ["--scale_timetraps"]),
+    {ok, GetOptResult} = ct_parse(CommandProvider, GetOptSpec, ["--scale_timetraps"]),
 
     NewState = rebar_state:command_parsed_args(State, GetOptResult),
 
@@ -1184,7 +1176,7 @@ cmd_create_priv_dir(Config) ->
     Namespace = rebar_state:namespace(State),
     CommandProvider = providers:get_provider(ct, Providers, Namespace),
     GetOptSpec = providers:opts(CommandProvider),
-    {ok, GetOptResult} = getopt:parse(GetOptSpec, ["--create_priv_dir=manual_per_tc"]),
+    {ok, GetOptResult} = ct_parse(CommandProvider, GetOptSpec, ["--create_priv_dir=manual_per_tc"]),
 
     NewState = rebar_state:command_parsed_args(State, GetOptResult),
 
@@ -1200,7 +1192,7 @@ cmd_include_dir(Config) ->
     Namespace = rebar_state:namespace(State),
     CommandProvider = providers:get_provider(ct, Providers, Namespace),
     GetOptSpec = providers:opts(CommandProvider),
-    {ok, GetOptResult} = getopt:parse(GetOptSpec, ["--include=foo/bar/baz,qux"]),
+    {ok, GetOptResult} = ct_parse(CommandProvider, GetOptSpec, ["--include=foo/bar/baz,qux"]),
 
     NewState = rebar_state:command_parsed_args(State, GetOptResult),
 
@@ -1248,7 +1240,7 @@ cmd_sys_config(Config) ->
     CmdFile = filename:join([AppDir, "config", "cmd_sys.config"]),
     ok = filelib:ensure_dir(CmdFile),
     ok = file:write_file(CmdFile, cmd_sys_config_file(AppName)),
-    {ok, GetOptResult} = getopt:parse(GetOptSpec, ["--sys_config="++CmdFile]),
+    {ok, GetOptResult} = ct_parse(CommandProvider, GetOptSpec, ["--sys_config="++CmdFile]),
     State2 = rebar_state:command_parsed_args(State1, GetOptResult),
 
     {ok, _} = rebar_prv_common_test:prepare_tests(State2),
@@ -1335,7 +1327,7 @@ cover_compiled(Config) ->
     Namespace = rebar_state:namespace(State),
     CommandProvider = providers:get_provider(ct, Providers, Namespace),
     GetOptSpec = providers:opts(CommandProvider),
-    {ok, GetOptResult} = getopt:parse(GetOptSpec, ["--cover"]),
+    {ok, GetOptResult} = ct_parse(CommandProvider, GetOptSpec, ["--cover"]),
 
     NewState = rebar_state:command_parsed_args(State, GetOptResult),
 
@@ -1353,7 +1345,7 @@ cover_export_name(Config) ->
     Namespace = rebar_state:namespace(State),
     CommandProvider = providers:get_provider(ct, Providers, Namespace),
     GetOptSpec = providers:opts(CommandProvider),
-    {ok, GetOptResult} = getopt:parse(GetOptSpec, ["--cover", "--cover_export_name=export_name"]),
+    {ok, GetOptResult} = ct_parse(CommandProvider, GetOptSpec, ["--cover", "--cover_export_name=export_name"]),
 
     NewState = rebar_state:command_parsed_args(State, GetOptResult),
 
@@ -1453,7 +1445,7 @@ testspec(Config) ->
     GetOptSpec = providers:opts(CommandProvider),
 
     %% Testspec in "test" directory
-    {ok, GetOptResult1} = getopt:parse(GetOptSpec, ["--spec","test/some.spec"]),
+    {ok, GetOptResult1} = ct_parse(CommandProvider, GetOptSpec, ["--spec","test/some.spec"]),
     State1 = rebar_state:command_parsed_args(State, GetOptResult1),
     Tests1 = rebar_prv_common_test:prepare_tests(State1),
     {ok, NewState1} = rebar_prv_common_test:compile(State1, Tests1),
@@ -1471,8 +1463,7 @@ testspec(Config) ->
 
 
     %% Testspec in directory other than "test"
-    {ok, GetOptResult2} = getopt:parse(GetOptSpec,
-                                       ["--spec","specs/another.spec"]),
+    {ok, GetOptResult2} = ct_parse(CommandProvider, GetOptSpec, ["--spec","specs/another.spec"]),
     State2 = rebar_state:command_parsed_args(State, GetOptResult2),
     Tests2 = {ok, T2} =rebar_prv_common_test:prepare_tests(State2),
     {ok, NewState2} = rebar_prv_common_test:compile(State2, Tests2),
@@ -1526,7 +1517,7 @@ testspec_at_root(Config) ->
     GetOptSpec = providers:opts(CommandProvider),
 
     SpecArg1 = rebar_string:join([Spec1,Spec2,Spec3],","),
-    {ok, GetOptResult1} = getopt:parse(GetOptSpec, ["--spec",SpecArg1]),
+    {ok, GetOptResult1} = ct_parse(CommandProvider, GetOptSpec, ["--spec",SpecArg1]),
     State1 = rebar_state:command_parsed_args(State, GetOptResult1),
     Tests1 = rebar_prv_common_test:prepare_tests(State1),
     {ok, NewState1} = rebar_prv_common_test:compile(State1, Tests1),
@@ -1559,7 +1550,7 @@ testspec_at_root(Config) ->
     ok = rebar_file_utils:rm_rf("_build"),
 
     SpecArg2 = "root.spec,root1.spec,root2.spec",
-    {ok, GetOptResult2} = getopt:parse(GetOptSpec, ["--spec",SpecArg2]),
+    {ok, GetOptResult2} = ct_parse(CommandProvider, GetOptSpec, ["--spec",SpecArg2]),
     State2 = rebar_state:command_parsed_args(State, GetOptResult2),
     Tests2 = rebar_prv_common_test:prepare_tests(State2),
     {ok, NewState2} = rebar_prv_common_test:compile(State2, Tests2),
@@ -1607,7 +1598,7 @@ testspec_parse_error(Config) ->
     GetOptSpec = providers:opts(CommandProvider),
 
     %% Non existing testspec
-    {ok, GetOptResult1} = getopt:parse(GetOptSpec, ["--spec",Spec1]),
+    {ok, GetOptResult1} = ct_parse(CommandProvider, GetOptSpec, ["--spec",Spec1]),
     State1 = rebar_state:command_parsed_args(State, GetOptResult1),
     Tests1 = rebar_prv_common_test:prepare_tests(State1),
     {error,
@@ -1617,7 +1608,7 @@ testspec_parse_error(Config) ->
         rebar_prv_common_test:compile(State1, Tests1),
 
     %% Syntax error
-    {ok, GetOptResult2} = getopt:parse(GetOptSpec, ["--spec",Spec2]),
+    {ok, GetOptResult2} = ct_parse(CommandProvider, GetOptSpec, ["--spec",Spec2]),
     State2 = rebar_state:command_parsed_args(State, GetOptResult2),
     Tests2 = rebar_prv_common_test:prepare_tests(State2),
     {error,
@@ -1657,7 +1648,7 @@ cmd_vs_cfg_opts(Config) ->
     CommandProvider = providers:get_provider(ct, Providers, Namespace),
     GetOptSpec = providers:opts(CommandProvider),
 
-    {ok, GetOptResult1} = getopt:parse(GetOptSpec, ["--spec","test/some.spec"]),
+    {ok, GetOptResult1} = ct_parse(CommandProvider, GetOptSpec, ["--spec","test/some.spec"]),
     State1 = rebar_state:command_parsed_args(State, GetOptResult1),
     {ok, TestOpts1} = rebar_prv_common_test:prepare_tests(State1),
     true = lists:member({spec, ["test/some.spec"]}, TestOpts1),
@@ -1666,7 +1657,7 @@ cmd_vs_cfg_opts(Config) ->
     false = lists:keymember(group, 1, TestOpts1),
     false = lists:keymember(testcase, 1, TestOpts1),
 
-    {ok, GetOptResult2} = getopt:parse(GetOptSpec, ["--suite","test/some_SUITE"]),
+    {ok, GetOptResult2} = ct_parse(CommandProvider, GetOptSpec, ["--suite","test/some_SUITE"]),
     State2 = rebar_state:command_parsed_args(State, GetOptResult2),
     {ok, TestOpts2} = rebar_prv_common_test:prepare_tests(State2),
     true = lists:member({suite, ["test/some_SUITE"]}, TestOpts2),
@@ -1675,7 +1666,7 @@ cmd_vs_cfg_opts(Config) ->
     false = lists:keymember(group, 1, TestOpts2),
     false = lists:keymember(testcase, 1, TestOpts2),
 
-    {ok, GetOptResult3} = getopt:parse(GetOptSpec, ["--group","[g1,g2],g3"]),
+    {ok, GetOptResult3} = ct_parse(CommandProvider, GetOptSpec, ["--group","[g1,g2],g3"]),
     State3 = rebar_state:command_parsed_args(State, GetOptResult3),
     {ok, TestOpts3} = rebar_prv_common_test:prepare_tests(State3),
     true = lists:member({group, [[g1,g2],g3]}, TestOpts3),
@@ -1711,7 +1702,7 @@ single_testspec_in_ct_opts(Config) ->
     GetOptSpec = providers:opts(CommandProvider),
 
     %% Testspec in "test" directory
-    {ok, GetOptResult1} = getopt:parse(GetOptSpec, []),
+    {ok, GetOptResult1} = ct_parse(CommandProvider, GetOptSpec, []),
     State1 = rebar_state:command_parsed_args(State, GetOptResult1),
     Tests1 = rebar_prv_common_test:prepare_tests(State1),
     {ok, T1} = Tests1,
@@ -1752,3 +1743,13 @@ cfg_sys_config_file(AppName) ->
 
 other_sys_config_file(AppName) ->
     io_lib:format("[{~ts, [{other_key, other_cfg_value}]}].", [AppName]).
+
+ct_parse(CommandProvider, _GetOptSpec, Args) ->
+    Module = providers:module(CommandProvider),
+    Cli = Module:cli(),
+    case argparse:parse(Args, Cli) of
+        {ok, ParsedMap, _Path, _Command} ->
+            {ok, {maps:to_list(ParsedMap), []}};
+        {error, _} = Error ->
+            Error
+    end.

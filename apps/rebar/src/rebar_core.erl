@@ -114,17 +114,12 @@ process_command(State, Command) ->
                 _ ->
                     Profiles = providers:profiles(CommandProvider),
                     State1 = rebar_state:apply_profiles(State, Profiles),
-                    Opts = providers:opts(CommandProvider)++rebar3:global_option_spec_list(),
-                    case getopt:parse(Opts, rebar_state:command_args(State1)) of
-                        {ok, Args} ->
-                            State2 = rebar_state:command_parsed_args(State1, Args),
+                    case parse_command_args(CommandProvider, State1, Command) of
+                        {ok, ParsedArgs} ->
+                            State2 = rebar_state:command_parsed_args(State1, ParsedArgs),
                             do(TargetProviders, State2);
-                        {error, {invalid_option, Option}} ->
-                            {error, io_lib:format("Invalid option ~ts on task ~ts", [Option, atom_to_list(Command)])};
-                        {error, {invalid_option_arg, {Option, Arg}}} ->
-                            {error, io_lib:format("Invalid argument ~ts to option ~ts", [Arg, Option])};
-                        {error, {missing_option_arg, Option}} ->
-                            {error, io_lib:format("Missing argument to option ~ts", [Option])}
+                        {error, Reason} ->
+                            {error, Reason}
                     end
             end
     end.
@@ -182,3 +177,39 @@ format_error({bad_provider_namespace, Name}) ->
 %% omitting the default namespace if it's not there
 friendly_provider({default, P}) -> P;
 friendly_provider(P) -> P.
+
+parse_command_args(CommandProvider, State, Command) ->
+    Module = providers:module(CommandProvider),
+    case code:ensure_loaded(Module) of
+        {module, _} ->
+            case erlang:function_exported(Module, cli, 0) of
+                true ->
+                    parse_with_argparse(Module, State, Command);
+                false ->
+                    parse_with_getopt(CommandProvider, State, Command)
+            end;
+        {error, _} ->
+            parse_with_getopt(CommandProvider, State, Command)
+    end.
+
+parse_with_argparse(Module, State, _Command) ->
+    Cli = Module:cli(),
+    case argparse:parse(rebar_state:command_args(State), Cli) of
+        {ok, ParsedMap, _Path, _Cmd} ->
+            {ok, {maps:to_list(ParsedMap), []}};
+        {error, ParseError} ->
+            {error, argparse:format_error(ParseError)}
+    end.
+
+parse_with_getopt(CommandProvider, State, Command) ->
+    Opts = providers:opts(CommandProvider) ++ rebar3:global_option_spec_list(),
+    case getopt:parse(Opts, rebar_state:command_args(State)) of
+        {ok, Args} ->
+            {ok, Args};
+        {error, {invalid_option, Option}} ->
+            {error, io_lib:format("Invalid option ~ts on task ~ts", [Option, atom_to_list(Command)])};
+        {error, {invalid_option_arg, {Option, Arg}}} ->
+            {error, io_lib:format("Invalid argument ~ts to option ~ts", [Arg, Option])};
+        {error, {missing_option_arg, Option}} ->
+            {error, io_lib:format("Missing argument to option ~ts", [Option])}
+    end.

@@ -45,12 +45,10 @@ cli() ->
 -spec do(rebar_state:t()) -> {ok, rebar_state:t()} | {error, string()}.
 do(State) ->
     {Profiles, Tasks} = args_to_profiles_and_tasks(rebar_state:command_args(State)),
-    case {Profiles, Tasks} of
-        {[], _} ->
-            {error, "At least one profile must be specified when using `as`"};
-        {_, []} ->
+    case Tasks of
+        [] ->
             {error, "At least one task must be specified when using `as`"};
-        _  ->
+        _ ->
             warn_on_empty_profile(Profiles, State),
             State1 = rebar_state:apply_profiles(State, [list_to_atom(X) || X <- Profiles]),
             State2 = rebar_plugins:project_apps_install(State1),
