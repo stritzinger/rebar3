@@ -35,7 +35,7 @@ do(Namespace, Command) when is_atom(Namespace), is_atom(Command) ->
 do(Namespace, Args) when is_atom(Namespace), is_list(Args) ->
     gen_server:call(?MODULE, {cmd, Namespace, do, Args}, infinity).
 
--spec do(atom(), atom(), string()) -> ok | {error, term()}.
+-spec do(atom(), atom(), [string()]) -> ok | {error, term()}.
 do(Namespace, Command, Args) when is_atom(Namespace), is_atom(Command), is_list(Args) ->
     gen_server:call(?MODULE, {cmd, Namespace, Command, Args}, infinity).
 
@@ -51,7 +51,7 @@ async_do(Namespace, Command) when is_atom(Namespace), is_atom(Command) ->
 async_do(Namespace, Args) when is_atom(Namespace), is_list(Args) ->
     gen_server:cast(?MODULE, {cmd, Namespace, do, Args}).
 
--spec async_do(atom(), atom(), string()) -> ok.
+-spec async_do(atom(), atom(), [string()]) -> ok.
 async_do(Namespace, Command, Args) when is_atom(Namespace), is_atom(Command), is_list(Args) ->
     gen_server:cast(?MODULE, {cmd, Namespace, Command, Args}).
 
@@ -75,13 +75,13 @@ init(State) ->
 handle_call({cmd, Command}, _From, State=#state{state=RState, cwd=Cwd}) ->
     MidState = maybe_show_warning(State),
     put(cmd_type, sync),
-    {Res, NewRState} = run(default, Command, "", RState, Cwd),
+    {Res, NewRState} = run(default, Command, [], RState, Cwd),
     put(cmd_type, undefined),
     {reply, Res, MidState#state{state=NewRState}, hibernate};
 handle_call({cmd, Namespace, Command}, _From, State = #state{state=RState, cwd=Cwd}) ->
     MidState = maybe_show_warning(State),
     put(cmd_type, sync),
-    {Res, NewRState} = run(Namespace, Command, "", RState, Cwd),
+    {Res, NewRState} = run(Namespace, Command, [], RState, Cwd),
     put(cmd_type, undefined),
     {reply, Res, MidState#state{state=NewRState}, hibernate};
 handle_call({cmd, Namespace, Command, Args}, _From, State = #state{state=RState, cwd=Cwd}) ->
@@ -97,13 +97,13 @@ handle_call(_Call, _From, State) ->
 handle_cast({cmd, Command}, State=#state{state=RState, cwd=Cwd}) ->
     MidState = maybe_show_warning(State),
     put(cmd_type, async),
-    {_, NewRState} = run(default, Command, "", RState, Cwd),
+    {_, NewRState} = run(default, Command, [], RState, Cwd),
     put(cmd_type, undefined),
     {noreply, MidState#state{state=NewRState}, hibernate};
 handle_cast({cmd, Namespace, Command}, State = #state{state=RState, cwd=Cwd}) ->
     MidState = maybe_show_warning(State),
     put(cmd_type, async),
-    {_, NewRState} = run(Namespace, Command, "", RState, Cwd),
+    {_, NewRState} = run(Namespace, Command, [], RState, Cwd),
     put(cmd_type, undefined),
     {noreply, MidState#state{state=NewRState}, hibernate};
 handle_cast({cmd, Namespace, Command, Args}, State = #state{state=RState, cwd=Cwd}) ->
@@ -132,14 +132,13 @@ terminate(_Reason, _State) ->
 %%%%%%%%%%%%%%%
 
 %% @private runs the actual command and maintains the state changes
--spec run(atom(), atom(), string(), rebar_state:t(), file:filename()) ->
+-spec run(atom(), atom(), [string()], rebar_state:t(), file:filename()) ->
     {ok, rebar_state:t()} | {{error, term()}, rebar_state:t()}.
-run(Namespace, Command, StrArgs, RState, Cwd) ->
+run(Namespace, Command, CmdArgs, RState, Cwd) ->
     try
         case rebar_dir:get_cwd() of
             Cwd ->
-                PArgs = getopt:tokenize(StrArgs),
-                Args = [atom_to_list(Namespace), atom_to_list(Command)] ++ PArgs,
+                Args = [atom_to_list(Namespace), atom_to_list(Command)] ++ CmdArgs,
                 CmdState0 = refresh_state(RState, Cwd),
                 CmdState1 = rebar_state:set(CmdState0, task, atom_to_list(Command)),
                 CmdState = rebar_state:set(CmdState1, caller, api),
