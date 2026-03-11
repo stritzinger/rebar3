@@ -85,7 +85,7 @@
 -export([otp_release/0]).
 
 -include("rebar.hrl").
--include_lib("public_key/include/OTP-PUB-KEY.hrl").
+-include_lib("public_key/include/public_key.hrl").
 
 -define(ONE_LEVEL_INDENT, "     ").
 -define(APP_NAME_INDEX, 2).
@@ -1093,7 +1093,7 @@ ssl_opts(Url) ->
 %% @private Determines which CA Certs to use for the HTTPS request.
 %% If the user sets the value {ssl_cacerts_path, "path to pem"} in their
 %% global rebar.config file, the pem will be encoded and used for the
-%% SSL connection.  Otherwise, CA Certs from `certifi` will be used.
+%% SSL connection. Otherwise, OS-native CA certs (via OTP) will be used.
 %% This functionality is useful (needed) for Corporate Proxies that rewrite Certs.
 %% See ssl_opts/2
 get_cacerts() ->
@@ -1101,7 +1101,7 @@ get_cacerts() ->
     Config = rebar_config:consult_file(GlobalConfigFile),
     case proplists:get_value(ssl_cacerts_path, Config) of
         undefined ->
-            certifi:cacerts();
+            [Der || #cert{der = Der} <- public_key:cacerts_get()];
         Path ->
             {ok, Bin} = file:read_file(Path),
             Pems = public_key:pem_decode(Bin),
@@ -1141,8 +1141,8 @@ check_hostname_opt(_, Opts) ->
       Res :: unknown_ca | {trusted_ca, any()}.
 partial_chain(Certs) ->
     Certs1 = [{Cert, public_key:pkix_decode_cert(Cert, otp)} || Cert <- Certs],
-    CACerts = certifi:cacerts(),
-    CACerts1 = [public_key:pkix_decode_cert(Cert, otp) || Cert <- CACerts],
+    CACerts = public_key:cacerts_get(),
+    CACerts1 = [public_key:pkix_decode_cert(Der, otp) || #cert{der = Der} <- CACerts],
     case ec_lists:find(fun({_, Cert}) ->
                                check_cert(CACerts1, Cert)
                        end, Certs1) of
