@@ -6,6 +6,7 @@
 all() -> [implicit_compile, default_compile, do_compile,
           as_default_compile, as_do_compile,
           notfound, do_notfound, default_notfound, ns_notfound, ns_found,
+          help_notfound, help_ns_notfound,
           as_ns_invalid,
           do_ns_chain, do_ns_chain2, do_ns_noarg, do_ns_badcmd].
 
@@ -84,6 +85,20 @@ ns_found(Config) ->
     rebar_test_utils:run_and_check(
       add_fake_ns_provider(Config), [], Command,
       {ok, []}
+    ).
+
+help_notfound(Config) ->
+    Command = ["help", "fakecommand"],
+    rebar_test_utils:run_and_check(
+      Config, [], Command,
+      {error, "Command fakecommand not found"}
+    ).
+
+help_ns_notfound(Config) ->
+    Command = ["help", "ns", "fakecommand"],
+    rebar_test_utils:run_and_check(
+      add_fake_ns_provider(Config), [], Command,
+      {error, "Command fakecommand not found in namespace ns"}
     ).
 
 as_ns_invalid(Config) ->

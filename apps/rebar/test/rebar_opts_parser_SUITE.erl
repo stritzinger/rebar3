@@ -12,11 +12,6 @@ init_per_testcase(_, Config) ->
     rebar_test_utils:init_rebar_state(Config, "opts_parser_").
 
 bad_arg_to_flag(Config) ->
-    ok = meck:new(getopt),
-    ok = meck:expect(getopt,
-                     parse,
-                     fun(_, _) -> {error, {invalid_option_arg, {foo, "null"}}} end),
-
     AppDir = ?config(apps, Config),
 
     Name = rebar_test_utils:create_random_name("bad_arg_"),
@@ -28,15 +23,9 @@ bad_arg_to_flag(Config) ->
                                                     ["compile", "--foo=null"],
                                                     return),
 
-    true = meck:validate(getopt),
-    ok = meck:unload(getopt),
-
-    "Invalid argument null to option foo" = lists:flatten(Error).
+    "erl: unknown argument: --foo=null" = lists:flatten(Error).
 
 missing_arg_to_flag(Config) ->
-    ok = meck:new(getopt),
-    ok = meck:expect(getopt, parse, fun(_, _) -> {error, {missing_option_arg, foo}} end),
-
     AppDir = ?config(apps, Config),
 
     Name = rebar_test_utils:create_random_name("missing_arg_"),
@@ -48,7 +37,4 @@ missing_arg_to_flag(Config) ->
                                                     ["compile", "--foo"],
                                                     return),
 
-    true = meck:validate(getopt),
-    ok = meck:unload(getopt),
-
-    "Missing argument to option foo" = lists:flatten(Error).
+    "erl: unknown argument: --foo" = lists:flatten(Error).
