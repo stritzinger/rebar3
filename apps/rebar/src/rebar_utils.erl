@@ -85,7 +85,7 @@
 -export([otp_release/0]).
 
 -include("rebar.hrl").
--include_lib("public_key/include/OTP-PUB-KEY.hrl").
+-include_lib("public_key/include/public_key.hrl").
 
 -define(ONE_LEVEL_INDENT, "     ").
 -define(APP_NAME_INDEX, 2).
@@ -1101,7 +1101,7 @@ get_cacerts() ->
     Config = rebar_config:consult_file(GlobalConfigFile),
     case proplists:get_value(ssl_cacerts_path, Config) of
         undefined ->
-            public_key:cacerts_get();
+            [Der || #cert{der = Der} <- public_key:cacerts_get()];
         Path ->
             {ok, Bin} = file:read_file(Path),
             Pems = public_key:pem_decode(Bin),
@@ -1142,7 +1142,7 @@ check_hostname_opt(_, Opts) ->
 partial_chain(Certs) ->
     Certs1 = [{Cert, public_key:pkix_decode_cert(Cert, otp)} || Cert <- Certs],
     CACerts = public_key:cacerts_get(),
-    CACerts1 = [public_key:pkix_decode_cert(Cert, otp) || Cert <- CACerts],
+    CACerts1 = [public_key:pkix_decode_cert(Der, otp) || #cert{der = Der} <- CACerts],
     case ec_lists:find(fun({_, Cert}) ->
                                check_cert(CACerts1, Cert)
                        end, Certs1) of
