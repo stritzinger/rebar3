@@ -40,7 +40,6 @@
          main/1,
          run/1,
          run/2,
-         global_option_spec_list/0,
          global_cli/1,
          init_config/0,
          set_options/2,
@@ -366,9 +365,8 @@ provider_command(Provider) ->
         true ->
             Mod:cli();
         false ->
-            #{help => unicode:characters_to_list(
-                         unicode:characters_to_binary(providers:desc(Provider))),
-              arguments => []}
+            %% Legacy providers may only expose getopt-style opts.
+            rebar_legacy_cli:to_command(Provider)
     end.
 
 is_bare_provider(P) when is_tuple(P), tuple_size(P) >= 5 ->
@@ -419,16 +417,6 @@ set_global_flag(State, Options, Flag) ->
                     "0"
             end,
     rebar_state:set(State, Flag, Value).
-
-%% @doc options accepted via getopt
--spec global_option_spec_list() -> [{atom(), char(), string(), atom(), string()}, ...].
-global_option_spec_list() ->
-    [
-    %% {Name,  ShortOpt,  LongOpt,    ArgSpec,   HelpMsg}
-    {help,     $h,        "help",     undefined, "Print this help."},
-    {version,  $v,        "version",  undefined, "Show version information."},
-    {task,     undefined, undefined,  string,    "Task to run."}
-    ].
 
 %% @private translate unhandled errors and internal return codes into proper
 %% erroneous program exits.

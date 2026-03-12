@@ -114,17 +114,13 @@ process_command(State, Command) ->
                 _ ->
                     Profiles = providers:profiles(CommandProvider),
                     State1 = rebar_state:apply_profiles(State, Profiles),
-                    Opts = providers:opts(CommandProvider)++rebar3:global_option_spec_list(),
-                    case getopt:parse(Opts, rebar_state:command_args(State1)) of
-                        {ok, Args} ->
-                            State2 = rebar_state:command_parsed_args(State1, Args),
+                    case parse_command_args(CommandProvider, State1) of
+                        {ok, ParsedMap, _Path, _Cmd} ->
+                            ParsedArgs = normalize_parsed_args(ParsedMap),
+                            State2 = rebar_state:command_parsed_args(State1, ParsedArgs),
                             do(TargetProviders, State2);
-                        {error, {invalid_option, Option}} ->
-                            {error, io_lib:format("Invalid option ~ts on task ~ts", [Option, atom_to_list(Command)])};
-                        {error, {invalid_option_arg, {Option, Arg}}} ->
-                            {error, io_lib:format("Invalid argument ~ts to option ~ts", [Arg, Option])};
-                        {error, {missing_option_arg, Option}} ->
-                            {error, io_lib:format("Missing argument to option ~ts", [Option])}
+                        {error, ParseError} ->
+                            {error, argparse:format_error(ParseError)}
                     end
             end
     end.
@@ -182,3 +178,28 @@ format_error({bad_provider_namespace, Name}) ->
 %% omitting the default namespace if it's not there
 friendly_provider({default, P}) -> P;
 friendly_provider(P) -> P.
+
+parse_command_args(CommandProvider, State) ->
+    Module = providers:module(CommandProvider),
+    case code:ensure_loaded(Module) of
+        {module, _} ->
+            case erlang:function_exported(Module, cli, 0) of
+                true ->
+                    argparse:parse(rebar_state:command_args(State), Module:cli());
+                false ->
+                    argparse:parse(
+                      rebar_state:command_args(State),
+                      rebar_legacy_cli:to_parse_command(CommandProvider)
+                    )
+            end;
+        {error, _} ->
+            argparse:parse(
+              rebar_state:command_args(State),
+              rebar_legacy_cli:to_parse_command(CommandProvider)
+            )
+    end.
+
+normalize_parsed_args(ParsedMap) ->
+    Rest = maps:get(rest, ParsedMap, []),
+    ParsedArgs = lists:keydelete(rest, 1, maps:to_list(ParsedMap)),
+    {ParsedArgs, Rest}.

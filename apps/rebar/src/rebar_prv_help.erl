@@ -67,25 +67,10 @@ command_help(Path, State) ->
             {ok, State}
     catch
         _:_ ->
-            legacy_command_help(Path, Providers, State)
-    end.
-
-legacy_command_help([Name], Providers, State) ->
-    task_help(default, list_to_atom(Name), Providers, State);
-legacy_command_help([Namespace, Name], Providers, State) ->
-    task_help(list_to_atom(Namespace), list_to_atom(Name), Providers, State).
-
-task_help(Namespace, Name, Providers, State) ->
-    case providers:get_provider(Name, Providers, Namespace) of
-        not_found ->
-            case providers:get_providers_by_namespace(Name, Providers) of
-                [] ->
-                    {error, io_lib:format("Unknown task ~p", [Name])};
-                NSProviders ->
-                    providers:help(NSProviders),
-                    {ok, State}
-            end;
-        Provider ->
-            providers:help(Provider),
-            {ok, State}
+            case rebar_legacy_cli:provider_help(Path, Providers) of
+                ok ->
+                    {ok, State};
+                {error, _} = Error ->
+                    Error
+            end
     end.
