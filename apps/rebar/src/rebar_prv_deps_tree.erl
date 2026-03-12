@@ -3,6 +3,7 @@
 -behaviour(provider).
 
 -export([init/1,
+         cli/0,
          do/1,
          format_error/1]).
 
@@ -18,12 +19,18 @@ init(State) ->
                providers:create([{name, ?PROVIDER},
                                  {module, ?MODULE},
                                  {bare, true},
-                                 {deps, ?DEPS},
-                                 {example, "rebar3 tree"},
-                                 {short_desc, "Print dependency tree."},
-                                 {desc, ""},
-                                 {opts, [{verbose, $v, "verbose", undefined, "Print repo and branch/tag/ref for git and hg deps"}]}])),
+                                 {deps, ?DEPS}])),
     {ok, State1}.
+
+-spec cli() -> argparse:command().
+cli() ->
+    #{help => "Print dependency tree.",
+      arguments => [
+        #{name => verbose,
+          long => "-verbose",
+          type => boolean,
+          help => "Print repo and branch/tag/ref for git and hg deps"}
+    ]}.
 
 -spec do(rebar_state:t()) -> {ok, rebar_state:t()} | {error, string()}.
 do(State) ->

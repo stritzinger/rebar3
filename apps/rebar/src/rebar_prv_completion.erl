@@ -5,6 +5,7 @@
 -behaviour(provider).
 
 -export([init/1,
+         cli/0,
          do/1,
          format_error/1]).
 
@@ -21,25 +22,33 @@
 
 -spec init(rebar_state:t()) -> {ok, rebar_state:t()}.
 init(State) ->
-    AliasesHelp = "Comma separated list of OS level aliases on which rebar3 completion will be triggered (e.g. \"rebar\" or \"r3\").",
-    AliasesOpt = {aliases, $a, "aliases", string, AliasesHelp},
-
-    FileHelp = "Completion file name. Relative to \"_build/\".",
-    FileOpt = {file, $f, "file", string, FileHelp},
-
-    ShellHelp = "Shell type, 'bash' or 'zsh'.",
-    ShellOpt = {shell, $s, "shell", atom, ShellHelp},
-
     Provider = providers:create([{name, ?PROVIDER},
                                  {module, ?MODULE},
                                  {bare, true},
-                                 {deps, ?DEPS},
-                                 {example, "rebar3 completion"},
-                                 {short_desc, "Generate completion file for your shell."},
-                                 {desc, "Generate completion file for your shell."},
-                                 {opts, [AliasesOpt, FileOpt, ShellOpt]}]),
+                                 {deps, ?DEPS}]),
     State1 = rebar_state:add_provider(State,Provider),
     {ok, State1}.
+
+-spec cli() -> argparse:command().
+cli() ->
+    #{help => "Generate completion file for your shell.",
+      arguments => [
+        #{name => aliases,
+          short => $a,
+          long => "-aliases",
+          type => string,
+          help => "Comma separated list of OS level aliases on which rebar3 completion will be triggered (e.g. \"rebar\" or \"r3\")."},
+        #{name => file,
+          short => $f,
+          long => "-file",
+          type => string,
+          help => "Completion file name. Relative to \"_build/\"."},
+        #{name => shell,
+          short => $s,
+          long => "-shell",
+          type => atom,
+          help => "Shell type, 'bash' or 'zsh'."}
+    ]}.
 
 -spec do(rebar_state:t()) -> {ok, rebar_state:t()} | {error, string()}.
 do(State) ->

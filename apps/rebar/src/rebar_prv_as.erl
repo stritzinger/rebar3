@@ -6,6 +6,7 @@
 -behaviour(provider).
 
 -export([init/1,
+         cli/0,
          do/1,
          format_error/1]).
 
@@ -23,12 +24,23 @@ init(State) ->
     State1 = rebar_state:add_provider(State, providers:create([{name, ?PROVIDER},
                                                                {module, ?MODULE},
                                                                {bare, true},
-                                                               {deps, ?DEPS},
-                                                               {example, "rebar3 as <profile1>,<profile2>,... <task1>, <task2>, ..."},
-                                                               {short_desc, "Higher order provider for running multiple tasks in a sequence as a certain profiles."},
-                                                               {desc, "Higher order provider for running multiple tasks in a sequence as a certain profiles."},
-                                                               {opts, [{profile, undefined, undefined, string, "Profiles to run as."}]}])),
+                                                               {deps, ?DEPS}])),
     {ok, State1}.
+
+-spec cli() -> argparse:command().
+cli() ->
+    #{help => "Higher order provider for running multiple tasks in a sequence as a certain profiles.",
+      arguments => [
+        #{name => profile,
+          type => string,
+          required => true,
+          help => "Profiles to run as."},
+        #{name => task,
+          type => string,
+          nargs => nonempty_list,
+          required => true,
+          help => "Tasks to run."}
+    ]}.
 
 -spec do(rebar_state:t()) -> {ok, rebar_state:t()} | {error, string()}.
 do(State) ->

@@ -3,6 +3,7 @@
 -behaviour(provider).
 
 -export([init/1,
+         cli/0,
          do/1,
          format_error/1]).
 
@@ -19,13 +20,17 @@ init(State) ->
                                       providers:create([{name, ?PROVIDER},
                                                         {module, ?MODULE},
                                                         {bare, true},
-                                                        {deps, ?DEPS},
-                                                        {example, "rebar3 pkgs elli"},
-                                                        {short_desc, "List information for a package."},
-                                                        {desc, info("List information for a package")},
-                                                        {opts, [{package, undefined, undefined, string,
-                                                                 "Package to fetch information for."}]}])),
+                                                        {deps, ?DEPS}])),
     {ok, State1}.
+
+-spec cli() -> argparse:command().
+cli() ->
+    #{help => "List information for a package.",
+      arguments => [
+        #{name => package,
+          type => string,
+          help => "Package to fetch information for."}
+    ]}.
 
 -spec do(rebar_state:t()) -> {ok, rebar_state:t()} | {error, string()}.
 do(State) ->
@@ -101,6 +106,3 @@ join_tuple_list([{K, V}], _Sep) ->
     <<K/binary, ": ", V/binary>>;
 join_tuple_list([{K, V} | T], Sep) ->
     <<K/binary, ": ", V/binary, Sep/binary, (join_tuple_list(T, Sep))/binary>>.
-
-info(Description) ->
-    io_lib:format("~ts.~n", [Description]).

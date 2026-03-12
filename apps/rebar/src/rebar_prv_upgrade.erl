@@ -6,6 +6,7 @@
 -behaviour(provider).
 
 -export([init/1,
+         cli/0,
          do/1,
          format_error/1]).
 
@@ -29,17 +30,23 @@ init(State) ->
                                  providers:create([{name, ?PROVIDER},
                                                    {module, ?MODULE},
                                                    {bare, true},
-                                                   {deps, ?DEPS},
-                                                   {example, "rebar3 upgrade [cowboy[,ranch]]"},
-                                                   {short_desc, "Upgrade dependencies."},
-                                                   {desc, "Upgrade project dependencies. Use the -a/--all option to "
-                                                          "upgrade all dependencies. To upgrade specific dependencies, "
-                                                          "their names can be listed in the command."},
-                                                   {opts, [{all, $a, "all", undefined, "Upgrade all dependencies."},
-                                                          {package, undefined, undefined, string,
-                                                           "List of packages to upgrade."}
-                                                          ]}])),
+                                                   {deps, ?DEPS}])),
     {ok, State1}.
+
+-spec cli() -> argparse:command().
+cli() ->
+    #{help => "Upgrade dependencies.",
+      arguments => [
+        #{name => all,
+          short => $a,
+          long => "-all",
+          type => boolean,
+          help => "Upgrade all dependencies."},
+        #{name => package,
+          type => string,
+          required => false,
+          help => "List of packages to upgrade."}
+    ]}.
 
 -spec do(rebar_state:t()) -> {ok, rebar_state:t()} | {error, string()}.
 do(State) ->

@@ -6,6 +6,7 @@
 -behaviour(provider).
 
 -export([init/1,
+         cli/0,
          do/1,
          format_error/1,
          filter_xref_results/3]).
@@ -28,12 +29,14 @@ init(State) ->
     Provider = providers:create([{name, ?PROVIDER},
                                  {module, ?MODULE},
                                  {deps, ?DEPS},
-                                 {bare, true},
-                                 {example, "rebar3 xref"},
-                                 {short_desc, short_desc()},
-                                 {desc, desc()}]),
+                                 {bare, true}]),
     State1 = rebar_state:add_provider(State, Provider),
     {ok, State1}.
+
+-spec cli() -> argparse:command().
+cli() ->
+    #{help => short_desc(),
+      arguments => []}. 
 
 -spec do(rebar_state:t()) -> {ok, rebar_state:t()} | {error, string()}.
 do(State) ->
@@ -67,26 +70,6 @@ format_error(Reason) ->
 
 short_desc() ->
     "Run cross reference analysis.".
-
-desc() ->
-    io_lib:format(
-      "~ts~n"
-      "~n"
-      "Valid rebar.config options:~n"
-      "  ~p~n"
-      "  ~p~n"
-      "  ~p~n"
-      "  ~p~n",
-      [short_desc(),
-       {xref_warnings, false},
-       {xref_extra_paths,[]},
-       {xref_checks, [undefined_function_calls, undefined_functions,
-                      locals_not_used, exports_not_used,
-                      deprecated_function_calls, deprecated_functions]},
-       {xref_queries,
-        [{"(xc - uc) || (xu - x - b"
-          " - (\"mod\":\".*foo\"/\"4\"))",[]}]}
-      ]).
 
 -spec prepare(rebar_state:t()) -> [atom()].
 prepare(State) ->

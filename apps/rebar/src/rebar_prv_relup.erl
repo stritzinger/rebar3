@@ -6,6 +6,7 @@
 -behaviour(provider).
 
 -export([init/1,
+         cli/0,
          do/1,
          format_error/1]).
 
@@ -23,13 +24,13 @@ init(State) ->
     Provider = providers:create([{name, ?PROVIDER},
                                  {module, ?MODULE},
                                  {bare, true},
-                                 {deps, ?DEPS},
-                                 {example, "rebar3 relup"},
-                                 {short_desc, "Create relup of releases."},
-                                 {desc, "Create relup of releases."},
-                                 {opts, rebar_relx:opt_spec_list()}]),
+                                 {deps, ?DEPS}]),
     State1 = rebar_state:add_provider(State, Provider),
     {ok, State1}.
+
+-spec cli() -> argparse:command().
+cli() ->
+    maps:put(help, "Create relup of releases.", rebar_relx:cli()).
 
 -spec do(rebar_state:t()) -> {ok, rebar_state:t()} | {error, string()}.
 do(State) ->

@@ -6,10 +6,11 @@
 -behaviour(provider).
 
 -export([init/1,
+         cli/0,
          do/1,
          format_error/1]).
 %% exported solely for tests
--export([prepare_tests/1, eunit_opts/1, validate_tests/2]).
+-export([prepare_tests/1, validate_tests/2]).
 
 -include("rebar.hrl").
 -include_lib("providers/include/providers.hrl").
@@ -30,13 +31,31 @@ init(State) ->
                                  {module, ?MODULE},
                                  {deps, ?DEPS},
                                  {bare, true},
-                                 {example, "rebar3 eunit"},
-                                 {short_desc, "Run EUnit Tests."},
-                                 {desc, "Run EUnit Tests."},
-                                 {opts, eunit_opts(State)},
                                  {profiles, [test]}]),
     State1 = rebar_state:add_provider(State, Provider),
     {ok, State1}.
+
+-spec cli() -> argparse:command().
+cli() ->
+    #{help => "Run EUnit Tests.",
+      arguments => [
+        #{name => app, long => "-app", type => string, help => help(app)},
+        #{name => application, long => "-application", type => string, help => help(app)},
+        #{name => cover, short => $c, long => "-cover", type => boolean, help => help(cover)},
+        #{name => cover_export_name, long => "-cover_export_name", type => string, help => help(cover_export_name)},
+        #{name => profile, short => $p, long => "-profile", type => boolean, help => help(profile)},
+        #{name => dir, short => $d, long => "-dir", type => string, help => help(dir)},
+        #{name => file, short => $f, long => "-file", type => string, help => help(file)},
+        #{name => module, short => $m, long => "-module", type => string, help => help(module)},
+        #{name => test, short => $t, long => "-test", type => string, help => help(test)},
+        #{name => suite, short => $s, long => "-suite", type => string, help => help(module)},
+        #{name => generator, short => $g, long => "-generator", type => string, help => help(generator)},
+        #{name => verbose, long => "-verbose", type => boolean, help => help(verbose)},
+        #{name => name, long => "-name", type => atom, help => help(name)},
+        #{name => sname, long => "-sname", type => atom, help => help(sname)},
+        #{name => sys_config, long => "-sys_config", type => string, help => help(sys_config)},
+        #{name => setcookie, long => "-setcookie", type => atom, help => help(setcookie)}
+    ]}.
 
 -spec do(rebar_state:t()) -> {ok, rebar_state:t()} | {error, string()}.
 do(State) ->
@@ -570,24 +589,6 @@ handle_results(error) ->
     {error, unknown_error};
 handle_results({error, Reason}) ->
     {error, {error_running_tests, Reason}}.
-
-eunit_opts(_State) ->
-    [{app, undefined, "app", string, help(app)},
-     {application, undefined, "application", string, help(app)},
-     {cover, $c, "cover", boolean, help(cover)},
-     {cover_export_name, undefined, "cover_export_name", string, help(cover_export_name)},
-     {profile, $p, "profile", boolean, help(profile)},
-     {dir, $d, "dir", string, help(dir)},
-     {file, $f, "file", string, help(file)},
-     {module, $m, "module", string, help(module)},
-     {test, $t, "test", string, help(test)},
-     {suite, $s, "suite", string, help(module)},
-     {generator, $g, "generator", string, help(generator)},
-     {verbose, $v, "verbose", boolean, help(verbose)},
-     {name, undefined, "name", atom, help(name)},
-     {sname, undefined, "sname", atom, help(sname)},
-     {sys_config, undefined, "sys_config", string, help(sys_config)}, %% comma-separated list
-     {setcookie, undefined, "setcookie", atom, help(setcookie)}].
 
 help(app)       -> "Comma separated list of application test suites to run. Equivalent to `[{application, App}]`.";
 help(cover)     -> "Generate cover data. Defaults to false.";

@@ -3,6 +3,7 @@
 -behaviour(provider).
 
 -export([init/1,
+         cli/0,
          do/1,
          format_error/1]).
 
@@ -22,31 +23,49 @@ init(State) ->
         {name, ?PROVIDER},
         {module, ?MODULE},
         {bare, true},
-        {deps, ?DEPS},
-        {example, "rebar3 new <template>"},
-        {short_desc, "Create new project from templates."},
-        {desc, info()},
-        {opts, [{force, $f, "force", undefined, "overwrite existing files"}]}
-    ]),
+        {deps, ?DEPS}]),
     State1 = rebar_state:add_provider(State, Provider),
     {ok, State1}.
 
+-spec cli() -> argparse:command().
+cli() ->
+    #{help => "Create new project from templates.",
+      arguments => [
+        #{name => force,
+          short => $f,
+          long => "-force",
+          type => boolean,
+          help => "overwrite existing files"},
+        #{name => template,
+          type => string,
+          required => true,
+          help => "Template name."},
+        #{name => vars,
+          type => string,
+          nargs => list,
+          required => false,
+          help => "Template options."}
+    ]}.
+
 -spec do(rebar_state:t()) -> {ok, rebar_state:t()} | {error, string()}.
 do(State) ->
-    case strip_flags(rebar_state:command_args(State)) of
-        ["help"] ->
+    {Args, _} = rebar_state:command_parsed_args(State),
+    TemplateName = proplists:get_value(template, Args),
+    Opts = proplists:get_value(vars, Args, []),
+    case {TemplateName, Opts} of
+        {"help", []} ->
             ?CONSOLE("Call `rebar3 new help <template>` for a detailed description~n", []),
             show_short_templates(list_templates(State)),
             {ok, State};
-        ["help", TemplateName] ->
-            case lists:keyfind(TemplateName, 1, list_templates(State)) of
+        {"help", [HelpTemplate]} ->
+            case lists:keyfind(HelpTemplate, 1, list_templates(State)) of
                 false ->
-                    ?PRV_ERROR({template_not_found, TemplateName});
+                    ?PRV_ERROR({template_not_found, HelpTemplate});
                 Term ->
                     show_template(Term),
                     {ok, State}
             end;
-        [TemplateName | Opts] ->
+        {TemplateName, Opts} ->
             case lists:keyfind(TemplateName, 1, list_templates(State)) of
                 false ->
                     ?PRV_ERROR({template_not_found, TemplateName});
@@ -54,10 +73,7 @@ do(State) ->
                     Force = is_forced(State),
                     ok = rebar_templater:new(TemplateName, parse_opts(Opts), Force, State),
                     {ok, State}
-            end;
-        [] ->
-            show_short_templates(list_templates(State)),
-            {ok, State}
+            end
     end.
 
 -spec format_error(any()) -> iolist().
@@ -80,19 +96,6 @@ list_templates(State) ->
                 ;  (Tpl, Acc) ->
                     [Tpl|Acc]
                 end, [], lists:reverse(rebar_templater:list_templates(State))).
-
-info() ->
-    io_lib:format(
-      "Create rebar3 project based on template and vars.~n"
-      "~n"
-      "Valid command line options:~n"
-      "  <template> [var=foo,...]~n"
-      "~n"
-      "See available templates with: `rebar3 new help`~n", []).
-
-strip_flags([]) -> [];
-strip_flags(["-"++_|Opts]) -> strip_flags(Opts);
-strip_flags([Opt | Opts]) -> [Opt | strip_flags(Opts)].
 
 is_forced(State) ->
     {Args, _} = rebar_state:command_parsed_args(State),

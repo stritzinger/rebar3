@@ -32,6 +32,7 @@
 -behaviour(provider).
 
 -export([init/1,
+         cli/0,
          do/1,
          format_error/1]).
 
@@ -56,57 +57,58 @@ init(State) ->
                 {name, ?PROVIDER},
                 {module, ?MODULE},
                 {bare, true},
-                {deps, ?DEPS},
-                {example, "rebar3 shell"},
-                {short_desc, "Run shell with project apps and deps in path."},
-                {desc, info()},
-                {opts, [{config, undefined, "config", string,
-                         "Path to the config file to use. Defaults to "
-                         "{shell, [{config, File}]} and then the relx "
-                         "sys.config file if not specified."},
-                        {name, undefined, "name", atom,
-                         "Gives a long name to the node."},
-                        {sname, undefined, "sname", atom,
-                         "Gives a short name to the node."},
-                        {setcookie, undefined, "setcookie", atom,
-                         "Sets the cookie if the node is distributed."},
-                        {script_file, undefined, "script", string,
-                         "Path to an escript file to run before "
-                         "starting the project apps. Defaults to "
-                         "rebar.config {shell, [{script_file, File}]} "
-                         "if not specified."},
-                        {apps, undefined, "apps", string,
-                         "A list of apps to boot before starting the "
-                         "shell. (E.g. --apps app1,app2,app3) Defaults "
-                         "to rebar.config {shell, [{apps, Apps}]} or "
-                         "relx apps if not specified."},
-                        {relname, $r, "relname", atom,
-                         "Name of the release to use as a template for the "
-                         "shell session."},
-                        {relvsn, $v, "relvsn", string,
-                         "Version of the release to use for the shell "
-                         "session."},
-                        {start_clean, undefined, "start-clean", boolean,
-                         "Cancel any applications in the 'apps' list "
-                         "or release."},
-                        {env_file, undefined, "env-file", string,
-                         "Path to file of os environment variables to setup "
-                         "before expanding vars in config files."},
-                        {user_drv_args, undefined, "user_drv_args", string,
-                         "For versions of Erlang prior to 26, this option "
-                         "can be used to pass arguments to the user_drv start "
-                         "function for creating custom shells. Starting "
-                         "with Erlang 26, the arguments defined with this "
-                         "option are applied to the shell start_interactive "
-                         "function."},
-                        {eval, undefined, "eval", string,
-                         "Erlang term(s) to execute after the apps have been "
-                         "started, but before the shell is presented to the "
-                         "user."}
-                    ]}
-            ])
+                {deps, ?DEPS}])
     ),
     {ok, State1}.
+
+-spec cli() -> argparse:command().
+cli() ->
+    #{help => "Run shell with project apps and deps in path.",
+      arguments => [
+        #{name => config, long => "-config", type => string,
+          help => "Path to the config file to use. Defaults to "
+                  "{shell, [{config, File}]} and then the relx "
+                  "sys.config file if not specified."},
+        #{name => name, long => "-name", type => atom,
+          help => "Gives a long name to the node."},
+        #{name => sname, long => "-sname", type => atom,
+          help => "Gives a short name to the node."},
+        #{name => setcookie, long => "-setcookie", type => atom,
+          help => "Sets the cookie if the node is distributed."},
+        #{name => script_file, long => "-script", type => string,
+          help => "Path to an escript file to run before "
+                  "starting the project apps. Defaults to "
+                  "rebar.config {shell, [{script_file, File}]} "
+                  "if not specified."},
+        #{name => apps, long => "-apps", type => string,
+          help => "A list of apps to boot before starting the "
+                  "shell. (E.g. --apps app1,app2,app3) Defaults "
+                  "to rebar.config {shell, [{apps, Apps}]} or "
+                  "relx apps if not specified."},
+        #{name => relname, short => $r, long => "-relname", type => atom,
+          help => "Name of the release to use as a template for the "
+                  "shell session."},
+        #{name => relvsn, long => "-relvsn", type => string,
+          help => "Version of the release to use for the shell "
+                  "session."},
+        #{name => start_clean, long => "-start-clean", type => boolean,
+          help => "Cancel any applications in the 'apps' list "
+                  "or release."},
+        #{name => env_file, long => "-env-file", type => string,
+          help => "Path to file of os environment variables to setup "
+                  "before expanding vars in config files."},
+        #{name => user_drv_args, long => "-user_drv_args", type => string,
+          help => "For versions of Erlang prior to 26, this option "
+                  "can be used to pass arguments to the user_drv start "
+                  "function for creating custom shells. Starting "
+                  "with Erlang 26, the arguments defined with this "
+                  "option are applied to the shell start_interactive "
+                  "function."},
+        #{name => eval, long => "-eval", type => string,
+          help => "Erlang term(s) to execute after the apps have been "
+                  "started, but before the shell is presented to the "
+                  "user."}
+    ]}.
 
 -spec do(rebar_state:t()) -> no_return().
 do(Config) ->
@@ -150,9 +152,6 @@ shell(State) ->
     %% '{starting, started}' instead of '{started, started}'
     init ! {'EXIT', self(), normal},
     gen_server:enter_loop(rebar_agent, [], GenState, {local, rebar_agent}, hibernate).
-
-info() ->
-    "Start a shell with project and deps preloaded similar to~n'erl -pa ebin -pa deps/*/ebin'.~n".
 
 setup_shell(ShellArgs) ->
     code:ensure_loaded(shell),

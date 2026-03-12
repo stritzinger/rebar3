@@ -6,6 +6,7 @@
 -behaviour(provider).
 
 -export([init/1,
+         cli/0,
          do/1,
          format_error/1]).
 
@@ -20,17 +21,17 @@
 
 -spec init(rebar_state:t()) -> {ok, rebar_state:t()}.
 init(State) ->
-    Provider = providers:create(
-        [{name, ?PROVIDER},
+    Provider = providers:create([{name, ?PROVIDER},
          {module, ?MODULE},
          {bare, false},
-         {deps, ?DEPS},
-         {example, "rebar3 repos"},
-         {short_desc, "Print current package repository configuration"},
-         {desc, "Display repository configuration for debugging purpose"},
-         {opts, []}]),
+         {deps, ?DEPS}]),
     State1 = rebar_state:add_provider(State, Provider),
     {ok, State1}.
+
+-spec cli() -> argparse:command().
+cli() ->
+    #{help => "Print current package repository configuration",
+      arguments => []}. 
 
 -spec do(rebar_state:t()) -> {ok, rebar_state:t()} | {error, string()}.
 do(State) ->

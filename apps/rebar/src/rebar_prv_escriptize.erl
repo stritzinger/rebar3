@@ -28,7 +28,7 @@
 
 -behaviour(provider).
 
--export([init/1, do/1, format_error/1]).
+-export([init/1, cli/0, do/1, format_error/1]).
 
 -define(PROVIDER, escriptize).
 -define(DEPS, [compile]).
@@ -48,22 +48,19 @@ init(State) ->
                                 {name, ?PROVIDER},
                                 {module, ?MODULE},
                                 {bare, true},
-                                {deps, ?DEPS},
-                                {example, "rebar3 escriptize"},
-                                {opts, opt_spec_list()},
-                                {short_desc, "Generate escript archive."},
-                                {desc, desc()}
-                                ]),
+                                {deps, ?DEPS}]),
     {ok, rebar_state:add_provider(State, Provider)}.
 
-desc() ->
-    "Generate an escript executable containing "
-        "the project's and its dependencies' BEAM files.".
-
--spec opt_spec_list() -> [getopt:option_spec()].
-opt_spec_list() ->
-    [{main_app,  $a, "main-app",  string,
-      "Specify the name of the application to build an escript for."}].
+-spec cli() -> argparse:command().
+cli() ->
+    #{help => "Generate escript archive.",
+      arguments => [
+        #{name => main_app,
+          short => $a,
+          long => "-main-app",
+          type => string,
+          help => "Specify the name of the application to build an escript for."}
+    ]}.
 
 do(State) ->
     Providers = rebar_state:providers(State),

@@ -3,6 +3,7 @@
 -behaviour(provider).
 
 -export([init/1,
+         cli/0,
          do/1,
          format_error/1]).
 
@@ -23,19 +24,24 @@ init(State) ->
         providers:create([{name, ?PROVIDER},
                           {module, ?MODULE},
                           {bare, true},
-                          {deps, ?DEPS},
-                          {example, ""},
-                          {short_desc, "Unlock dependencies."},
-                          {desc, "Unlock project dependencies. Use the --all option "
-                                 "to unlock all dependencies. To unlock specific dependencies, "
-                                 "their name can be listed in the command."},
-                          {opts, [{all, $a, "all", undefined, "Unlock all dependencies and remove the lock file."},
-                            {package, undefined, undefined, string,
-                             "List of packages to unlock."}
-                          ]}
-                         ])
+                          {deps, ?DEPS}])
     ),
     {ok, State1}.
+
+-spec cli() -> argparse:command().
+cli() ->
+    #{help => "Unlock dependencies.",
+      arguments => [
+        #{name => all,
+          short => $a,
+          long => "-all",
+          type => boolean,
+          help => "Unlock all dependencies and remove the lock file."},
+        #{name => package,
+          type => string,
+          required => false,
+          help => "List of packages to unlock."}
+    ]}.
 
 do(State) ->
     Dir = rebar_state:dir(State),

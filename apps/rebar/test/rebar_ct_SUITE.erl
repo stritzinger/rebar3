@@ -1767,10 +1767,11 @@ other_sys_config_file(AppName) ->
     io_lib:format("[{~ts, [{other_key, other_cfg_value}]}].", [AppName]).
 
 ct_parse(CommandProvider, _GetOptSpec, Args) ->
-    Cli = rebar_legacy_cli:to_command(CommandProvider),
+    Module = providers:module(CommandProvider),
+    Cli = Module:cli(),
     case argparse:parse(Args, Cli) of
         {ok, ParsedMap, _Path, _Command} ->
             {ok, {maps:to_list(ParsedMap), []}};
-        {error, ParseError} ->
-            {error, argparse:format_error(ParseError)}
+        {error, _} = Error ->
+            Error
     end.
