@@ -38,10 +38,8 @@ do(State) ->
         [] ->
             help(State),
             {ok, State};
-        [Name] -> % default namespace
-            task_help(default, list_to_atom(Name), State);
-        [Namespace, Name] ->
-            task_help(list_to_atom(Namespace), list_to_atom(Name), State);
+        HelpPath when is_list(HelpPath), length(HelpPath) =< 2 ->
+            command_help(HelpPath, State);
         _ ->
             {error, "Too many arguments given. " ++
                  "Usage: rebar3 help [<namespace>] <task>"}
@@ -55,18 +53,29 @@ format_error(Reason) ->
 %% print help/usage string
 %%
 help(State) ->
-    ?CONSOLE("Rebar3 is a tool for working with Erlang projects.~n", []),
-    OptSpecList = rebar3:global_option_spec_list(),
-    getopt:usage(OptSpecList, "rebar3", "", []),
-    ?CONSOLE("  Set the environment variable DEBUG=1 for detailed output.~n", []),
-    ?CONSOLE("Several tasks are available:~n", []),
+    io:format("~ts",
+              [argparse:help(
+                  rebar3:global_cli(rebar_state:providers(State)),
+                  #{progname => "rebar3"})]).
 
-    providers:help(rebar_state:providers(State)),
-
-    ?CONSOLE("~nRun 'rebar3 help <TASK>' for details.", []).
-
-task_help(Namespace, Name, State) ->
+command_help(Path, State) ->
     Providers = rebar_state:providers(State),
+    try argparse:help(rebar3:global_cli(Providers),
+                      #{progname => "rebar3", command => Path}) of
+        HelpText ->
+            io:format("~ts", [HelpText]),
+            {ok, State}
+    catch
+        _:_ ->
+            legacy_command_help(Path, Providers, State)
+    end.
+
+legacy_command_help([Name], Providers, State) ->
+    task_help(default, list_to_atom(Name), Providers, State);
+legacy_command_help([Namespace, Name], Providers, State) ->
+    task_help(list_to_atom(Namespace), list_to_atom(Name), Providers, State).
+
+task_help(Namespace, Name, Providers, State) ->
     case providers:get_provider(Name, Providers, Namespace) of
         not_found ->
             case providers:get_providers_by_namespace(Name, Providers) of
