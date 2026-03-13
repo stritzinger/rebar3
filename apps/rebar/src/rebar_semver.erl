@@ -179,14 +179,14 @@ format_version_part(Vsn)
 %% @doc parse a string or binary into a valid semver representation
 -spec parse(any_version()) -> version().
 parse(Version) when erlang:is_list(Version) ->
-    case ec_semver_parser:parse(Version) of % TODO: move ec_semver_parser to rebar_parser
+    case rebar_semver_parser:parse(Version) of
         {fail, _} ->
             {erlang:iolist_to_binary(Version), {[],[]}};
         Good ->
             Good
     end;
 parse(Version) when erlang:is_binary(Version) ->
-    case ec_semver_parser:parse(Version) of % TODO: move ec_semver_parser to rebar_parser
+    case rebar_semver_parser:parse(Version) of
         {fail, _} ->
             {Version, {[],[]}};
         Good ->
