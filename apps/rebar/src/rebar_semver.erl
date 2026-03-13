@@ -11,12 +11,33 @@
 
 -export_type([version/0, constraint/0]).
 
--type version() :: ec_semver:semver().
--type constraint() :: fun((ec_semver:semver()) -> boolean()).
 
--spec parse_version(binary()) -> {ok, version()} | {error, {invalid_vsn, binary()}}.
+-type version_element() :: non_neg_integer() | binary().
+
+-type major_minor_patch_minpatch() ::
+        version_element()
+      | {version_element(), version_element()}
+      | {version_element(), version_element(), version_element()}
+      | {version_element(), version_element(),
+         version_element(), version_element()}.
+
+-type alpha_part() :: integer() | binary() | string().
+-type alpha_info() :: {PreRelease::[alpha_part()],
+                       BuildVersion::[alpha_part()]}.
+
+-type version() :: {major_minor_patch_minpatch(), alpha_info()}.
+-type constraint() :: fun((any_version()) -> boolean()).
+
+-type version_string() :: string() | binary().
+
+-type any_version() :: version_string() | version().
+
+-spec parse_version(Version) -> {ok, Parsed} | Error when
+      Version :: any_version(),
+      Parsed  :: version(),
+      Error   :: {error, {invalid_vsn, Version}}.
 parse_version(Version) ->
-    case ec_semver:parse(Version) of
+    case parse(Version) of
         {C, _} when is_binary(C) ->
             {error, {invalid_vsn, Version}};
         {{A, B}, _} when is_binary(A); is_binary(B) ->
@@ -38,6 +59,10 @@ parse_constraint(Constraint) ->
         Match -> {ok, Match}
     end.
 
+-spec parse_constraint_ors(Patterns, Constraints) -> Result when
+      Patterns    :: [binary()],
+      Constraints :: [constraint()],
+      Result      :: nomatch | constraint().
 parse_constraint_ors([], []) -> nomatch;
 parse_constraint_ors([], [Match]) -> Match;
 parse_constraint_ors([], Matchers) ->
@@ -48,6 +73,10 @@ parse_constraint_ors([And|Ors], Matchers) ->
         Match -> parse_constraint_ors(Ors, [Match|Matchers])
     end.
 
+-spec parse_constraint_ands(Patterns, Constraints) -> Result when
+      Patterns    :: [binary()],
+      Constraints :: [constraint()],
+      Result      :: nomatch | constraint().
 parse_constraint_ands([], []) -> nomatch;
 parse_constraint_ands([], [Match]) -> Match;
 parse_constraint_ands([], Matchers) ->
@@ -58,23 +87,28 @@ parse_constraint_ands([Pattern|Ands], Matchers) ->
         Match -> parse_constraint_ands(Ands, [Match|Matchers])
     end.
 
+-spec parse_constraint_pattern(binary()) -> nomatch | constraint().
 parse_constraint_pattern(<<" ", Vsn/binary>>) ->
     parse_constraint_pattern(Vsn);
 parse_constraint_pattern(<<"==", Vsn/binary>>) ->
-    parse_version_constraint(Vsn, fun ec_semver:eql/2);
+    parse_version_constraint(Vsn, fun eql/2);
 parse_constraint_pattern(<<">=", Vsn/binary>>) ->
-    parse_version_constraint(Vsn, fun ec_semver:gte/2);
+    parse_version_constraint(Vsn, fun gte/2);
 parse_constraint_pattern(<<"<=", Vsn/binary>>) ->
-    parse_version_constraint(Vsn, fun ec_semver:lte/2);
+    parse_version_constraint(Vsn, fun lte/2);
 parse_constraint_pattern(<<">", Vsn/binary>>) ->
-    parse_version_constraint(Vsn, fun ec_semver:gt/2);
+    parse_version_constraint(Vsn, fun gt/2);
 parse_constraint_pattern(<<"<", Vsn/binary>>) ->
-    parse_version_constraint(Vsn, fun ec_semver:lt/2);
+    parse_version_constraint(Vsn, fun lt/2);
 parse_constraint_pattern(<<"~>", Vsn/binary>>) ->
-    parse_version_constraint(Vsn, fun ec_semver:pes/2);
+    parse_version_constraint(Vsn, fun pes/2);
 parse_constraint_pattern(Vsn) ->
-    parse_version_constraint(Vsn, fun ec_semver:eql/2).
+    parse_version_constraint(Vsn, fun eql/2).
 
+-spec parse_version_constraint(Vsn, Match) -> Result when
+      Vsn    :: any_version(),
+      Match  :: fun((any_version(), any_version()) -> boolean()),
+      Result :: nomatch | constraint().
 parse_version_constraint(Vsn, Match) ->
     case parse_version(string:trim(Vsn)) of
         {ok, Bound} -> fun (V) -> Match(V, Bound) end;
@@ -93,21 +127,206 @@ is_prerelease_or_build(undefined) -> false;
 is_prerelease_or_build(Vsn) ->
     binary:match(Vsn, [<<"-">>, <<"+">>]) =/= nomatch.
 
--spec match(version(), constraint()) -> boolean().
+-spec match(any_version(), constraint()) -> boolean().
 match(Version, Constraint) ->
     Constraint(Version).
 
--spec cmp(version(), version()) -> gt | lt | eq.
+-spec cmp(any_version(), any_version()) -> gt | lt | eq.
 cmp(Vsn1, Vsn2) ->
-    case ec_semver:gt(Vsn1, Vsn2) of
+    case gt(Vsn1, Vsn2) of
         true -> gt;
         false ->
-            case ec_semver:lt(Vsn1, Vsn2) of
+            case lt(Vsn1, Vsn2) of
                 true -> lt;
                 false -> eq
             end
     end.
 
 -spec format(version()) -> binary().
-format(Vsn) ->
-    iolist_to_binary(ec_semver:format(Vsn)).
+format({Maj, {AlphaPart, BuildPart}})
+  when erlang:is_integer(Maj);
+       erlang:is_binary(Maj) ->
+    iolist_to_binary([format_version_part(Maj),
+                      format_vsn_rest(<<"-">>, AlphaPart),
+                      format_vsn_rest(<<"+">>, BuildPart)]);
+format({{Maj, Min}, {AlphaPart, BuildPart}}) ->
+    iolist_to_binary([format_version_part(Maj), ".",
+                      format_version_part(Min),
+                      format_vsn_rest(<<"-">>, AlphaPart),
+                      format_vsn_rest(<<"+">>, BuildPart)]);
+format({{Maj, Min, Patch}, {AlphaPart, BuildPart}}) ->
+    iolist_to_binary([format_version_part(Maj), ".",
+                      format_version_part(Min), ".",
+                      format_version_part(Patch),
+                      format_vsn_rest(<<"-">>, AlphaPart),
+                      format_vsn_rest(<<"+">>, BuildPart)]);
+format({{Maj, Min, Patch, MinPatch}, {AlphaPart, BuildPart}}) ->
+    iolist_to_binary([format_version_part(Maj), ".",
+                      format_version_part(Min), ".",
+                      format_version_part(Patch), ".",
+                      format_version_part(MinPatch),
+                      format_vsn_rest(<<"-">>, AlphaPart),
+                      format_vsn_rest(<<"+">>, BuildPart)]).
+
+-spec format_version_part(integer() | binary()) -> iolist().
+format_version_part(Vsn)
+  when erlang:is_integer(Vsn) ->
+    erlang:integer_to_list(Vsn);
+format_version_part(Vsn)
+  when erlang:is_binary(Vsn) ->
+    Vsn.
+
+%% @doc parse a string or binary into a valid semver representation
+-spec parse(any_version()) -> version().
+parse(Version) when erlang:is_list(Version) ->
+    case ec_semver_parser:parse(Version) of % TODO: move ec_semver_parser to rebar_parser
+        {fail, _} ->
+            {erlang:iolist_to_binary(Version), {[],[]}};
+        Good ->
+            Good
+    end;
+parse(Version) when erlang:is_binary(Version) ->
+    case ec_semver_parser:parse(Version) of % TODO: move ec_semver_parser to rebar_parser
+        {fail, _} ->
+            {Version, {[],[]}};
+        Good ->
+            Good
+    end;
+parse(Version) ->
+    Version.
+
+%% @doc test for quality between semver versions
+-spec eql(any_version(), any_version()) -> boolean().
+eql(VsnA, VsnB) ->
+    NVsnA = normalize(parse(VsnA)),
+    NVsnB = normalize(parse(VsnB)),
+    NVsnA =:= NVsnB.
+
+%% @doc Test that VsnA is greater than VsnB
+-spec gt(any_version(), any_version()) -> boolean().
+gt(VsnA, VsnB) ->
+    {MMPA, {AlphaA, PatchA}} = normalize(parse(VsnA)),
+    {MMPB, {AlphaB, PatchB}} = normalize(parse(VsnB)),
+    ((MMPA > MMPB)
+     orelse
+       ((MMPA =:= MMPB)
+        andalso
+          ((AlphaA =:= [] andalso AlphaB =/= [])
+           orelse
+             ((not (AlphaB =:= [] andalso AlphaA =/= []))
+              andalso
+                (AlphaA > AlphaB))))
+     orelse
+       ((MMPA =:= MMPB)
+        andalso
+          (AlphaA =:= AlphaB)
+        andalso
+          ((PatchB =:= [] andalso PatchA =/= [])
+           orelse
+           PatchA > PatchB))).
+
+%% @doc Test that VsnA is greater than or equal to VsnB
+-spec gte(any_version(), any_version()) -> boolean().
+gte(VsnA, VsnB) ->
+    NVsnA = normalize(parse(VsnA)),
+    NVsnB = normalize(parse(VsnB)),
+    gt(NVsnA, NVsnB) orelse eql(NVsnA, NVsnB).
+
+%% @doc Test that VsnA is less than VsnB
+-spec lt(any_version(), any_version()) -> boolean().
+lt(VsnA, VsnB) ->
+    {MMPA, {AlphaA, PatchA}} = normalize(parse(VsnA)),
+    {MMPB, {AlphaB, PatchB}} = normalize(parse(VsnB)),
+    ((MMPA < MMPB)
+     orelse
+       ((MMPA =:= MMPB)
+        andalso
+          ((AlphaB =:= [] andalso AlphaA =/= [])
+           orelse
+             ((not (AlphaA =:= [] andalso AlphaB =/= []))
+              andalso
+                (AlphaA < AlphaB))))
+     orelse
+       ((MMPA =:= MMPB)
+        andalso
+          (AlphaA =:= AlphaB)
+        andalso
+          ((PatchA =:= [] andalso PatchB =/= [])
+           orelse
+           PatchA < PatchB))).
+
+%% @doc Test that VsnA is less than or equal to VsnB
+-spec lte(any_version(), any_version()) -> boolean().
+lte(VsnA, VsnB) ->
+    NVsnA = normalize(parse(VsnA)),
+    NVsnB = normalize(parse(VsnB)),
+    lt(NVsnA, NVsnB) orelse eql(NVsnA, NVsnB).
+
+%% @doc check that VsnA is Approximately greater than VsnB
+%%
+%% Specifying ">= 2.6.5" is an optimistic version constraint. All
+%% versions greater than the one specified, including major releases
+%% (e.g. 3.0.0) are allowed.
+%%
+%% Conversely, specifying "~> 2.6" is pessimistic about future major
+%% revisions and "~> 2.6.5" is pessimistic about future minor
+%% revisions.
+%%
+%%  "~> 2.6" matches cookbooks >= 2.6.0 AND &lt; 3.0.0
+%% "~> 2.6.5" matches cookbooks >= 2.6.5 AND &lt; 2.7.0
+-spec pes(any_version(), any_version()) -> boolean().
+pes(VsnA, VsnB) ->
+    internal_pes(parse(VsnA), parse(VsnB)).
+
+-spec to_list(integer() | binary() | string()) -> string() | binary().
+to_list(Detail) when erlang:is_integer(Detail) ->
+    erlang:integer_to_list(Detail);
+to_list(Detail) when erlang:is_list(Detail); erlang:is_binary(Detail) ->
+    Detail.
+
+-spec format_vsn_rest(binary() | string(), [integer() | binary() | string()]) -> iolist().
+format_vsn_rest(_TypeMark, []) ->
+    [];
+format_vsn_rest(TypeMark, [Head | Rest]) ->
+    [TypeMark, Head |
+     [[".", to_list(Detail)] || Detail <- Rest]].
+
+%% @doc normalize the semver so they can be compared
+-spec normalize(version()) -> version().
+normalize({Vsn, Rest})
+  when erlang:is_binary(Vsn);
+       erlang:is_integer(Vsn) ->
+    {{Vsn, 0, 0, 0}, Rest};
+normalize({{Maj, Min}, Rest}) ->
+    {{Maj, Min, 0, 0}, Rest};
+normalize({{Maj, Min, Patch}, Rest}) ->
+    {{Maj, Min, Patch, 0}, Rest};
+normalize(Other = {{_, _, _, _}, {_,_}}) ->
+    Other.
+
+%% @doc to do the pessimistic compare we need a parsed semver. This is
+%% the internal implementation of the of the pessimistic run. The
+%% external just ensures that versions are parsed.
+-spec internal_pes(version(), version()) -> boolean().
+internal_pes(VsnA, {{LM, LMI}, Alpha})
+  when erlang:is_integer(LM),
+       erlang:is_integer(LMI) ->
+    gte(VsnA, {{LM, LMI, 0}, Alpha}) andalso
+        lt(VsnA, {{LM + 1, 0, 0, 0}, {[], []}});
+internal_pes(VsnA, {{LM, LMI, LP}, Alpha})
+    when erlang:is_integer(LM),
+         erlang:is_integer(LMI),
+         erlang:is_integer(LP) ->
+    gte(VsnA, {{LM, LMI, LP}, Alpha})
+        andalso
+        lt(VsnA, {{LM, LMI + 1, 0, 0}, {[], []}});
+internal_pes(VsnA, {{LM, LMI, LP, LMP}, Alpha})
+    when erlang:is_integer(LM),
+         erlang:is_integer(LMI),
+         erlang:is_integer(LP),
+         erlang:is_integer(LMP) ->
+    gte(VsnA, {{LM, LMI, LP, LMP}, Alpha})
+        andalso
+        lt(VsnA, {{LM, LMI, LP + 1, 0}, {[], []}});
+internal_pes(Vsn, LVsn) ->
+    gte(Vsn, LVsn).
