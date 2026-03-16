@@ -95,7 +95,7 @@ get_package(Dep, Vsn, Hash, Repos, Table, State) ->
                 [] ->
                     not_found
             end;
-            
+
         _ ->
             not_found
     end.
@@ -197,7 +197,7 @@ find_highest_matching_(Dep, DepVsn, #{name := Repo}, Table, State) when is_binar
     case rebar_semver:parse_version(DepVsn) of
         {ok, _} ->
             resolve_version_(Dep, <<"~> "/utf8, DepVsn/binary>>, Repo, Table, State);
-            
+
         {error, _} ->
             resolve_version_(Dep, DepVsn, Repo, Table, State)
     end.
@@ -320,16 +320,20 @@ resolve_version_no_package(Dep, DepVsn, Hash, HexRegistry, State) ->
                 end
             end,
             handle_missing_no_exception(Fun, Dep, State);
-        
         Error ->
             Error
     end.
 
-    
-check_all_repos(Fun, RepoConfigs) ->
-    ec_lists:search(fun(#{name := R}) ->
-                            Fun(R)
-                    end, RepoConfigs).
+
+check_all_repos(_, []) ->
+    not_found;
+check_all_repos(Fun, [Config = #{name := Name} | OtherConfigs]) ->
+    case Fun(Name) of
+        {ok, Value} ->
+            {ok, Value, Config};
+        not_found ->
+            check_all_repos(Fun, OtherConfigs)
+    end.
 
 handle_missing_no_exception(Fun, Dep, State) ->
     Resources = rebar_state:resources(State),
@@ -357,11 +361,10 @@ resolve_version_(Dep, Constraint, Repo, HexRegistry, State) ->
             AllowPreRelease = rebar_semver:is_prerelease_or_build(Constraint),
             AllVersions = get_package_versions(Dep, AllowPreRelease, Repo, HexRegistry, State),
             resolve_version_loop(Match, AllVersions, none);
-    
         Error ->
             Error
     end.
-    
+
 resolve_version_loop(_Constraint, [], none) -> none;
 resolve_version_loop(_Constraint, [], BestMatch) -> {ok, BestMatch};
 resolve_version_loop(Constraint, [Vsn|R], none) ->
