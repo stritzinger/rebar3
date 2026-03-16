@@ -15,7 +15,7 @@ all() ->
 groups() ->
     [{resolve_version, [use_first_repo_match, use_exact_with_hash, fail_repo_update,
                         ignore_match_in_excluded_repo, optional_prereleases,
-                        or_in_prerelease
+                        or_in_prerelease, check_all_repos_finds_local
                        ]}].
 
 init_per_group(resolve_version, Config) ->
@@ -108,6 +108,19 @@ init_per_testcase(ignore_match_in_excluded_repo, Config) ->
                 fun(_State) -> true end),
 
     [{state, State} | Config];
+init_per_testcase(check_all_repos_finds_local, Config) ->
+    Deps = ?config(deps, Config),
+    Repos = ?config(repos, Config),
+    State = setup_deps_and_repos(Deps, Repos),
+
+    meck:new(rebar_packages, [passthrough, no_link]),
+
+    meck:expect(rebar_packages, update_package,
+                fun(_, _, _State) -> fail end),
+    meck:expect(rebar_packages, verify_table,
+                fun(_State) -> true end),
+
+    [{state, State} | Config];
 init_per_testcase(Case, Config) when Case =:= optional_prereleases; Case =:= or_in_prerelease ->
     Deps = ?config(deps, Config),
     Repos = ?config(repos, Config),
@@ -148,7 +161,8 @@ end_per_testcase(Case, _Config) when Case =:= use_first_repo_match ;
                                      Case =:= fail_repo_update ;
                                      Case =:= ignore_match_in_excluded_repo ;
                                      Case =:= optional_prereleases ;
-                                     Case =:= or_in_prerelease ->
+                                     Case =:= or_in_prerelease ;
+                                     Case =:= check_all_repos_finds_local ->
     meck:unload(rebar_packages);
 end_per_testcase(_, _) ->
     ok.
@@ -391,7 +405,7 @@ use_first_repo_match(Config) ->
 
     ?assertMatch({ok,{package,{<<"B">>, {{1,4,0}, {[],[]}}, Repo3},
                     <<"inner checksum">>,<<"outer checksum">>, false, []},
-                  #{name := Repo3,
+                 #{name := Repo3,
                     http_adapter := {rebar_httpc_adapter, #{profile := rebar}}}},
                  rebar_packages:resolve_version(<<"B">>, <<"~> 1.4.0">>, undefined, undefined,
                                                 ?PACKAGE_TABLE, State)).
@@ -479,6 +493,13 @@ or_in_prerelease(Config) ->
                     http_adapter := {rebar_httpc_adapter, #{profile := rebar}}}},
                  rebar_packages:resolve_version(<<"B">>, <<"~> 1.5.5-a-or-b.0">>, <<"inner checksum">>, <<"outer checksum">>,
                                                 ?PACKAGE_TABLE, State1)).
+
+check_all_repos_finds_local(Config) ->
+    State = ?config(state, Config),
+
+    ?assertMatch({ok, {package, {<<"B">>, {{2,0,0}, {[],[]}}, _}, _, _, _, _}, _},
+                 rebar_packages:resolve_version(<<"B">>, <<"> 1.4.0">>, undefined, undefined,
+                                                ?PACKAGE_TABLE, State)).
 
 %%
 
