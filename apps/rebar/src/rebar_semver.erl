@@ -14,6 +14,7 @@
 %% SPDX-SnippetBegin
 %% SPDX-License-Identifier: MIT
 %% SPDX-SnippetCopyrightText: 2011 Erlware, LLC
+%% SPDX-FileCopyrightText: 2026 Dipl. Phys. Peer Stritzinger GmbH
 %% SPDX-SnippetComment: Types derived from ec_semver.erl in erlware_commons.
 
 -type version_element() :: non_neg_integer() | binary().
@@ -151,6 +152,7 @@ cmp(Vsn1, Vsn2) ->
 %% SPDX-SnippetBegin
 %% SPDX-License-Identifier: MIT
 %% SPDX-SnippetCopyrightText: 2011 Erlware, LLC
+%% SPDX-FileCopyrightText: 2026 Dipl. Phys. Peer Stritzinger GmbH
 %% SPDX-SnippetComment: Functions derived from ec_semver.erl in erlware_commons.
 
 -spec format(version()) -> binary().
