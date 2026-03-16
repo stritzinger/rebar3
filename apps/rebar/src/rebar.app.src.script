@@ -23,7 +23,6 @@
                   erlware_commons,
                   providers,
                   bbmustache,
-                  ssl_verify_fun,
                   certifi,
                   cth_readable,
                   relx,
