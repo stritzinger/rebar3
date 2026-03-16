@@ -2,8 +2,8 @@
 %% SPDX-FileCopyrightText: 2011 Erlware, LLC
 %% SPDX-FileCopyrightText: 2026 Dipl. Phys. Peer Stritzinger GmbH
 %%
-%% This file is derived from ec_semver_parser.erl in erlware_commons
-%% (https://github.com/erlware/erlware_commons).
+%% This file is derived from ec_semver_parser.erl and ec_semver.erl
+%% in erlware_commons (https://github.com/erlware/erlware_commons).
 
 -module(rebar_semver_parser).
 
@@ -38,7 +38,7 @@ parse(Input) when is_binary(Input) ->
 
 -spec 'semver'(input(), index()) -> parse_result().
 'semver'(Input, Index) ->
-  p(Input, Index, 'semver', fun(I,D) -> (p_seq([fun 'major_minor_patch_min_patch'/2, p_optional(p_seq([p_string(<<"-">>), fun 'alpha_part'/2, p_zero_or_more(p_seq([p_string(<<".">>), fun 'alpha_part'/2]))])), p_optional(p_seq([p_string(<<"+">>), fun 'alpha_part'/2, p_zero_or_more(p_seq([p_string(<<".">>), fun 'alpha_part'/2]))])), p_not(p_anything())]))(I,D) end, fun(Node, _Idx) -> internal_parse_version(Node)  end).
+  p(Input, Index, 'semver', fun(I,D) -> (p_seq([fun 'major_minor_patch_min_patch'/2, p_optional(p_seq([p_string(<<"-">>), fun 'alpha_part'/2, p_zero_or_more(p_seq([p_string(<<".">>), fun 'alpha_part'/2]))])), p_optional(p_seq([p_string(<<"+">>), fun 'alpha_part'/2, p_zero_or_more(p_seq([p_string(<<".">>), fun 'alpha_part'/2]))])), p_not(p_anything())]))(I,D) end, fun(Node, _Idx) -> internal_parse_version(Node) end).
 
 -spec 'major_minor_patch_min_patch'(input(), index()) -> parse_result().
 'major_minor_patch_min_patch'(Input, Index) ->
@@ -56,6 +56,46 @@ parse(Input) when is_binary(Input) ->
 'alpha_part'(Input, Index) ->
   p(Input, Index, 'alpha_part', fun(I,D) -> (p_one_or_more(p_charclass(<<"[A-Za-z0-9-]">>)))(I,D) end, fun(Node, _Idx) ->erlang:iolist_to_binary(Node) end).
 
+
+internal_parse_version([MMP, AlphaPart, BuildPart, _]) ->
+    {parse_major_minor_patch_minpatch(MMP), {parse_alpha_part(AlphaPart),
+                                             parse_alpha_part(BuildPart)}}.
+
+parse_major_minor_patch_minpatch([MajVsn, [], [], []]) ->
+    strip_maj_version(MajVsn);
+parse_major_minor_patch_minpatch([MajVsn, [<<".">>, MinVsn], [], []]) ->
+    {strip_maj_version(MajVsn), MinVsn};
+parse_major_minor_patch_minpatch([MajVsn,
+                                  [<<".">>, MinVsn],
+                                  [<<".">>, PatchVsn], []]) ->
+    {strip_maj_version(MajVsn), MinVsn, PatchVsn};
+parse_major_minor_patch_minpatch([MajVsn,
+                                  [<<".">>, MinVsn],
+                                  [<<".">>, PatchVsn],
+                                  [<<".">>, MinPatch]]) ->
+    {strip_maj_version(MajVsn), MinVsn, PatchVsn, MinPatch}.
+
+parse_alpha_part([]) ->
+    [];
+parse_alpha_part([_, AV1, Rest]) ->
+    [erlang:iolist_to_binary(AV1) |
+     [format_alpha_part(Part) || Part <- Rest]].
+
+format_alpha_part([<<".">>, AlphaPart]) ->
+    Bin = erlang:iolist_to_binary(AlphaPart),
+    try
+        erlang:list_to_integer(erlang:binary_to_list(Bin))
+    catch
+        error:badarg ->
+            Bin
+    end.
+
+strip_maj_version([<<"v">>, MajVsn]) ->
+    MajVsn;
+strip_maj_version([[], MajVsn]) ->
+    MajVsn;
+strip_maj_version(MajVsn) ->
+    MajVsn.
 
 transform(_,Node,_Index) -> Node.
 -type index() :: {{line, pos_integer()}, {column, pos_integer()}}.
