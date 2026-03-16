@@ -31,7 +31,7 @@ parse(Input) when is_binary(Input) ->
 
 -spec 'semver'(input(), index()) -> parse_result().
 'semver'(Input, Index) ->
-  p(Input, Index, 'semver', fun(I,D) -> (p_seq([fun 'major_minor_patch_min_patch'/2, p_optional(p_seq([p_string(<<"-">>), fun 'alpha_part'/2, p_zero_or_more(p_seq([p_string(<<".">>), fun 'alpha_part'/2]))])), p_optional(p_seq([p_string(<<"+">>), fun 'alpha_part'/2, p_zero_or_more(p_seq([p_string(<<".">>), fun 'alpha_part'/2]))])), p_not(p_anything())]))(I,D) end, fun(Node, _Idx) -> ec_semver:internal_parse_version(Node)  end).
+  p(Input, Index, 'semver', fun(I,D) -> (p_seq([fun 'major_minor_patch_min_patch'/2, p_optional(p_seq([p_string(<<"-">>), fun 'alpha_part'/2, p_zero_or_more(p_seq([p_string(<<".">>), fun 'alpha_part'/2]))])), p_optional(p_seq([p_string(<<"+">>), fun 'alpha_part'/2, p_zero_or_more(p_seq([p_string(<<".">>), fun 'alpha_part'/2]))])), p_not(p_anything())]))(I,D) end, fun(Node, _Idx) -> internal_parse_version(Node)  end).
 
 -spec 'major_minor_patch_min_patch'(input(), index()) -> parse_result().
 'major_minor_patch_min_patch'(Input, Index) ->
