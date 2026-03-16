@@ -15,7 +15,8 @@ all() ->
 groups() ->
     [{resolve_version, [use_first_repo_match, use_exact_with_hash, fail_repo_update,
                         ignore_match_in_excluded_repo, optional_prereleases,
-                        or_in_prerelease, check_all_repos_finds_local
+                        or_in_prerelease, check_all_repos_finds_local,
+                        fallback_to_update_on_missing
                        ]}].
 
 init_per_group(resolve_version, Config) ->
@@ -121,6 +122,31 @@ init_per_testcase(check_all_repos_finds_local, Config) ->
                 fun(_State) -> true end),
 
     [{state, State} | Config];
+init_per_testcase(fallback_to_update_on_missing, Config) ->
+    Repos = ?config(repos, Config),
+    %% Only insert deps that do NOT include D — D will be "fetched" by update_package
+    State = setup_deps_and_repos([], Repos),
+
+    meck:new(rebar_packages, [passthrough, no_link]),
+
+    %% Simulate update_package fetching D-1.0.0 into the ETS table on the first repo
+    [Repo1 | _] = Repos,
+    meck:expect(rebar_packages, update_package,
+                fun(<<"D">>, #{name := Repo}, _State) when Repo =:= Repo1 ->
+                        {ok, Parsed} = rebar_semver:parse_version("1.0.0"),
+                        ets:insert(?PACKAGE_TABLE,
+                                   #package{key={<<"D">>, Parsed, Repo},
+                                            dependencies=[],
+                                            retired=false,
+                                            inner_checksum = <<"inner checksum">>,
+                                            outer_checksum = <<"outer checksum">>}),
+                        ok;
+                   (_, _, _State) -> fail
+                end),
+    meck:expect(rebar_packages, verify_table,
+                fun(_State) -> true end),
+
+    [{state, State} | Config];
 init_per_testcase(Case, Config) when Case =:= optional_prereleases; Case =:= or_in_prerelease ->
     Deps = ?config(deps, Config),
     Repos = ?config(repos, Config),
@@ -162,7 +188,8 @@ end_per_testcase(Case, _Config) when Case =:= use_first_repo_match ;
                                      Case =:= ignore_match_in_excluded_repo ;
                                      Case =:= optional_prereleases ;
                                      Case =:= or_in_prerelease ;
-                                     Case =:= check_all_repos_finds_local ->
+                                     Case =:= check_all_repos_finds_local ;
+                                     Case =:= fallback_to_update_on_missing ->
     meck:unload(rebar_packages);
 end_per_testcase(_, _) ->
     ok.
@@ -499,6 +526,13 @@ check_all_repos_finds_local(Config) ->
 
     ?assertMatch({ok, {package, {<<"B">>, {{2,0,0}, {[],[]}}, _}, _, _, _, _}, _},
                  rebar_packages:resolve_version(<<"B">>, <<"> 1.4.0">>, undefined, undefined,
+                                                ?PACKAGE_TABLE, State)).
+
+fallback_to_update_on_missing(Config) ->
+    State = ?config(state, Config),
+
+    ?assertMatch({ok, {package, {<<"D">>, {{1,0,0}, {[],[]}}, _}, _, _, _, _}, _},
+                 rebar_packages:resolve_version(<<"D">>, <<"1.0.0">>, undefined, undefined,
                                                 ?PACKAGE_TABLE, State)).
 
 %%

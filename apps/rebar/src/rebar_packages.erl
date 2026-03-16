@@ -311,7 +311,7 @@ resolve_version(Dep, DepVsn, _OldHash, Hash, HexRegistry, State) ->
 resolve_version_no_package(Dep, DepVsn, Hash, HexRegistry, State) ->
     case rebar_semver:parse_constraint(DepVsn) of
         {ok, _} ->
-            Fun = fun(Repo) ->
+            Fun = fun(#{name := Repo}) ->
                 case resolve_version_(Dep, DepVsn, Repo, HexRegistry, State) of
                     none ->
                         not_found;
@@ -327,8 +327,8 @@ resolve_version_no_package(Dep, DepVsn, Hash, HexRegistry, State) ->
 
 check_all_repos(_, []) ->
     not_found;
-check_all_repos(Fun, [Config = #{name := Name} | OtherConfigs]) ->
-    case Fun(Name) of
+check_all_repos(Fun, [Config | OtherConfigs]) ->
+    case Fun(Config) of
         {ok, Value} ->
             {ok, Value, Config};
         not_found ->
@@ -343,14 +343,14 @@ handle_missing_no_exception(Fun, Dep, State) ->
     %% if none is found then we step through checking after updating the repo registry
     case check_all_repos(Fun, RepoConfigs) of
         not_found ->
-            ec_lists:search(fun(Config=#{name := R}) ->
+            check_all_repos(fun(Config) ->
                                     case ?MODULE:update_package(Dep, Config, State) of
                                         ok ->
-                                            Fun(R);
+                                            Fun(Config);
                                         _ ->
                                             not_found
                                     end
-                            end, RepoConfigs);
+                             end, RepoConfigs);
         Result ->
             Result
     end.
