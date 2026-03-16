@@ -11,6 +11,10 @@
 
 -export_type([version/0, constraint/0]).
 
+%% SPDX-SnippetBegin
+%% SPDX-License-Identifier: MIT
+%% SPDX-SnippetCopyrightText: 2011 Erlware, LLC
+%% SPDX-SnippetComment: Types derived from ec_semver.erl in erlware_commons.
 
 -type version_element() :: non_neg_integer() | binary().
 
@@ -31,6 +35,8 @@
 -type version_string() :: string() | binary().
 
 -type any_version() :: version_string() | version().
+
+%% SPDX-SnippetEnd
 
 -spec parse_version(Version) -> {ok, Parsed} | Error when
       Version :: any_version(),
@@ -141,6 +147,11 @@ cmp(Vsn1, Vsn2) ->
                 false -> eq
             end
     end.
+
+%% SPDX-SnippetBegin
+%% SPDX-License-Identifier: MIT
+%% SPDX-SnippetCopyrightText: 2011 Erlware, LLC
+%% SPDX-SnippetComment: Functions derived from ec_semver.erl in erlware_commons.
 
 -spec format(version()) -> binary().
 format({Maj, {AlphaPart, BuildPart}})
@@ -330,3 +341,5 @@ internal_pes(VsnA, {{LM, LMI, LP, LMP}, Alpha})
         lt(VsnA, {{LM, LMI, LP + 1, 0}, {[], []}});
 internal_pes(Vsn, LVsn) ->
     gte(Vsn, LVsn).
+
+%% SPDX-SnippetEnd

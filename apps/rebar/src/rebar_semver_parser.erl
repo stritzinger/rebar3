@@ -1,3 +1,10 @@
+%% SPDX-License-Identifier: MIT
+%% SPDX-FileCopyrightText: 2011 Erlware, LLC
+%% SPDX-FileCopyrightText: 2026 Dipl. Phys. Peer Stritzinger GmbH
+%%
+%% This file is derived from ec_semver_parser.erl in erlware_commons
+%% (https://github.com/erlware/erlware_commons).
+
 -module(rebar_semver_parser).
 
 -export([parse/1]).
