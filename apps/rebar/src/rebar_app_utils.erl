@@ -49,15 +49,15 @@
 
 %% @doc finds the proper app info record for a given app name in a list of
 %% such records.
--spec find(binary(), [rebar_app_info:t()]) -> {ok, rebar_app_info:t()} | error.
+-spec find(binary(), [rebar_app_info:t()]) -> {value, rebar_app_info:t()} | false.
 find(Name, Apps) ->
-    ec_lists:find(fun(App) -> rebar_app_info:name(App) =:= Name end, Apps).
+    lists:search(fun(App) -> rebar_app_info:name(App) =:= Name end, Apps).
 
 %% @doc finds the proper app info record for a given app name at a given version
 %% in a list of such records.
--spec find(binary(), binary(), [rebar_app_info:t()]) -> {ok, rebar_app_info:t()} | error.
+-spec find(binary(), binary(), [rebar_app_info:t()]) -> {value, rebar_app_info:t()} | false.
 find(Name, Vsn, Apps) ->
-    ec_lists:find(fun(App) ->
+    lists:search(fun(App) ->
                           rebar_app_info:name(App) =:= Name
                               andalso rebar_app_info:original_vsn(App) =:= Vsn
                   end, Apps).

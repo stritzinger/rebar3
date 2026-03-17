@@ -104,9 +104,9 @@ define_root_app(Apps, State) ->
                                rebar_file_utils:real_dir_path(rebar_app_info:dir(X)) =:=
                                rebar_file_utils:real_dir_path(RootDir)
                        end, Apps) of
-        {ok, App} ->
+        {value, App} ->
             rebar_app_info:name(App);
-        error ->
+        false ->
             root
     end.
 

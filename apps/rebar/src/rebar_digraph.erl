@@ -93,16 +93,9 @@ subgraph(Graph, Vertices) ->
 
 %% @private from a list of app names, fetch the proper app info records
 %% for them.
--spec names_to_apps([atom()], [rebar_app_info:t()]) -> [rebar_app_info:t()].
+-spec names_to_apps([binary()], [rebar_app_info:t()]) -> [rebar_app_info:t()].
 names_to_apps(Names, Apps) ->
-    [element(2, App) || App <- [find_app_by_name(Name, Apps) || Name <- Names], App =/= error].
-
-%% @private fetch the proper app info record for a given app name.
--spec find_app_by_name(atom(), [rebar_app_info:t()]) -> {ok, rebar_app_info:t()} | error.
-find_app_by_name(Name, Apps) ->
-    ec_lists:find(fun(App) ->
-                          rebar_app_info:name(App) =:= Name
-                  end, Apps).
+    [element(2, App) || App <- [rebar_app_utils:find(Name, Apps) || Name <- Names], App =/= false].
 
 %% @private The union of all entries in the applications list for an app and
 %% the deps listed in its rebar.config is all deps that may be needed

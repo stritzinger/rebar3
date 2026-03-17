@@ -80,7 +80,7 @@ filter_existing_plugins(Plugins, State) ->
     AllPlugins = rebar_state:all_plugin_deps(State),
     rebar_utils:filtermap(fun({Plugin, PluginName}) ->
                             case rebar_app_utils:find(PluginName, AllPlugins) of
-                                {ok, _} ->
+                                {value, _} ->
                                     false;
                                 _ ->
                                     {true, Plugin}

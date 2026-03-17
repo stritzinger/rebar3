@@ -234,8 +234,8 @@ get_runtime_apps([App|Rest0], AppsAcc0, AppsList) ->
             fun(AppName, {Rest, Acc}) ->
                 %% We only care about those apps we ccould find in the state.
                 case rebar_app_utils:find(AppName, AppsList) of
-                    {ok, AppInfo} -> {[AppInfo|Rest], sets:add_element(AppInfo, Acc)};
-                    error -> {Rest, Acc}
+                    {value, AppInfo} -> {[AppInfo|Rest], sets:add_element(AppInfo, Acc)};
+                    false -> {Rest, Acc}
                 end
             end, {Rest0, sets:add_element(App, AppsAcc0)}, TotalApps),
     get_runtime_apps(Rest1 ++ TotalApps, AppsAcc1, AppsList).

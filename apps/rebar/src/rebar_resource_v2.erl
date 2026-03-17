@@ -46,17 +46,17 @@ new(Type, Module, State) ->
 
 -spec find_resource(type(), [resource()]) -> {ok, resource()} | {error, not_found}.
 find_resource(Type, Resources) ->
-    case ec_lists:find(fun(#resource{type=T}) -> T =:= Type end, Resources) of
-        error when is_atom(Type) ->
+    case lists:search(fun(#resource{type=T}) -> T =:= Type end, Resources) of
+        false when is_atom(Type) ->
             case code:which(Type) of
                 non_existing ->
                     {error, not_found};
                 _ ->
                     {ok, rebar_resource:new(Type, Type, #{})}
             end;
-        error ->
+        false ->
             {error, not_found};
-        {ok, Resource} ->
+        {value, Resource} ->
             {ok, Resource}
     end.
 
