@@ -1,9 +1,12 @@
-%% SPDX-License-Identifier: MIT
-%% SPDX-FileCopyrightText: 2011 Erlware, LLC
-%% SPDX-FileCopyrightText: 2026 Dipl. Phys. Peer Stritzinger GmbH
+%% %CopyrightBegin%
 %%
-%% This file is derived from ec_semver_parser.erl and ec_semver.erl
-%% in erlware_commons (https://github.com/erlware/erlware_commons).
+%% SPDX-License-Identifier: MIT
+%% SPDX-FileCopyrightText: Copyright 2011 Erlware, LLC
+%% SPDX-FileCopyrightText: Copyright 2026 Dipl. Phys. Peer Stritzinger GmbH
+%%
+%% SPDX-FileComment: This file is derived from ec_semver_parser.erl and ec_semver.erl in erlware_commons (https://github.com/erlware/erlware_commons).
+%%
+%% %CopyrightEnd%
 
 -module(rebar_semver_parser).
 
