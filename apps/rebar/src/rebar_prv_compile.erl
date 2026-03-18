@@ -299,7 +299,7 @@ extra_virtual_apps(_, _, []) ->
     [];
 extra_virtual_apps(State, VApp0, [Dir|Dirs]) ->
     SrcDir = filename:join([rebar_state:dir(State), Dir]),
-    case ec_file:is_dir(SrcDir) of
+    case filelib:is_dir(SrcDir) of
         false ->
             extra_virtual_apps(State, VApp0, Dirs);
         true ->
@@ -401,7 +401,7 @@ paths_for_apps([], Acc) -> Acc;
 paths_for_apps([App|Rest], Acc) ->
     {_SrcDirs, ExtraDirs} = resolve_src_dirs(rebar_app_info:opts(App)),
     Paths = [filename:join([rebar_app_info:out_dir(App), Dir]) || Dir <- ["ebin"|ExtraDirs]],
-    FilteredPaths = lists:filter(fun ec_file:is_dir/1, Paths),
+    FilteredPaths = lists:filter(fun filelib:is_dir/1, Paths),
     paths_for_apps(Rest, Acc ++ FilteredPaths).
 
 paths_for_extras(State, Apps) ->
@@ -415,7 +415,7 @@ paths_for_extras(State, Apps) ->
 paths_for_extras(State) ->
     {_SrcDirs, ExtraDirs} = resolve_src_dirs(rebar_state:opts(State)),
     Paths = [filename:join([rebar_dir:base_dir(State), "extras", Dir]) || Dir <- ExtraDirs],
-    lists:filter(fun ec_file:is_dir/1, Paths).
+    lists:filter(fun filelib:is_dir/1, Paths).
 
 has_all_artifacts(AppInfo1) ->
     case rebar_app_info:has_all_artifacts(AppInfo1) of
@@ -476,7 +476,7 @@ symlink_or_copy(OldAppDir, AppDir, Dir) ->
 symlink_or_copy_existing(OldAppDir, AppDir, Dir) ->
     Source = filename:join([OldAppDir, Dir]),
     Target = filename:join([AppDir, Dir]),
-    case ec_file:is_dir(Source) of
+    case filelib:is_dir(Source) of
         true -> rebar_file_utils:symlink_or_copy(Source, Target);
         false -> ok
     end.
@@ -484,7 +484,7 @@ symlink_or_copy_existing(OldAppDir, AppDir, Dir) ->
 copy(OldAppDir, AppDir, Dir) ->
     Source = filename:join([OldAppDir, Dir]),
     Target = filename:join([AppDir, Dir]),
-    case ec_file:is_dir(Source) of
+    case filelib:is_dir(Source) of
         true  -> copy(Source, Target);
         false -> ok
     end.

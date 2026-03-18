@@ -171,9 +171,9 @@ basic_app_compiles(Config) ->
 basic_app_files(Config) ->
     AppDir = ?config(apps, Config),
 
-    lists:foreach(fun(F) -> true = ec_file:exists(filename:join([AppDir, "_build", "test", "lib", "basic_app", "ebin", F])) end,
+    lists:foreach(fun(F) -> true = filelib:is_file(filename:join([AppDir, "_build", "test", "lib", "basic_app", "ebin", F])) end,
                   ["basic_app.app", "basic_app.beam"]),
-    lists:foreach(fun(F) -> true = ec_file:exists(filename:join([AppDir, "_build", "test", "lib", "basic_app", "test", F])) end,
+    lists:foreach(fun(F) -> true = filelib:is_file(filename:join([AppDir, "_build", "test", "lib", "basic_app", "test", F])) end,
                   ["basic_app_tests.beam", "basic_app_tests_helper.beam"]).
 
 %% check that the correct tests are exported from modules for project
@@ -230,15 +230,15 @@ multi_app_compiles(Config) ->
 multi_app_files(Config) ->
     AppDir = ?config(apps, Config),
 
-    lists:foreach(fun(F) -> true = ec_file:exists(filename:join([AppDir, "_build", "test", "lib", "multi_app_bar", "ebin", F])) end,
+    lists:foreach(fun(F) -> true = filelib:is_file(filename:join([AppDir, "_build", "test", "lib", "multi_app_bar", "ebin", F])) end,
                   ["multi_app_bar.app", "multi_app_bar.beam"]),
-    lists:foreach(fun(F) -> true = ec_file:exists(filename:join([AppDir, "_build", "test", "lib", "multi_app_baz", "ebin", F])) end,
+    lists:foreach(fun(F) -> true = filelib:is_file(filename:join([AppDir, "_build", "test", "lib", "multi_app_baz", "ebin", F])) end,
                   ["multi_app_baz.app", "multi_app_baz.beam"]),
-    lists:foreach(fun(F) -> true = ec_file:exists(filename:join([AppDir, "_build", "test", "lib", "multi_app_bar", "test", F])) end,
+    lists:foreach(fun(F) -> true = filelib:is_file(filename:join([AppDir, "_build", "test", "lib", "multi_app_bar", "test", F])) end,
                   ["multi_app_bar_tests.beam", "multi_app_bar_tests_helper.beam"]),
-    lists:foreach(fun(F) -> true = ec_file:exists(filename:join([AppDir, "_build", "test", "lib", "multi_app_baz", "test", F])) end,
+    lists:foreach(fun(F) -> true = filelib:is_file(filename:join([AppDir, "_build", "test", "lib", "multi_app_baz", "test", F])) end,
                   ["multi_app_baz_tests.beam", "multi_app_baz_tests_helper.beam"]),
-    lists:foreach(fun(F) -> true = ec_file:exists(filename:join([AppDir, "_build", "test", "extras", "test", F])) end,
+    lists:foreach(fun(F) -> true = filelib:is_file(filename:join([AppDir, "_build", "test", "extras", "test", F])) end,
                   ["multi_app_tests.beam", "multi_app_tests_helper.beam"]).
 
 %% check that the correct tests are exported from modules for project

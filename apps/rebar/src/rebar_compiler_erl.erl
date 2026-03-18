@@ -19,7 +19,7 @@ context(AppInfo) ->
     OutDir = rebar_app_info:dir(AppInfo),
     SrcDirs = rebar_dir:src_dirs(rebar_app_info:opts(AppInfo)),
     ExistingSrcDirs = lists:filter(fun(D) ->
-                                           ec_file:is_dir(filename:join(OutDir, D))
+                                           filelib:is_dir(filename:join(OutDir, D))
                                    end, SrcDirs),
 
     RebarOpts = rebar_app_info:opts(AppInfo),

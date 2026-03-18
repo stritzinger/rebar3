@@ -395,7 +395,7 @@ validate(State, {generator, Module, Function}) ->
 validate(State, Module) when is_atom(Module) ->
     validate_module(State, Module);
 validate(State, Path) when is_list(Path) ->
-    case ec_file:is_dir(Path) of
+    case filelib:is_dir(Path) of
         true  -> validate(State, {dir, Path});
         false -> validate(State, {file, Path})
     end;
@@ -417,13 +417,13 @@ validate_app(State, [App|Rest], AppName) ->
     end.
 
 validate_dir(State, Dir) ->
-    case ec_file:is_dir(filename:join([rebar_state:dir(State), Dir])) of
+    case filelib:is_dir(filename:join([rebar_state:dir(State), Dir])) of
         true  -> ok;
         false -> {error, lists:concat(["Directory `", Dir, "' not found."])}
     end.
 
 validate_file(State, File) ->
-    case ec_file:exists(filename:join([rebar_state:dir(State), File])) of
+    case filelib:is_file(filename:join([rebar_state:dir(State), File])) of
         true  -> ok;
         false -> {error, lists:concat(["File `", File, "' not found."])}
     end.

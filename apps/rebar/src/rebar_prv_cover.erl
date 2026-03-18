@@ -322,7 +322,7 @@ cover_compile(State, apps) ->
     ExclApps = [rebar_utils:to_binary(A) || A <- rebar_state:get(State, cover_excl_apps, [])],
     Apps = filter_checkouts_and_excluded(rebar_state:project_apps(State), ExclApps),
     AppDirs = app_dirs(Apps),
-    cover_compile(State, lists:filter(fun(D) -> ec_file:is_dir(D) end, AppDirs));
+    cover_compile(State, lists:filter(fun(D) -> filelib:is_dir(D) end, AppDirs));
 cover_compile(State, Dirs) ->
     rebar_paths:set_paths([deps], State),
     %% start the cover server if necessary

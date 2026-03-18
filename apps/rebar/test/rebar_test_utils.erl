@@ -436,7 +436,7 @@ check_results(AppDir, Expected, ProfileRun, State) ->
                         end,
                     DevMode = lists:all(IsSymLinkFun, RelLibs),
                     ?assertEqual(ExpectedDevMode, DevMode),
-                    ?assert(ec_file:exists(filename:join([ReleaseDir, Name, "releases", Vsn]))),
+                    ?assert(filelib:is_file(filename:join([ReleaseDir, Name, "releases", Vsn]))),
 
                     %% throws not_found if it doesn't exist
                     ok
