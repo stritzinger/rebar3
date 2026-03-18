@@ -113,7 +113,7 @@ multi_tmpdir(_Config) ->
 
 reset_nonexistent_dir(Config) ->
     TmpDir = ?config(tmpdir, Config),
-    _ = ec_file:remove(TmpDir, [recursive]),
+    _ = file:del_dir_r(TmpDir),
     ?assertNot(filelib:is_dir(TmpDir)),
     ok = rebar_file_utils:reset_dir(TmpDir),
     ?assert(filelib:is_dir(TmpDir)),
@@ -121,7 +121,7 @@ reset_nonexistent_dir(Config) ->
 
 reset_empty_dir(Config) ->
     TmpDir = ?config(tmpdir, Config),
-    _ = ec_file:remove(TmpDir, [recursive]),
+    _ = file:del_dir_r(TmpDir),
     _ = filelib:ensure_dir(filename:join([TmpDir, "dummy.beam"])),
     ?assert(filelib:is_dir(TmpDir)),
     ok = rebar_file_utils:reset_dir(TmpDir),
@@ -130,7 +130,7 @@ reset_empty_dir(Config) ->
 
 reset_dir(Config) ->
     TmpDir = ?config(tmpdir, Config),
-    _ = ec_file:remove(TmpDir, [recursive]),
+    _ = file:del_dir_r(TmpDir),
     _ = filelib:ensure_dir(filename:join([TmpDir, "dummy.beam"])),
     ?assert(filelib:is_dir(TmpDir)),
     lists:foreach(fun(Name) -> file:write_file(filename:join([TmpDir, Name]), <<>>) end,
@@ -205,7 +205,7 @@ resolve_link(_Config) ->
             ["rebar_file_utils_SUITE", "resolve_link"]),
     Link = filename:join(TmpDir, "link"),
     Target = filename:join(TmpDir, "link-target"),
-    ec_file:remove(TmpDir, [recursive]),
+    file:del_dir_r(TmpDir),
     ok = filelib:ensure_dir(Target),
     ok = file:write_file(Target, <<>>),
     ok = file:make_symlink(Target, Link),

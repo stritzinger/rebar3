@@ -24,7 +24,7 @@ init_per_testcase(multiapp_macros, Config) ->
     Name = rebar_test_utils:create_random_name("multiapp_macros"),
     AppsDir = filename:join([PrivDir, rebar_test_utils:create_random_name(Name)]),
     ec_file:copy(filename:join([DataDir, "foo"]), AppsDir, [recursive]),
-    ok = ec_file:remove(filename:join([AppsDir, "apps", "foo"]), [recursive]),
+    ok = file:del_dir_r(filename:join([AppsDir, "apps", "foo"])),
     Verbosity = rebar3:log_level(),
     rebar_log:init(command_line, Verbosity),
     State = rebar_state:new([{base_dir, filename:join([AppsDir, "_build"])}

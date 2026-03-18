@@ -503,7 +503,7 @@ system_tmpdir(PathComponents) ->
 
 reset_dir(Path) ->
     %% delete the directory if it exists
-    _ = ec_file:remove(Path, [recursive]),
+    _ = file:del_dir_r(Path),
     %% recreate the directory
     ensure_dir(Path).
 

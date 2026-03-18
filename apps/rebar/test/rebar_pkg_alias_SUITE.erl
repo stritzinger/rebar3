@@ -165,7 +165,7 @@ transitive_hash_mismatch(Config) ->
     [io:format(Io, "~p.~n", [Attr]) || Attr <- NewLock],
     file:close(Io),
     ct:pal("lock: ~p", [file:consult(Lockfile)]),
-    ec_file:remove(filename:join([AppDir, "_build"]), [recursive]),
+    file:del_dir_r(filename:join([AppDir, "_build"])),
     ?assertMatch(
        {error, {rebar_fetch, {unexpected_hash, _, _, _}}},
        rebar_test_utils:run_and_check(Config, RebarConfig, ["lock"], return)
