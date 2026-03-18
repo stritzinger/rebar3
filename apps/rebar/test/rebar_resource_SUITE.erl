@@ -28,7 +28,7 @@ init_per_testcase(change_type_upgrade, Config) ->
     Type = ?config(type, Config),
     TypeStr = atom_to_list(Type),
     DirName = filename:join([?config(priv_dir, Config), "resource_"++TypeStr]),
-    ec_file:mkdir_path(DirName),
+    filelib:ensure_path(DirName),
 
     {ok, AppInfo} = rebar_app_info:new(test_app, "0.0.1", DirName),
     AppInfo1 = rebar_app_info:source(AppInfo, ?config(resource, Config)),

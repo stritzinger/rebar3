@@ -22,7 +22,7 @@ init_per_testcase(Case, Config0) ->
     AppDir = ?config(apps, Config),
     application:load(rebar),
 
-    ok = ec_file:mkdir_p(AppDir),
+    ok = filelib:ensure_path(AppDir),
     State = rebar_state:new([{base_dir, filename:join([AppDir, "_build"])}]),
 
     rebar_test_utils:create_app(AppDir, Name, "1.0.0", [kernel, stdlib]),

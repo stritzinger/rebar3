@@ -63,7 +63,7 @@ download_source_online(AppInfo, State) ->
     AppDir1 = rebar_utils:to_list(AppDir),
     case rebar_resource_v2:download(TmpDir, AppInfo, State) of
         ok ->
-            ec_file:mkdir_p(AppDir1),
+            filelib:ensure_path(AppDir1),
             code:del_path(filename:absname(filename:join(AppDir1, "ebin"))),
             FetchDir = rebar_app_info:fetch_dir(AppInfo),
             ok = rebar_file_utils:rm_rf(filename:absname(FetchDir)),

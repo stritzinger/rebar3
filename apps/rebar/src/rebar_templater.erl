@@ -238,7 +238,7 @@ execute_template([{message, _} | Terms], Files, Template, Vars, Force) ->
 %% Create a directory
 execute_template([{dir, Path} | Terms], Files, Template, Vars, Force) ->
     ?DEBUG("Creating directory ~p", [Path]),
-    case ec_file:mkdir_p(expand_path(Path, Vars)) of
+    case filelib:ensure_path(expand_path(Path, Vars)) of
         ok ->
             ok;
         {error, Reason} ->
