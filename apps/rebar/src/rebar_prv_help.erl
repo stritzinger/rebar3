@@ -55,12 +55,12 @@ format_error(Reason) ->
 help(State) ->
     io:format("~ts",
               [argparse:help(
-                  rebar3:global_cli(rebar_state:providers(State)),
+                  rebar_cli:global_cli(rebar_state:providers(State)),
                   #{progname => "rebar3"})]).
 
 command_help(Path, State) ->
     Providers = rebar_state:providers(State),
-    try argparse:help(rebar3:global_cli(Providers),
+    try argparse:help(rebar_cli:global_cli(Providers),
                       #{progname => "rebar3", command => Path}) of
         HelpText ->
             io:format("~ts", [HelpText]),

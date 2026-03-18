@@ -63,7 +63,7 @@ help_overview_with_legacy_conflicting_short_provider(Config) ->
 
 global_help_with_legacy_reserved_short_is_valid(Config) ->
     State = add_legacy_reserved_short_provider_state(?config(state, Config)),
-    Cli = rebar3:global_cli(rebar_state:providers(State)),
+    Cli = rebar_cli:global_cli(rebar_state:providers(State)),
     Help = argparse:help(Cli, #{progname => "rebar3"}),
     ?assert(is_list(Help) orelse is_binary(Help)).
 
