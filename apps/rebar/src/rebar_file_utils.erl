@@ -52,7 +52,8 @@
          resolve_link/1,
          split_dirname/1,
          ensure_dir/1,
-         real_dir_path/1]).
+         real_dir_path/1,
+         insecure_mkdtemp/0]).
 
 -include("rebar.hrl").
 
@@ -385,7 +386,7 @@ robocopy_mv_and_rename(Source, Dest, SrcDir, SrcName, DestDir, DestName) ->
     %%  - rename srcname destname (to avoid clobbering)
     %%  - robocopy tmp_dir dest_dir destname
     %%  - remove tmp_dir
-    case ec_file:insecure_mkdtemp() of
+    case insecure_mkdtemp() of
         {error, _Reason} ->
             {error, lists:flatten(
                      io_lib:format("Failed to move ~ts to ~ts (tmpdir failed)~n",
@@ -621,6 +622,34 @@ ensure_dir(Path) ->
       after
           ok = file:set_cwd(CurCwd)
       end.
+
+%% @doc make a unique temporary directory. Similar function to BSD stdlib
+%% function of the same name.
+-spec insecure_mkdtemp() -> TmpDirPath::file:name() | {error, term()}.
+insecure_mkdtemp() ->
+    UniqueNumber = erlang:integer_to_list(erlang:trunc(rand:uniform() * 1_000_000_000_000)),
+    TmpDirPath =
+        filename:join([tmp(), lists:flatten([".tmp_dir", UniqueNumber])]),
+
+    case filelib:ensure_path(TmpDirPath) of
+        ok -> TmpDirPath;
+        Error -> Error
+    end.
+
+-spec tmp() -> file:name().
+tmp() ->
+    case os:type() of
+        {win32, _} ->
+            case os:getenv("TEMP") of
+                false -> "./tmp";
+                Val -> Val
+            end;
+        _ ->
+            case os:getenv("TMPDIR") of
+                false -> "/tmp";
+                Val -> Val
+            end
+    end.
 %% SPDX-SnippetEnd
 
 %% ===================================================================

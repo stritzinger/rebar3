@@ -88,7 +88,7 @@ get_md5(Rebar3Path) ->
     rebar_string:lowercase(DigestHex).
 
 maybe_fetch_rebar3(Rebar3Md5) ->
-    TmpDir = ec_file:insecure_mkdtemp(),
+    TmpDir = rebar_file_utils:insecure_mkdtemp(),
     TmpFile = filename:join(TmpDir, "rebar3"),
     case request("https://s3.amazonaws.com/rebar3/rebar3", Rebar3Md5) of
         {ok, Binary, ETag} ->

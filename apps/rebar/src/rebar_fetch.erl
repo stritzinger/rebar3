@@ -59,7 +59,7 @@ download_source_(AppInfo, State) ->
 
 download_source_online(AppInfo, State) ->
     AppDir = rebar_app_info:dir(AppInfo),
-    TmpDir = ec_file:insecure_mkdtemp(),
+    TmpDir = rebar_file_utils:insecure_mkdtemp(),
     AppDir1 = rebar_utils:to_list(AppDir),
     case rebar_resource_v2:download(TmpDir, AppInfo, State) of
         ok ->
