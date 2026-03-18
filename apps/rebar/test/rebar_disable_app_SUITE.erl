@@ -3,7 +3,7 @@
 -include_lib("common_test/include/ct.hrl").
 -include_lib("eunit/include/eunit.hrl").
 
--define(MOD(Name), 
+-define(MOD(Name),
 	io_lib:format("-module(~s).~n-export([x/0]).~nx() -> ok.~n", [Name])).
 
 all() -> [disable_app].
@@ -45,5 +45,5 @@ create_random_app(AppDir, Prefix) ->
     Mod = filename:join([AppDir, "apps", Name, "src", ModName ++ ".erl"]),
     ok = filelib:ensure_dir(Mod),
     Src = ?MOD(ModName),
-    ok = ec_file:write(Mod, Src),
+    ok = file:write_file(Mod, Src),
     Name.

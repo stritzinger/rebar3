@@ -1146,7 +1146,7 @@ dont_recompile_yrl_or_xrl(Config) ->
         "  {token,{float,TokenLine,list_to_float(TokenChars)}}."
         "\n\n"
         "Erlang code.",
-    ok = ec_file:write(Xrl, XrlBody),
+    ok = file:write_file(Xrl, XrlBody),
 
     Yrl = filename:join([AppDir, "src", "not_a_real_yrl_" ++ Name ++ ".yrl"]),
     ok = filelib:ensure_dir(Yrl),
@@ -1159,7 +1159,7 @@ dont_recompile_yrl_or_xrl(Config) ->
                "T -> F : '$1'.\n"
                "F -> '(' E ')' : '$2'.\n"
                "F -> number : '$1'.\n"],
-    ok = ec_file:write(Yrl, YrlBody),
+    ok = file:write_file(Yrl, YrlBody),
 
     XrlErl = filename:join([AppDir, "src", filename:basename(Xrl, ".xrl") ++ ".erl"]),
     YrlErl = filename:join([AppDir, "src", filename:basename(Yrl, ".yrl") ++ ".erl"]),
@@ -1171,7 +1171,7 @@ dont_recompile_yrl_or_xrl(Config) ->
     Hrl = filename:join([AppDir, "include", "some_header.hrl"]),
     ok = filelib:ensure_dir(Hrl),
     HrlBody = yeccpre_hrl(),
-    ok = ec_file:write(Hrl, HrlBody),
+    ok = file:write_file(Hrl, HrlBody),
     RebarConfig = [{yrl_opts, [{includefile, "include/some_header.hrl"}]}],
 
     rebar_test_utils:run_and_check(Config, RebarConfig, ["compile"], {ok, [{app, Name}]}),

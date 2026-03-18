@@ -199,7 +199,7 @@ verify_test_results(xref_ignore_test, AppName, XrefResults, _QueryResults) ->
 write_src_file(Dir, AppName, Module, IgnoreXref) ->
     Erl = filename:join([Dir, "src", module_name(AppName, Module)]),
     ok = filelib:ensure_dir(Erl),
-    ok = ec_file:write(Erl, get_module_body(Module, AppName, IgnoreXref)).
+    ok = file:write_file(Erl, get_module_body(Module, AppName, IgnoreXref)).
 
 delete_src_file(Dir, AppName, Module) ->
     Erl = filename:join([Dir, "src", module_name(AppName, Module)]),

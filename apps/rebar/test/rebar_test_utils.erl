@@ -162,7 +162,7 @@ create_config(AppDir, Contents) ->
 create_config(_AppDir, ConfFilename, Contents) ->
     ok = filelib:ensure_dir(ConfFilename),
     Config = lists:flatten([io_lib:fwrite("~p.~n", [Term]) || Term <- Contents]),
-    ok = ec_file:write(ConfFilename, Config),
+    ok = file:write_file(ConfFilename, Config),
     ConfFilename.
 
 %% @doc Util to create a random variation of a given name.
@@ -461,32 +461,34 @@ check_results(AppDir, Expected, ProfileRun, State) ->
 write_plugin_file(Dir, Name) ->
     Erl = filename:join([Dir, "src", Name]),
     ok = filelib:ensure_dir(Erl),
-    ok = ec_file:write(Erl, plugin_src_file(Name)).
+    ok = file:write_file(Erl, plugin_src_file(Name)).
 
 write_src_file(Dir, Name) ->
     Erl = filename:join([Dir, "src", Name]),
     ok = filelib:ensure_dir(Erl),
-    ok = ec_file:write(Erl, erl_src_file(Name)).
+    ok = file:write_file(Erl, erl_src_file(Name)).
 
 write_eunitized_src_file(Dir, Name) ->
     Erl = filename:join([Dir, "src", "not_a_real_src_" ++ Name ++ ".erl"]),
     ok = filelib:ensure_dir(Erl),
-    ok = ec_file:write(Erl, erl_eunitized_src_file("not_a_real_src_" ++ Name ++ ".erl")).
+    ok = file:write_file(Erl, erl_eunitized_src_file("not_a_real_src_" ++ Name ++ ".erl")).
 
 write_eunit_suite_file(Dir, Name) ->
     Erl = filename:join([Dir, "test", "not_a_real_src_" ++ Name ++ "_tests.erl"]),
     ok = filelib:ensure_dir(Erl),
-    ok = ec_file:write(Erl, erl_eunit_suite_file("not_a_real_src_" ++ Name ++ ".erl")).
+    ok = file:write_file(Erl, erl_eunit_suite_file("not_a_real_src_" ++ Name ++ ".erl")).
 
 write_app_file(Dir, Name, Version, Deps) ->
     Filename = filename:join([Dir, "ebin", Name ++ ".app"]),
     ok = filelib:ensure_dir(Filename),
-    ok = ec_file:write_term(Filename, get_app_metadata(ec_cnv:to_list(Name), Version, Deps)).
+    Term = get_app_metadata(ec_cnv:to_list(Name), Version, Deps),
+    ok = file:write_file(Filename, lists:flatten(io_lib:fwrite("~p. ", [Term]))).
 
 write_app_src_file(Dir, Name, Version, Deps) ->
     Filename = filename:join([Dir, "src", Name ++ ".app.src"]),
     ok = filelib:ensure_dir(Filename),
-    ok = ec_file:write_term(Filename, get_app_metadata(ec_cnv:to_list(Name), Version, Deps)).
+    Term = get_app_metadata(ec_cnv:to_list(Name), Version, Deps),
+    ok = file:write_file(Filename, lists:flatten(io_lib:fwrite("~p. ", [Term]))).
 
 erl_src_file(Name) ->
     io_lib:format("-module('~s').\n"
