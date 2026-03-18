@@ -96,7 +96,7 @@ src_dirs(Apps, State) ->
 print_paths_if_exist(Paths, State) ->
     {RawOpts, _} = rebar_state:command_parsed_args(State),
     Sep = proplists:get_value(separator, RawOpts, " "),
-    RealPaths = lists:filter(fun(P) -> ec_file:is_dir(P) end, Paths),
+    RealPaths = lists:filter(fun(P) -> filelib:is_dir(P) end, Paths),
     io:format("~ts", [rebar_string:join(RealPaths, Sep)]).
 
 project_deps(State) ->

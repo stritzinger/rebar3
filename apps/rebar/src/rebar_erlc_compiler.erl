@@ -124,7 +124,7 @@ compile(AppInfo, CompileOpts) when element(1, AppInfo) == app_info_t ->
 
     ExtraDirs = rebar_dir:extra_src_dirs(RebarOpts),
     F = fun(D) ->
-        case ec_file:is_dir(filename:join([Dir, D])) of
+        case filelib:is_dir(filename:join([Dir, D])) of
             true  -> compile_dirs(RebarOpts, Dir, [D], D, CompileOpts);
             false -> ok
         end
@@ -156,7 +156,7 @@ compile(RebarOpts, BaseDir, OutDir, CompileOpts) ->
 
     ExtraDirs = rebar_dir:extra_src_dirs(RebarOpts),
     F = fun(D) ->
-        case ec_file:is_dir(filename:join([BaseDir, D])) of
+        case filelib:is_dir(filename:join([BaseDir, D])) of
             true  -> compile_dirs(RebarOpts, BaseDir, [D], D, CompileOpts);
             false -> ok
         end
