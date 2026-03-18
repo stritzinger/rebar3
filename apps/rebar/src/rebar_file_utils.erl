@@ -51,7 +51,8 @@
          normalize_relative_path/1,
          resolve_link/1,
          split_dirname/1,
-         ensure_dir/1]).
+         ensure_dir/1,
+         real_dir_path/1]).
 
 -include("rebar.hrl").
 
@@ -604,6 +605,23 @@ split_dirname(Path) ->
 -spec ensure_dir(file:name_all()) -> ok | {error, file:posix()}.
 ensure_dir(Path) ->
     filelib:ensure_dir(filename:join(Path, "fake_file")).
+
+%% SPDX-SnippetBegin
+%% SPDX-License-Identifier: MIT
+%% SPDX-SnippetCopyrightText: 2011 Erlware, LLC
+%% SPDX-FileCopyrightText: 2026 Dipl. Phys. Peer Stritzinger GmbH
+%% SPDX-SnippetComment: Adapted from ec_file:real_dir_path/1 in erlware_commons.
+-spec real_dir_path(file:name()) -> file:name().
+ real_dir_path(Path) ->
+      {ok, CurCwd} = file:get_cwd(),
+      try
+          ok = file:set_cwd(Path),
+          {ok, RealPath} = file:get_cwd(),
+          filename:absname(RealPath)
+      after
+          ok = file:set_cwd(CurCwd)
+      end.
+%% SPDX-SnippetEnd
 
 %% ===================================================================
 %% Internal functions
