@@ -82,11 +82,11 @@ groups() ->
 init_per_suite(Config) ->
     PrivDir = ?config(priv_dir, Config),
     DataDir = ?config(data_dir, Config),
-    ok = ec_file:copy(filename:join([DataDir, "basic_app.zip"]), filename:join([PrivDir, "basic_app.zip"])),
+    ok = rebar_file_utils:copy(filename:join([DataDir, "basic_app.zip"]), filename:join([PrivDir, "basic_app.zip"])),
     {ok, _} = zip:extract(filename:join([PrivDir, "basic_app.zip"]), [{cwd, PrivDir}]),
-    ok = ec_file:copy(filename:join([DataDir, "multi_app.zip"]), filename:join([PrivDir, "multi_app.zip"])),
+    ok = rebar_file_utils:copy(filename:join([DataDir, "multi_app.zip"]), filename:join([PrivDir, "multi_app.zip"])),
     {ok, _} = zip:extract(filename:join([PrivDir, "multi_app.zip"]), [{cwd, PrivDir}]),
-    ok = ec_file:copy(filename:join([DataDir, "syscfg_app.zip"]), filename:join([PrivDir, "syscfg_app.zip"])),
+    ok = rebar_file_utils:copy(filename:join([DataDir, "syscfg_app.zip"]), filename:join([PrivDir, "syscfg_app.zip"])),
     {ok, _} = zip:extract(filename:join([PrivDir, "syscfg_app.zip"]), [{cwd, PrivDir}]),
     Config.
 
@@ -100,7 +100,7 @@ init_per_group(basic_app, Config) ->
 
     AppDirs = ["src", "include", "test"],
 
-    lists:foreach(fun(F) -> ec_file:copy(filename:join([PrivDir, "basic_app", F]),
+    lists:foreach(fun(F) -> rebar_file_utils:copy(filename:join([PrivDir, "basic_app", F]),
                                          filename:join([AppDir, F]),
                                          [recursive]) end, AppDirs),
 
@@ -117,7 +117,7 @@ init_per_group(multi_app, Config) ->
 
     AppDirs = ["apps", "test"],
 
-    lists:foreach(fun(F) -> ec_file:copy(filename:join([PrivDir, "multi_app", F]),
+    lists:foreach(fun(F) -> rebar_file_utils:copy(filename:join([PrivDir, "multi_app", F]),
                                          filename:join([AppDir, F]),
                                          [recursive]) end, AppDirs),
 
@@ -134,7 +134,7 @@ init_per_group(cmd_line_args, Config) ->
 
     AppDirs = ["apps", "test"],
 
-    lists:foreach(fun(F) -> ec_file:copy(filename:join([PrivDir, "multi_app", F]),
+    lists:foreach(fun(F) -> rebar_file_utils:copy(filename:join([PrivDir, "multi_app", F]),
                                          filename:join([AppDir, F]),
                                          [recursive]) end, AppDirs),
 
@@ -626,7 +626,7 @@ misspecified_eunit_tests(Config) ->
 
     AppDirs = ["src", "include", "test"],
 
-    lists:foreach(fun(F) -> ec_file:copy(filename:join([PrivDir, "basic_app", F]),
+    lists:foreach(fun(F) -> rebar_file_utils:copy(filename:join([PrivDir, "basic_app", F]),
                                          filename:join([AppDir, F]),
                                          [recursive]) end, AppDirs),
 
@@ -646,7 +646,7 @@ misspecified_eunit_compile_opts(Config) ->
 
     AppDirs = ["src", "include", "test"],
 
-    lists:foreach(fun(F) -> ec_file:copy(filename:join([PrivDir, "basic_app", F]),
+    lists:foreach(fun(F) -> rebar_file_utils:copy(filename:join([PrivDir, "basic_app", F]),
                                          filename:join([AppDir, F]),
                                          [recursive]) end, AppDirs),
 
@@ -664,7 +664,7 @@ misspecified_eunit_first_files(Config) ->
 
     AppDirs = ["src", "include", "test"],
 
-    lists:foreach(fun(F) -> ec_file:copy(filename:join([PrivDir, "basic_app", F]),
+    lists:foreach(fun(F) -> rebar_file_utils:copy(filename:join([PrivDir, "basic_app", F]),
                                          filename:join([AppDir, F]),
                                          [recursive]) end, AppDirs),
 
@@ -684,7 +684,7 @@ alternate_test_regex(Config) ->
 
     AppDirs = ["src", "include", "test"],
 
-    lists:foreach(fun(F) -> ec_file:copy(filename:join([PrivDir, "basic_app", F]),
+    lists:foreach(fun(F) -> rebar_file_utils:copy(filename:join([PrivDir, "basic_app", F]),
                                          filename:join([AppDir, F]),
                                          [recursive]) end, AppDirs),
 
@@ -707,7 +707,7 @@ syscfg_app_opts(Config) ->
 
     AppDirs = ["src", "test", "config"],
 
-    lists:foreach(fun(F) -> ec_file:copy(filename:join([PrivDir, "syscfg_app", F]),
+    lists:foreach(fun(F) -> rebar_file_utils:copy(filename:join([PrivDir, "syscfg_app", F]),
                                          filename:join([AppDir, F]),
                                          [recursive]) end, AppDirs),
 
