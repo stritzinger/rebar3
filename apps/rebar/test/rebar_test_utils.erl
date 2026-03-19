@@ -1,4 +1,5 @@
 -module(rebar_test_utils).
+-include_lib("kernel/include/file.hrl").
 -include_lib("common_test/include/ct.hrl").
 -include_lib("eunit/include/eunit.hrl").
 -export([init_rebar_state/1, init_rebar_state/2, run_and_check/3, run_and_check/4,
@@ -432,7 +433,10 @@ check_results(AppDir, Expected, ProfileRun, State) ->
                     {ok, RelLibs} = rebar_utils:list_dir(LibDir),
                     IsSymLinkFun =
                         fun(X) ->
-                                ec_file:is_symlink(filename:join(LibDir, X))
+                                case file:read_link_info(filename:join(LibDir, X)) of
+                                    {ok, #file_info{type = symlink}} -> true;
+                                    _ -> false
+                                end
                         end,
                     DevMode = lists:all(IsSymLinkFun, RelLibs),
                     ?assertEqual(ExpectedDevMode, DevMode),

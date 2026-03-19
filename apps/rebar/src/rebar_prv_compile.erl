@@ -9,6 +9,7 @@
 -export([compile/2, compile/3, compile/4]).
 -export([copy_app_dirs/3]).
 
+-include_lib("kernel/include/file.hrl").
 -include_lib("providers/include/providers.hrl").
 -include("rebar.hrl").
 
@@ -507,9 +508,9 @@ copy(Source, Target) ->
     end.
 
 delete_if_symlink(Path) ->
-    case ec_file:is_symlink(Path) of
-        true  -> file:delete(Path);
-        false -> ok
+    case file:read_link_info(Path) of
+        {ok, #file_info{type = symlink}} -> file:delete(Path);
+        _ -> ok
     end.
 
 resolve_src_dirs(Opts) ->
