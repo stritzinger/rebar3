@@ -31,6 +31,7 @@ to_command(Provider) ->
 
 -spec to_parse_command(providers:t()) -> argparse:command().
 to_parse_command(Provider) ->
+    info_legacy_provider(Provider),
     command(
       Provider,
       [#{name => help,
@@ -193,3 +194,7 @@ provider_help([Namespace, Task], Providers) ->
     end;
 provider_help(Path, _Providers) ->
     {error, "Command " ++ string:join(Path, " ") ++ " not found"}.
+
+info_legacy_provider(Provider) ->
+    ?INFO("Provider ~ts is using deprecated legacy CLI compatibility.",
+          [atom_to_list(providers:impl(Provider))]).

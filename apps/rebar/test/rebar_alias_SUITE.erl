@@ -194,7 +194,7 @@ command_console(Config) ->
         fun (Captured, AliasesAcc) ->
             Match = re:run(Captured, "^([^=]+)=.*", [{capture, all_but_first}]),
             case Match of
-                no_match ->
+                nomatch ->
                     AliasesAcc;
                 {match, [{Start, End}]} ->
                     CapturedPref = string:sub_string(Captured, Start+1, End),

@@ -186,18 +186,10 @@ friendly_provider(P) -> P.
 
 parse_command_args(CommandProvider, State) ->
     Module = providers:module(CommandProvider),
-    case code:ensure_loaded(Module) of
-        {module, _} ->
-            case erlang:function_exported(Module, cli, 0) of
-                true ->
-                    argparse:parse(rebar_state:command_args(State), Module:cli());
-                false ->
-                    argparse:parse(
-                      rebar_state:command_args(State),
-                      rebar_legacy_cli:to_parse_command(CommandProvider)
-                    )
-            end;
-        {error, _} ->
+    case erlang:function_exported(Module, cli, 0) of
+        true ->
+            argparse:parse(rebar_state:command_args(State), Module:cli());
+        false ->
             argparse:parse(
               rebar_state:command_args(State),
               rebar_legacy_cli:to_parse_command(CommandProvider)

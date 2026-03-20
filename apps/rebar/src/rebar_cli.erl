@@ -74,7 +74,7 @@ namespace_commands(Namespace, Providers) ->
 
 provider_command(Provider) ->
     Mod = providers:module(Provider),
-    _ = code:ensure_loaded(Mod),
+    {module, Mod} = code:ensure_loaded(Mod),
     case erlang:function_exported(Mod, cli, 0) of
         true ->
             Mod:cli();
