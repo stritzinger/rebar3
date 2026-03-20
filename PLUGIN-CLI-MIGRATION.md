@@ -21,9 +21,11 @@ Treat this as deprecated behavior and migrate away from it:
 4. Automatic reserved-short sanitization in legacy option conversion.
    Globally reserved short flags like `-v`/`-h` may be dropped during
    conversion so help/CLI validation can still succeed.
-5. Duplicate short flags in legacy provider option specs are not supported.
-   If two options reuse the same short flag, plugin authors must migrate to
-   `cli/0` and assign unique short flags or rely on long flags instead.
+5. Duplicate short flags within a single legacy provider option spec are not
+   supported.
+   If two options in one command reuse the same short flag, plugin authors
+   must migrate to `cli/0` and assign unique short flags or rely on long
+   flags instead.
 
 ## Reserved flags
 
@@ -36,7 +38,10 @@ plugin options:
 ## Duplicate short flags
 
 Reused short flags such as defining both `-c` for different options are not
-supported in the compatibility path.
+supported within one command in the compatibility path.
+
+Reusing the same short flag in different subcommands is allowed by `argparse`
+and is not a problem by itself.
 
 If your provider currently relies on duplicate short flags, migrate it to
 `cli/0` and do one of the following:

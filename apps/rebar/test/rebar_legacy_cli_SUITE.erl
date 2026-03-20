@@ -13,6 +13,7 @@ all() ->
      help_with_legacy_conflicting_short_provider_notfound,
      help_overview_with_legacy_conflicting_short_provider,
      global_help_with_legacy_reserved_short_is_valid,
+     global_help_with_duplicate_shorts_in_different_providers_is_valid,
      to_command_argparse_drops_reserved_short_option,
      to_command_argparse_accepts_long_options_for_duplicate_short_options,
      to_command_argparse_keeps_typed_legacy_options_optional,
@@ -66,6 +67,24 @@ global_help_with_legacy_reserved_short_is_valid(Config) ->
     Cli = rebar_cli:global_cli(rebar_state:providers(State)),
     Help = argparse:help(Cli, #{progname => "rebar3"}),
     ?assert(is_list(Help) orelse is_binary(Help)).
+
+global_help_with_duplicate_shorts_in_different_providers_is_valid(Config) ->
+    State0 = ?config(state, Config),
+    State1 = rebar_state:add_provider(State0, duplicate_short_provider(one, "first")),
+    State2 = rebar_state:add_provider(State1, duplicate_short_provider(two, "second")),
+    Cli = rebar_cli:global_cli(rebar_state:providers(State2)),
+    Overview = argparse:help(Cli, #{progname => "rebar3"}),
+    HelpOne = argparse:help(Cli, #{progname => "rebar3", command => ["one"]}),
+    HelpTwo = argparse:help(Cli, #{progname => "rebar3", command => ["two"]}),
+    {ok, Parsed1, Path1, _Cmd1} = argparse:parse(["one", "-k", "alpha"], Cli),
+    {ok, Parsed2, Path2, _Cmd2} = argparse:parse(["two", "-k", "beta"], Cli),
+    ?assert(is_list(Overview) orelse is_binary(Overview)),
+    ?assert(is_list(HelpOne) orelse is_binary(HelpOne)),
+    ?assert(is_list(HelpTwo) orelse is_binary(HelpTwo)),
+    ?assertEqual(["erl", "one"], Path1),
+    ?assertEqual(["erl", "two"], Path2),
+    ?assertEqual("alpha", maps:get(value, Parsed1)),
+    ?assertEqual("beta", maps:get(value, Parsed2)).
 
 to_command_argparse_drops_reserved_short_option(_Config) ->
     Provider = reserved_short_and_long_provider(),
@@ -270,6 +289,16 @@ duplicate_short_defaults_provider() ->
        {opts, [{columns, $c, "columns", string, "List columns to display"},
                {type, $t, "type", {string, "otp"}, "Package type"},
                {cached, $c, "cached", {boolean, false}, "List only cached packages"}]}]
+     ).
+
+duplicate_short_provider(Name, Long) ->
+    providers:create(
+      [{name, Name},
+       {module, ?MODULE},
+       {namespace, default},
+       {bare, true},
+       {deps, []},
+       {opts, [{value, $k, Long, string, "Duplicate short in another command"}]}]
      ).
 
 iodata_help_provider() ->

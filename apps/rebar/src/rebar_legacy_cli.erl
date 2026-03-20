@@ -129,11 +129,10 @@ maybe_put(Key, Value, Map) ->
     Map#{Key => Value}.
 
 sanitize_arguments(Args) ->
-    %% Legacy getopt providers can reuse short switches.
-    %% argparse rejects duplicate option switches during CLI validation,
-    %% which can crash `rebar3 help` before fallback handling runs.
-    %% Keep command generation resilient by dropping conflicting short
-    %% switches from provider options while still exposing the argument itself.
+    %% argparse rejects duplicate short switches within a single command,
+    %% and provider options cannot reuse the inherited global -h/-v flags.
+    %% Keep command generation resilient by dropping only command-local
+    %% short conflicts while still exposing the argument itself.
     ReservedShorts = sets:from_list([$h, $v]),
     sanitize_arguments(Args, ReservedShorts, []).
 
