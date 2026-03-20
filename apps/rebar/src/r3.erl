@@ -10,7 +10,7 @@
 do(Command) -> rebar_agent:do(Command).
 
 %% @doc alias for `rebar_agent:do/2'
--spec do(atom(), atom() | string()) -> ok | {error, term()}.
+-spec do(atom(), atom() | [string()]) -> ok | {error, term()}.
 do(Namespace, Command) -> rebar_agent:do(Namespace, Command).
 
 %% @doc alias for `rebar_agent:do/3'
@@ -22,7 +22,7 @@ do(Namespace, Command, Args) -> rebar_agent:do(Namespace, Command, Args).
 async_do(Command) -> rebar_agent:async_do(Command).
 
 %% @doc alias for `rebar_agent:async_do/2'
--spec async_do(atom(), atom()) -> ok.
+-spec async_do(atom(), atom() | [string()]) -> ok.
 async_do(Namespace, Command) -> rebar_agent:async_do(Namespace, Command).
 
 %% @doc alias for `rebar_agent:async_do/3'
