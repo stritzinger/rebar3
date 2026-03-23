@@ -30,7 +30,7 @@
 
 -behaviour(provider).
 
--export([init/1, cli/0, do/1, format_error/1]).
+-export([init/1, cli/0, alias_cli/1, do/1, format_error/1]).
 -include("rebar.hrl").
 
 -define(PROVIDER, alias).
@@ -92,9 +92,10 @@ init_alias(Alias, Cmds, State) ->
 
     MF = module(Module),
     EF = exports(),
+    CF = cli_func(Cmds),
     FF = do_func(Cmds),
 
-    {ok, _, Bin} = compile:forms([MF, EF, FF]),
+    {ok, _, Bin} = compile:forms([MF, EF, CF, FF]),
     code:load_binary(Module, "none", Bin),
 
     Provider = providers:create([
@@ -125,23 +126,49 @@ validate_provider(Alias, Cmds, State) ->
             false
     end.
 
+-spec alias_cli([term()]) -> argparse:command().
+alias_cli(Cmds) ->
+    #{help => lists:flatten(desc(Cmds)),
+      arguments => []}.
+
+-dialyzer({no_unused, desc/1}). % required since we suppress warnings for init_alias/3
+desc(Cmds) ->
+    "Equivalent to running: rebar3 do "
+        ++ cmds_string(Cmds).
+
 cmds_string(Cmds) ->
     rebar_string:join(lists:map(fun to_desc/1, Cmds), ",").
 
+to_desc({Cmd, []}) ->
+    cmd_to_list(Cmd);
 to_desc({Cmd, Args}) when is_list(Args) ->
-    atom_to_list(Cmd) ++ " " ++ Args;
+    cmd_to_list(Cmd) ++ " " ++ Args;
 to_desc({Namespace, Cmd}) ->
     atom_to_list(Namespace) ++ " " ++ atom_to_list(Cmd);
 to_desc({Namespace, Cmd, Args}) ->
     atom_to_list(Namespace) ++ " " ++ atom_to_list(Cmd) ++ " " ++ Args;
 to_desc(Cmd) ->
-    atom_to_list(Cmd).
+    cmd_to_list(Cmd).
+
+cmd_to_list(Cmd) when is_atom(Cmd) ->
+    atom_to_list(Cmd);
+cmd_to_list(Cmd) when is_list(Cmd) ->
+    Cmd.
 
 module(Name) ->
     {attribute, 1, module, Name}.
 
 exports() ->
-    {attribute, 1, export, [{do, 1}]}.
+    {attribute, 1, export, [{cli, 0}, {do, 1}]}.
+
+cli_func(Cmds) ->
+    {function, 1, cli, 0,
+     [{clause, 1,
+       [],
+       [],
+       [{call, 1,
+         {remote, 1, {atom, 1, rebar_prv_alias}, {atom, 1, alias_cli}},
+         [make_args(Cmds)]}]}]}.
 
 do_func(Cmds) ->
     {function, 1, do, 1,
