@@ -1,10 +1,13 @@
 %% -*- erlang-indent-level: 4;indent-tabs-mode: nil -*-
 %% ex: ts=4 sw=4 et
-%% -------------------------------------------------------------------
+
+%% %CopyrightBegin%
 %%
-%% rebar: Erlang Build Tools
+%% SPDX-License-Identifier: MIT
 %%
 %% Copyright (c) 2009 Dave Smith (dizzyd@dizzyd.com)
+%% Copyright (c) 2015-2026 Rebar3 and its contributors
+%% Copyright (c) 2026 Dipl. Phys. Peer Stritzinger GmbH
 %%
 %% Permission is hereby granted, free of charge, to any person obtaining a copy
 %% of this software and associated documentation files (the "Software"), to deal
@@ -23,7 +26,8 @@
 %% LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 %% OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 %% THE SOFTWARE.
-%% -------------------------------------------------------------------
+%%
+%% %CopyrightEnd%
 %%
 %% @doc Main module for rebar3. Supports two interfaces; one for escripts,
 %% and one for usage as a library (although rebar3 makes a lot of
@@ -40,7 +44,6 @@
          main/1,
          run/1,
          run/2,
-         global_option_spec_list/0,
          init_config/0,
          set_options/2,
          parse_args/1,
@@ -353,17 +356,6 @@ set_global_flag(State, Options, Flag) ->
                     "0"
             end,
     rebar_state:set(State, Flag, Value).
-
-
-%% @doc options accepted via getopt
--spec global_option_spec_list() -> [{atom(), char(), string(), atom(), string()}, ...].
-global_option_spec_list() ->
-    [
-    %% {Name,  ShortOpt,  LongOpt,    ArgSpec,   HelpMsg}
-    {help,     $h,        "help",     undefined, "Print this help."},
-    {version,  $v,        "version",  undefined, "Show version information."},
-    {task,     undefined, undefined,  string,    "Task to run."}
-    ].
 
 %% @private translate unhandled errors and internal return codes into proper
 %% erroneous program exits.

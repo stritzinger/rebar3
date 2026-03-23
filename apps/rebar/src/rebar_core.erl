@@ -1,10 +1,13 @@
 %% -*- erlang-indent-level: 4;indent-tabs-mode: nil -*-
 %% ex: ts=4 sw=4 et
-%% -------------------------------------------------------------------
+
+%% %CopyrightBegin%
 %%
-%% rebar: Erlang Build Tools
+%% SPDX-License-Identifier: MIT
 %%
 %% Copyright (c) 2009 Dave Smith (dizzyd@dizzyd.com)
+%% Copyright (c) 2015-2026 Rebar3 and its contributors
+%% Copyright (c) 2026 Dipl. Phys. Peer Stritzinger GmbH
 %%
 %% Permission is hereby granted, free of charge, to any person obtaining a copy
 %% of this software and associated documentation files (the "Software"), to deal
@@ -23,7 +26,9 @@
 %% LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 %% OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 %% THE SOFTWARE.
-%% -------------------------------------------------------------------
+%%
+%% %CopyrightEnd%
+
 %% @doc Module providing core functionality about command dispatch, namespacing,
 %% and chaining for rebar3.
 -module(rebar_core).
@@ -114,17 +119,13 @@ process_command(State, Command) ->
                 _ ->
                     Profiles = providers:profiles(CommandProvider),
                     State1 = rebar_state:apply_profiles(State, Profiles),
-                    Opts = providers:opts(CommandProvider)++rebar3:global_option_spec_list(),
-                    case getopt:parse(Opts, rebar_state:command_args(State1)) of
-                        {ok, Args} ->
-                            State2 = rebar_state:command_parsed_args(State1, Args),
+                    case parse_command_args(CommandProvider, State1) of
+                        {ok, ParsedMap, _Path, _Cmd} ->
+                            ParsedArgs = normalize_parsed_args(ParsedMap),
+                            State2 = rebar_state:command_parsed_args(State1, ParsedArgs),
                             do(TargetProviders, State2);
-                        {error, {invalid_option, Option}} ->
-                            {error, io_lib:format("Invalid option ~ts on task ~ts", [Option, atom_to_list(Command)])};
-                        {error, {invalid_option_arg, {Option, Arg}}} ->
-                            {error, io_lib:format("Invalid argument ~ts to option ~ts", [Arg, Option])};
-                        {error, {missing_option_arg, Option}} ->
-                            {error, io_lib:format("Missing argument to option ~ts", [Option])}
+                        {error, ParseError} ->
+                            {error, argparse:format_error(ParseError)}
                     end
             end
     end.
@@ -182,3 +183,20 @@ format_error({bad_provider_namespace, Name}) ->
 %% omitting the default namespace if it's not there
 friendly_provider({default, P}) -> P;
 friendly_provider(P) -> P.
+
+parse_command_args(CommandProvider, State) ->
+    Module = providers:module(CommandProvider),
+    case erlang:function_exported(Module, cli, 0) of
+        true ->
+            argparse:parse(rebar_state:command_args(State), Module:cli());
+        false ->
+            argparse:parse(
+              rebar_state:command_args(State),
+              rebar_legacy_cli:to_parse_command(CommandProvider)
+            )
+    end.
+
+normalize_parsed_args(ParsedMap) ->
+    Rest = maps:get(rest, ParsedMap, []),
+    ParsedArgs = lists:keydelete(rest, 1, maps:to_list(ParsedMap)),
+    {ParsedArgs, Rest}.

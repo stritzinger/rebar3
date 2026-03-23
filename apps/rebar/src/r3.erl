@@ -1,3 +1,25 @@
+%% %CopyrightBegin%
+%%
+%% SPDX-License-Identifier: Apache-2.0
+%%
+%% SPDX-FileCopyrightText: Copyright 2015-2026 Rebar3 and its contributors
+%%
+%% SPDX-FileCopyrightText: Copyright 2026 Dipl. Phys. Peer Stritzinger GmbH
+%%
+%% Licensed under the Apache License, Version 2.0 (the "License");
+%% you may not use this file except in compliance with the License.
+%% You may obtain a copy of the License at
+%%
+%%     http://www.apache.org/licenses/LICENSE-2.0
+%%
+%% Unless required by applicable law or agreed to in writing, software
+%% distributed under the License is distributed on an "AS IS" BASIS,
+%% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+%% See the License for the specific language governing permissions and
+%% limitations under the License.
+%%
+%% %CopyrightEnd%
+
 %%% @doc external alias for `rebar_agent' for more convenient
 %%% calls from a shell.
 -module(r3).
@@ -10,11 +32,11 @@
 do(Command) -> rebar_agent:do(Command).
 
 %% @doc alias for `rebar_agent:do/2'
--spec do(atom(), atom() | string()) -> ok | {error, term()}.
+-spec do(atom(), atom() | [string()]) -> ok | {error, term()}.
 do(Namespace, Command) -> rebar_agent:do(Namespace, Command).
 
 %% @doc alias for `rebar_agent:do/3'
--spec do(atom(), atom(), string()) -> ok | {error, term()}.
+-spec do(atom(), atom(), [string()]) -> ok | {error, term()}.
 do(Namespace, Command, Args) -> rebar_agent:do(Namespace, Command, Args).
 
 %% @doc alias for `rebar_agent:async_do/1'
@@ -22,11 +44,11 @@ do(Namespace, Command, Args) -> rebar_agent:do(Namespace, Command, Args).
 async_do(Command) -> rebar_agent:async_do(Command).
 
 %% @doc alias for `rebar_agent:async_do/2'
--spec async_do(atom(), atom()) -> ok.
+-spec async_do(atom(), atom() | [string()]) -> ok.
 async_do(Namespace, Command) -> rebar_agent:async_do(Namespace, Command).
 
 %% @doc alias for `rebar_agent:async_do/3'
--spec async_do(atom(), atom(), string()) -> ok.
+-spec async_do(atom(), atom(), [string()]) -> ok.
 async_do(Namespace, Command, Args) -> rebar_agent:async_do(Namespace, Command, Args).
 
 break() ->

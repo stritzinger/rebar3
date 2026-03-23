@@ -1,3 +1,25 @@
+%% %CopyrightBegin%
+%%
+%% SPDX-License-Identifier: Apache-2.0
+%%
+%% SPDX-FileCopyrightText: Copyright 2015-2026 Rebar3 and its contributors
+%%
+%% SPDX-FileCopyrightText: Copyright 2026 Dipl. Phys. Peer Stritzinger GmbH
+%%
+%% Licensed under the Apache License, Version 2.0 (the "License");
+%% you may not use this file except in compliance with the License.
+%% You may obtain a copy of the License at
+%%
+%%     http://www.apache.org/licenses/LICENSE-2.0
+%%
+%% Unless required by applicable law or agreed to in writing, software
+%% distributed under the License is distributed on an "AS IS" BASIS,
+%% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+%% See the License for the specific language governing permissions and
+%% limitations under the License.
+%%
+%% %CopyrightEnd%
+
 -module(rebar_eunit_SUITE).
 
 -export([all/0, groups/0]).
@@ -299,14 +321,14 @@ eunit_first_files(Config) ->
 %% check that the --application cmd line opt generates the correct test set
 single_application_arg(Config) ->
     S = ?config(result, Config),
-    {ok, Args} = getopt:parse(rebar_prv_eunit:eunit_opts(S), ["--application=multi_app_bar"]),
+    {ok, Args} = eunit_parse(S, ["--application=multi_app_bar"]),
     State = rebar_state:command_parsed_args(S, Args),
 
     {ok, [{application, multi_app_bar}]} = rebar_prv_eunit:prepare_tests(State).
 
 multi_application_arg(Config) ->
     S = ?config(result, Config),
-    {ok, Args} = getopt:parse(rebar_prv_eunit:eunit_opts(S), ["--application=multi_app_bar,multi_app_baz"]),
+    {ok, Args} = eunit_parse(S, ["--application=multi_app_bar,multi_app_baz"]),
     State = rebar_state:command_parsed_args(S, Args),
 
     {ok, [{application, multi_app_bar}, {application, multi_app_baz}]} = rebar_prv_eunit:prepare_tests(State).
@@ -314,7 +336,7 @@ multi_application_arg(Config) ->
 %% check that an invalid --application cmd line opt generates an error
 missing_application_arg(Config) ->
     S = ?config(result, Config),
-    {ok, Args} = getopt:parse(rebar_prv_eunit:eunit_opts(S), ["--application=missing_app"]),
+    {ok, Args} = eunit_parse(S, ["--application=missing_app"]),
     State = rebar_state:command_parsed_args(S, Args),
 
     Error = {error, {rebar_prv_eunit, {eunit_test_errors, ["Application `missing_app' not found in project."]}}},
@@ -329,7 +351,7 @@ single_module_arg(Config) ->
     Path = code:get_path(),
     code:add_paths([filename:join([AppDir, "_build", "test", "lib", "multi_app_bar", "ebin"])]),
 
-    {ok, Args} = getopt:parse(rebar_prv_eunit:eunit_opts(S), ["--module=multi_app_bar"]),
+    {ok, Args} = eunit_parse(S, ["--module=multi_app_bar"]),
     State = rebar_state:command_parsed_args(S, Args),
 
     {ok, [{module, multi_app_bar}]} = rebar_prv_eunit:prepare_tests(State),
@@ -346,7 +368,7 @@ multi_module_arg(Config) ->
     code:add_paths([filename:join([AppDir, "_build", "test", "lib", "multi_app_bar", "ebin"])]),
     code:add_paths([filename:join([AppDir, "_build", "test", "lib", "multi_app_baz", "ebin"])]),
 
-    {ok, Args} = getopt:parse(rebar_prv_eunit:eunit_opts(S), ["--module=multi_app_bar,multi_app_baz"]),
+    {ok, Args} = eunit_parse(S, ["--module=multi_app_bar,multi_app_baz"]),
     State = rebar_state:command_parsed_args(S, Args),
 
     {ok, [{module, multi_app_bar}, {module, multi_app_baz}]} = rebar_prv_eunit:prepare_tests(State),
@@ -358,7 +380,7 @@ multi_module_arg(Config) ->
 missing_module_arg(Config) ->
     S = ?config(result, Config),
 
-    {ok, Args} = getopt:parse(rebar_prv_eunit:eunit_opts(S), ["--module=missing_app"]),
+    {ok, Args} = eunit_parse(S, ["--module=missing_app"]),
     State = rebar_state:command_parsed_args(S, Args),
 
     T = rebar_prv_eunit:prepare_tests(State),
@@ -371,7 +393,7 @@ missing_module_arg(Config) ->
 single_test_arg(Config) ->
     S = ?config(result, Config),
 
-    {ok, Args} = getopt:parse(rebar_prv_eunit:eunit_opts(S), ["--test=module_name:function_name"]),
+    {ok, Args} = eunit_parse(S, ["--test=module_name:function_name"]),
     State = rebar_state:command_parsed_args(S, Args),
 
     {ok, [{test, module_name, function_name}]} = rebar_prv_eunit:prepare_tests(State).
@@ -379,7 +401,7 @@ single_test_arg(Config) ->
 multi_test_arg(Config) ->
     S = ?config(result, Config),
 
-    {ok, Args} = getopt:parse(rebar_prv_eunit:eunit_opts(S), ["--test=module1:func1+func2,module2:func1;func2"]),
+    {ok, Args} = eunit_parse(S, ["--test=module1:func1+func2,module2:func1;func2"]),
     State = rebar_state:command_parsed_args(S, Args),
 
     Generators = [{test, module1, func1},
@@ -392,7 +414,7 @@ multi_test_arg(Config) ->
 missing_test_arg(Config) ->
     S = ?config(result, Config),
 
-    {ok, Args} = getopt:parse(rebar_prv_eunit:eunit_opts(S), ["--test=missing_module:func1"]),
+    {ok, Args} = eunit_parse(S, ["--test=missing_module:func1"]),
     State = rebar_state:command_parsed_args(S, Args),
 
     Error = {error, {rebar_prv_eunit, {eunit_test_errors, ["Module `missing_module' not found in project."]}}},
@@ -407,7 +429,7 @@ single_suite_arg(Config) ->
     Path = code:get_path(),
     code:add_paths([filename:join([AppDir, "_build", "test", "lib", "multi_app_bar", "ebin"])]),
 
-    {ok, Args} = getopt:parse(rebar_prv_eunit:eunit_opts(S), ["--suite=multi_app_bar"]),
+    {ok, Args} = eunit_parse(S, ["--suite=multi_app_bar"]),
     State = rebar_state:command_parsed_args(S, Args),
 
     {ok, [{module, multi_app_bar}]} = rebar_prv_eunit:prepare_tests(State),
@@ -424,7 +446,7 @@ multi_suite_arg(Config) ->
     code:add_paths([filename:join([AppDir, "_build", "test", "lib", "multi_app_bar", "ebin"])]),
     code:add_paths([filename:join([AppDir, "_build", "test", "lib", "multi_app_baz", "ebin"])]),
 
-    {ok, Args} = getopt:parse(rebar_prv_eunit:eunit_opts(S), ["--suite=multi_app_bar,multi_app_baz"]),
+    {ok, Args} = eunit_parse(S, ["--suite=multi_app_bar,multi_app_baz"]),
     State = rebar_state:command_parsed_args(S, Args),
 
     {ok, [{module, multi_app_bar}, {module, multi_app_baz}]} = rebar_prv_eunit:prepare_tests(State),
@@ -436,7 +458,7 @@ multi_suite_arg(Config) ->
 missing_suite_arg(Config) ->
     S = ?config(result, Config),
 
-    {ok, Args} = getopt:parse(rebar_prv_eunit:eunit_opts(S), ["--suite=missing_app"]),
+    {ok, Args} = eunit_parse(S, ["--suite=missing_app"]),
     State = rebar_state:command_parsed_args(S, Args),
 
     Error = {error, {rebar_prv_eunit, {eunit_test_errors, ["Module `missing_app' not found in project."]}}},
@@ -446,7 +468,7 @@ missing_suite_arg(Config) ->
 single_generator_arg(Config) ->
     S = ?config(result, Config),
 
-    {ok, Args} = getopt:parse(rebar_prv_eunit:eunit_opts(S), ["--generator=module_name:function_name"]),
+    {ok, Args} = eunit_parse(S, ["--generator=module_name:function_name"]),
     State = rebar_state:command_parsed_args(S, Args),
 
     {ok, [{generator, module_name, function_name}]} = rebar_prv_eunit:prepare_tests(State).
@@ -454,7 +476,7 @@ single_generator_arg(Config) ->
 multi_generator_arg(Config) ->
     S = ?config(result, Config),
 
-    {ok, Args} = getopt:parse(rebar_prv_eunit:eunit_opts(S), ["--generator=module1:func1+func2,module2:func1;func2"]),
+    {ok, Args} = eunit_parse(S, ["--generator=module1:func1+func2,module2:func1;func2"]),
     State = rebar_state:command_parsed_args(S, Args),
 
     Generators = [{generator, module1, func1},
@@ -467,7 +489,7 @@ multi_generator_arg(Config) ->
 missing_generator_arg(Config) ->
     S = ?config(result, Config),
 
-    {ok, Args} = getopt:parse(rebar_prv_eunit:eunit_opts(S), ["--generator=missing_module:func1"]),
+    {ok, Args} = eunit_parse(S, ["--generator=missing_module:func1"]),
     State = rebar_state:command_parsed_args(S, Args),
 
     Error = {error, {rebar_prv_eunit, {eunit_test_errors, ["Module `missing_module' not found in project."]}}},
@@ -479,7 +501,7 @@ single_file_arg(Config) ->
     AppDir = ?config(apps, Config),
 
     Path = filename:join([AppDir, "_build", "test", "lib", "multi_app_bar", "ebin", "multi_app_bar.beam"]),
-    {ok, Args} = getopt:parse(rebar_prv_eunit:eunit_opts(S), ["--file=" ++ Path]),
+    {ok, Args} = eunit_parse(S, ["--file=" ++ Path]),
     State = rebar_state:command_parsed_args(S, Args),
 
     {ok, [{file, Path}]} = rebar_prv_eunit:prepare_tests(State).
@@ -490,7 +512,7 @@ multi_file_arg(Config) ->
 
     BarPath = filename:join([AppDir, "_build", "test", "lib", "multi_app_bar", "ebin", "multi_app_bar.beam"]),
     BazPath = filename:join([AppDir, "_build", "test", "lib", "multi_app_baz", "ebin", "multi_app_baz.beam"]),
-    {ok, Args} = getopt:parse(rebar_prv_eunit:eunit_opts(S), ["--file=" ++ BarPath ++ "," ++ BazPath]),
+    {ok, Args} = eunit_parse(S, ["--file=" ++ BarPath ++ "," ++ BazPath]),
     State = rebar_state:command_parsed_args(S, Args),
 
     {ok, [{file, BarPath}, {file, BazPath}]} = rebar_prv_eunit:prepare_tests(State).
@@ -501,7 +523,7 @@ missing_file_arg(Config) ->
     AppDir = ?config(apps, Config),
 
     Path = filename:join([AppDir, "_build", "test", "lib", "missing_app", "ebin", "missing_app.beam"]),
-    {ok, Args} = getopt:parse(rebar_prv_eunit:eunit_opts(S), ["--file=" ++ Path]),
+    {ok, Args} = eunit_parse(S, ["--file=" ++ Path]),
     State = rebar_state:command_parsed_args(S, Args),
 
     Error = {error, {rebar_prv_eunit, {eunit_test_errors, ["File `" ++ Path ++"' not found."]}}},
@@ -513,7 +535,7 @@ single_dir_arg(Config) ->
     AppDir = ?config(apps, Config),
 
     Path = filename:join([AppDir, "_build", "test", "lib", "multi_app_bar", "ebin"]),
-    {ok, Args} = getopt:parse(rebar_prv_eunit:eunit_opts(S), ["--dir=" ++ Path]),
+    {ok, Args} = eunit_parse(S, ["--dir=" ++ Path]),
     State = rebar_state:command_parsed_args(S, Args),
 
     {ok, [{dir, Path}]} = rebar_prv_eunit:prepare_tests(State).
@@ -524,7 +546,7 @@ multi_dir_arg(Config) ->
 
     BarPath = filename:join([AppDir, "_build", "test", "lib", "multi_app_bar", "ebin"]),
     BazPath = filename:join([AppDir, "_build", "test", "lib", "multi_app_baz", "ebin"]),
-    {ok, Args} = getopt:parse(rebar_prv_eunit:eunit_opts(S), ["--dir=" ++ BarPath ++ "," ++ BazPath]),
+    {ok, Args} = eunit_parse(S, ["--dir=" ++ BarPath ++ "," ++ BazPath]),
     State = rebar_state:command_parsed_args(S, Args),
 
     {ok, [{dir, BarPath}, {dir, BazPath}]} = rebar_prv_eunit:prepare_tests(State).
@@ -535,7 +557,7 @@ missing_dir_arg(Config) ->
     AppDir = ?config(apps, Config),
 
     Path = filename:join([AppDir, "_build", "test", "lib", "missing_app", "ebin"]),
-    {ok, Args} = getopt:parse(rebar_prv_eunit:eunit_opts(S), ["--dir=" ++ Path]),
+    {ok, Args} = eunit_parse(S, ["--dir=" ++ Path]),
     State = rebar_state:command_parsed_args(S, Args),
 
     Error = {error, {rebar_prv_eunit, {eunit_test_errors, ["Directory `" ++ Path ++"' not found."]}}},
@@ -552,7 +574,7 @@ multiple_arg_composition(Config) ->
     FilePath = filename:join([AppDir, "_build", "test", "lib", "multi_app_bar", "ebin", "multi_app_bar.beam"]),
     DirPath = filename:join([AppDir, "_build", "test", "lib", "multi_app_bar", "ebin"]),
 
-    {ok, Args} = getopt:parse(rebar_prv_eunit:eunit_opts(S), ["--application=multi_app_bar",
+    {ok, Args} = eunit_parse(S, ["--application=multi_app_bar",
                                                               "--module=multi_app_bar",
                                                               "--suite=multi_app_bar",
                                                               "--file=" ++ FilePath,
@@ -578,7 +600,7 @@ multiple_arg_errors(Config) ->
     FilePath = filename:join([AppDir, "_build", "test", "lib", "missing_app", "ebin", "missing_app.beam"]),
     DirPath = filename:join([AppDir, "_build", "test", "lib", "missing_app", "ebin"]),
 
-    {ok, Args} = getopt:parse(rebar_prv_eunit:eunit_opts(S), ["--application=missing_app",
+    {ok, Args} = eunit_parse(S, ["--application=missing_app",
                                                               "--module=missing_app",
                                                               "--suite=missing_app",
                                                               "--file=" ++ FilePath,
@@ -698,3 +720,14 @@ syscfg_app_opts(Config) ->
                                              ["eunit" | Opts], return),
     ok.
 
+eunit_parse(State, Args) ->
+    Providers = rebar_state:providers(State),
+    Namespace = rebar_state:namespace(State),
+    CommandProvider = providers:get_provider(eunit, Providers, Namespace),
+    Cli = rebar_legacy_cli:to_command(CommandProvider),
+    case argparse:parse(Args, Cli) of
+        {ok, ParsedMap, _Path, _Command} ->
+            {ok, {maps:to_list(ParsedMap), []}};
+        {error, ParseError} ->
+            {error, argparse:format_error(ParseError)}
+    end.

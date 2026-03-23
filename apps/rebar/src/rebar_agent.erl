@@ -1,3 +1,25 @@
+%% %CopyrightBegin%
+%%
+%% SPDX-License-Identifier: Apache-2.0
+%%
+%% SPDX-FileCopyrightText: Copyright 2015-2026 Rebar3 and its contributors
+%%
+%% SPDX-FileCopyrightText: Copyright 2026 Dipl. Phys. Peer Stritzinger GmbH
+%%
+%% Licensed under the Apache License, Version 2.0 (the "License");
+%% you may not use this file except in compliance with the License.
+%% You may obtain a copy of the License at
+%%
+%%     http://www.apache.org/licenses/LICENSE-2.0
+%%
+%% Unless required by applicable law or agreed to in writing, software
+%% distributed under the License is distributed on an "AS IS" BASIS,
+%% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+%% See the License for the specific language governing permissions and
+%% limitations under the License.
+%%
+%% %CopyrightEnd%
+
 %%% @doc Runs a process that holds a rebar3 state and can be used
 %%% to statefully maintain loaded project state into a running VM.
 -module(rebar_agent).
@@ -35,7 +57,7 @@ do(Namespace, Command) when is_atom(Namespace), is_atom(Command) ->
 do(Namespace, Args) when is_atom(Namespace), is_list(Args) ->
     gen_server:call(?MODULE, {cmd, Namespace, do, Args}, infinity).
 
--spec do(atom(), atom(), string()) -> ok | {error, term()}.
+-spec do(atom(), atom(), [string()]) -> ok | {error, term()}.
 do(Namespace, Command, Args) when is_atom(Namespace), is_atom(Command), is_list(Args) ->
     gen_server:call(?MODULE, {cmd, Namespace, Command, Args}, infinity).
 
@@ -51,7 +73,7 @@ async_do(Namespace, Command) when is_atom(Namespace), is_atom(Command) ->
 async_do(Namespace, Args) when is_atom(Namespace), is_list(Args) ->
     gen_server:cast(?MODULE, {cmd, Namespace, do, Args}).
 
--spec async_do(atom(), atom(), string()) -> ok.
+-spec async_do(atom(), atom(), [string()]) -> ok.
 async_do(Namespace, Command, Args) when is_atom(Namespace), is_atom(Command), is_list(Args) ->
     gen_server:cast(?MODULE, {cmd, Namespace, Command, Args}).
 
@@ -132,14 +154,13 @@ terminate(_Reason, _State) ->
 %%%%%%%%%%%%%%%
 
 %% @private runs the actual command and maintains the state changes
--spec run(atom(), atom(), string(), rebar_state:t(), file:filename()) ->
+-spec run(atom(), atom(), [string()], rebar_state:t(), file:filename()) ->
     {ok, rebar_state:t()} | {{error, term()}, rebar_state:t()}.
-run(Namespace, Command, StrArgs, RState, Cwd) ->
+run(Namespace, Command, CmdArgs, RState, Cwd) ->
     try
         case rebar_dir:get_cwd() of
             Cwd ->
-                PArgs = getopt:tokenize(StrArgs),
-                Args = [atom_to_list(Namespace), atom_to_list(Command)] ++ PArgs,
+                Args = [atom_to_list(Namespace), atom_to_list(Command)] ++ CmdArgs,
                 CmdState0 = refresh_state(RState, Cwd),
                 CmdState1 = rebar_state:set(CmdState0, task, atom_to_list(Command)),
                 CmdState = rebar_state:set(CmdState1, caller, api),

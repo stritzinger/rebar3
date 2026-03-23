@@ -1,6 +1,28 @@
 %% -*- erlang-indent-level: 4;indent-tabs-mode: nil -*-
 %% ex: ts=4 sw=4 et
 
+%% %CopyrightBegin%
+%%
+%% SPDX-License-Identifier: Apache-2.0
+%%
+%% SPDX-FileCopyrightText: Copyright 2015-2026 Rebar3 and its contributors
+%%
+%% SPDX-FileCopyrightText: Copyright 2026 Dipl. Phys. Peer Stritzinger GmbH
+%%
+%% Licensed under the Apache License, Version 2.0 (the "License");
+%% you may not use this file except in compliance with the License.
+%% You may obtain a copy of the License at
+%%
+%%     http://www.apache.org/licenses/LICENSE-2.0
+%%
+%% Unless required by applicable law or agreed to in writing, software
+%% distributed under the License is distributed on an "AS IS" BASIS,
+%% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+%% See the License for the specific language governing permissions and
+%% limitations under the License.
+%%
+%% %CopyrightEnd%
+
 -module(rebar_prv_help).
 
 -behaviour(provider).
@@ -38,10 +60,8 @@ do(State) ->
         [] ->
             help(State),
             {ok, State};
-        [Name] -> % default namespace
-            task_help(default, list_to_atom(Name), State);
-        [Namespace, Name] ->
-            task_help(list_to_atom(Namespace), list_to_atom(Name), State);
+        HelpPath when is_list(HelpPath), length(HelpPath) =< 2 ->
+            command_help(HelpPath, State);
         _ ->
             {error, "Too many arguments given. " ++
                  "Usage: rebar3 help [<namespace>] <task>"}
@@ -55,28 +75,24 @@ format_error(Reason) ->
 %% print help/usage string
 %%
 help(State) ->
-    ?CONSOLE("Rebar3 is a tool for working with Erlang projects.~n", []),
-    OptSpecList = rebar3:global_option_spec_list(),
-    getopt:usage(OptSpecList, "rebar3", "", []),
-    ?CONSOLE("  Set the environment variable DEBUG=1 for detailed output.~n", []),
-    ?CONSOLE("Several tasks are available:~n", []),
+    io:format("~ts",
+              [argparse:help(
+                  rebar_cli:global_cli(rebar_state:providers(State)),
+                  #{progname => "rebar3"})]).
 
-    providers:help(rebar_state:providers(State)),
-
-    ?CONSOLE("~nRun 'rebar3 help <TASK>' for details.", []).
-
-task_help(Namespace, Name, State) ->
+command_help(Path, State) ->
     Providers = rebar_state:providers(State),
-    case providers:get_provider(Name, Providers, Namespace) of
-        not_found ->
-            case providers:get_providers_by_namespace(Name, Providers) of
-                [] ->
-                    {error, io_lib:format("Unknown task ~p", [Name])};
-                NSProviders ->
-                    providers:help(NSProviders),
-                    {ok, State}
-            end;
-        Provider ->
-            providers:help(Provider),
+    try argparse:help(rebar_cli:global_cli(Providers),
+                      #{progname => "rebar3", command => Path}) of
+        HelpText ->
+            io:format("~ts", [HelpText]),
             {ok, State}
+    catch
+        _:_ ->
+            case rebar_legacy_cli:provider_help(Path, Providers) of
+                ok ->
+                    {ok, State};
+                {error, _} = Error ->
+                    Error
+            end
     end.
