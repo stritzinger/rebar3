@@ -61,12 +61,13 @@ cli() ->
         #{name => template,
           type => string,
           required => true,
-          help => "Template name."},
+          help => "Template name. "
+                  "See available templates with: `rebar3 new help`"},
         #{name => vars,
           type => string,
           nargs => list,
           required => false,
-          help => "Template options."}
+          help => "Template options. Valid options: [var=foo,...]"}
     ]}.
 
 -spec do(rebar_state:t()) -> {ok, rebar_state:t()} | {error, string()}.
