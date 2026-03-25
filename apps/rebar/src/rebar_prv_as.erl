@@ -51,13 +51,15 @@ init(State) ->
 
 -spec cli() -> argparse:command().
 cli() ->
-    #{help => "Higher order provider for running multiple tasks in a sequence as a certain profiles.",
+    % This is only used for the help text not for parsing.
+    % Parsing is done manually below not via argparse.
+    #{help => "Higher order provider for running multiple tasks in a sequence as certain profiles.",
       arguments => [
-        #{name => profile,
+        #{name => profiles,
           type => string,
           required => true,
           help => "Profiles to run as."},
-        #{name => task,
+        #{name => tasks,
           type => string,
           nargs => nonempty_list,
           required => true,
