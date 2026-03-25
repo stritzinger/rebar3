@@ -53,6 +53,9 @@ cli() ->
 
 -spec do(rebar_state:t()) -> {ok, rebar_state:t()} | {error, string()}.
 do(State) ->
+    ?CONSOLE("Dependencies not matching the config file are followed by "
+             "an asterisk (*).", []),
+    ?CONSOLE("", []),
     Profiles = rebar_state:current_profiles(State),
     [display(State, Profile) || Profile <- Profiles],
     {ok, State}.
