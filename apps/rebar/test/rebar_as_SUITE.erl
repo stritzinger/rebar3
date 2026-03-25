@@ -192,11 +192,20 @@ clean_as_profile(Config) ->
 
     rebar_test_utils:run_and_check(Config,
                                    [],
-                                   ["as", "foo", "compile"],
+                                   ["as", "foo,bar", "compile"],
                                    {ok, [{app, Name, valid}]}),
 
     rebar_test_utils:run_and_check(Config,
                                    [],
-                                   ["clean", "-a", "-p", "foo"],
+                                   ["clean", "-a", "-p", "foo,bar"],
+                                   {ok, [{app, Name, invalid}]}),
+    rebar_test_utils:run_and_check(Config,
+                                   [],
+                                   ["as", "foo,bar", "compile"],
+                                   {ok, [{app, Name, valid}]}),
+
+    rebar_test_utils:run_and_check(Config,
+                                   [],
+                                   ["clean", "-a", "-p", "foo", "-p", "bar"],
                                    {ok, [{app, Name, invalid}]}),
     ok.

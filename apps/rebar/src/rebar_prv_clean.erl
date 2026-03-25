@@ -66,6 +66,7 @@ cli() ->
           short => $p,
           long => "-profile",
           type => string,
+          action => append,
           help => "Clean under profile. Equivalent to `rebar3 as <profile> clean`"}
     ]}.
 
@@ -140,7 +141,7 @@ clean_extras(State) ->
 handle_args(State) ->
     {Args, _} = rebar_state:command_parsed_args(State),
     All = proplists:get_value(all, Args, false),
-    Profiles = proplists:get_all_values(profile, Args),
+    Profiles = proplists:get_value(profile, Args, []),
     DepsRaw = proplists:get_value(apps, Args),
     Deps = parse_deps(DepsRaw),
     {All, Profiles, Deps}.
