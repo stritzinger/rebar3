@@ -49,13 +49,7 @@ init(State) ->
 -spec cli() -> argparse:command().
 cli() ->
     #{help => "Locks dependencies.",
-      arguments => [
-        #{name => package,
-          type => string,
-          nargs => list,
-          required => false,
-          help => "Legacy positional args (ignored)."}
-    ]}.
+      arguments => []}.
 
 -spec do(rebar_state:t()) -> {ok, rebar_state:t()} | {error, string()}.
 do(State) ->
