@@ -619,7 +619,7 @@ stable_lock(Config) ->
                                                   [{deps, ?config(next_top_deps, Config)}]),
     {ok, NewRebarConfig} = file:consult(NewRebarConf),
     rebar_test_utils:run_and_check(
-        Config, NewRebarConfig, ["lock", App], Expectation
+        Config, NewRebarConfig, ["lock"], Expectation
     ).
 
 fwd_lock(Config) ->
@@ -639,7 +639,7 @@ fwd_lock(Config) ->
                                                   [{deps, ?config(next_top_deps, Config)}]),
     {ok, NewRebarConfig} = file:consult(NewRebarConf),
     rebar_test_utils:run_and_check(
-        Config, NewRebarConfig, ["lock", App], Expectation
+        Config, NewRebarConfig, ["lock"], Expectation
     ).
 
 compile_upgrade_parity(Config) ->
