@@ -1,3 +1,6 @@
+%% -*- erlang-indent-level: 4;indent-tabs-mode: nil -*-
+%% ex: ts=4 sw=4 et
+
 %% %CopyrightBegin%
 %%
 %% SPDX-License-Identifier: Apache-2.0
@@ -19,9 +22,6 @@
 %% limitations under the License.
 %%
 %% %CopyrightEnd%
-
-%% -*- erlang-indent-level: 4;indent-tabs-mode: nil -*-
-%% ex: ts=4 sw=4 et
 
 -module(rebar_prv_path).
 

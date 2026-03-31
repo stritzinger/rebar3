@@ -1,3 +1,6 @@
+%% -*- erlang-indent-level: 4;indent-tabs-mode: nil -*-
+%% ex: ts=4 sw=4 et
+
 %% %CopyrightBegin%
 %%
 %% SPDX-License-Identifier: Apache-2.0
@@ -20,8 +23,6 @@
 %%
 %% %CopyrightEnd%
 
-%% -*- erlang-indent-level: 4;indent-tabs-mode: nil -*-
-%% ex: ts=4 sw=4 et
 %% -------------------------------------------------------------------
 %%
 %% rebar: Erlang Build Tools
