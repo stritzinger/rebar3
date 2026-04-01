@@ -48,6 +48,22 @@
 -define(DIAGNOSTIC_LEVEL, 4).
 -define(DFLT_INTENSITY, high).
 
+-define(REBAR_LOGGER, rebar).
+-define(REBAR_LOG_FORMATER, rebar_log_formater).
+
+-define(MFA, {?MODULE, ?FUNCTION_NAME, ?FUNCTION_ARITY}).
+
+-include_lib("kernel/include/logger.hrl").
+%% ===================================================================
+%% Types
+%% ===================================================================
+
+-type level() :: ?ERROR_LEVEL
+                 | ?WARN_LEVEL
+                 | ?INFO_LEVEL
+                 | ?DEBUG_LEVEL
+                 | ?DIAGNOSTIC_LEVEL.
+
 %% ===================================================================
 %% Public API
 %% ===================================================================
@@ -74,28 +90,39 @@ intensity() ->
     end.
 
 init(Caller, Verbosity) ->
-    Level = case valid_level(Verbosity) of
-                ?ERROR_LEVEL -> error;
-                ?WARN_LEVEL  -> warn;
-                ?INFO_LEVEL  -> info;
-                ?DEBUG_LEVEL -> debug;
-                ?DIAGNOSTIC_LEVEL -> debug
-            end,
+    OldLevel = level_to_atom(valid_level(Verbosity)),
+    Level = old_level_compat_mapping(OldLevel),
     Intensity = intensity(),
+    Config = #{
+        formatter => {?REBAR_LOG_FORMATER, #{
+            intensity => Intensity
+        }},
+        level => Level
+    },
+    case logger:add_handler(?REBAR_LOGGER, rebar_log_h, Config) of
+        {error, {already_exist, ?REBAR_LOGGER}} ->
+            logger:update_handler_config(?REBAR_LOGGER, Config);
+        ok ->
+            ok
+    end,
+    Filter = {fun logger_filters:domain/2, {stop, sub, [rebar]}},
+    logger:add_handler_filter(default, rebar_filter, Filter),
     application:set_env(rebar, log_caller, Caller),
-    Log = ec_cmd_log:new(Level, Caller, Intensity),
-    set_level(valid_level(Verbosity)),
-    application:set_env(rebar, log, Log).
+    set_level(valid_level(Verbosity)).
 
+-spec set_level(level()) -> ok | {error, term()}.
 set_level(Level) ->
-    ok = application:set_env(rebar, log_level, Level).
+    LevelAtom = old_level_compat_mapping(level_to_atom(valid_level(Level))),
+    logger:update_handler_config(?REBAR_LOGGER, level, LevelAtom),
+    logger:set_module_level(?MODULE, LevelAtom).
 
+-spec get_level() -> level().
 get_level() ->
-    case application:get_env(rebar, log_level) of
-        undefined ->
-            default_level();
-        {ok, Level} ->
-            Level
+    case logger:get_handler_config(?REBAR_LOGGER) of
+        {ok, #{level := Level}} ->
+            atom_to_level(new_level_compat_mapping(Level));
+        {error, _} ->
+            default_level()
     end.
 
 log(diagnostic, Str, Args) ->
@@ -106,22 +133,12 @@ log(diagnostic, Str, Args) ->
     %% The underlying library only supports debug at its lowest
     %% level, so we filter on our end of the lib.
     case get_level() of
-        ?DIAGNOSTIC_LEVEL -> log(debug, Str, Args);
+        ?DIAGNOSTIC_LEVEL -> log(debug, "[DIAG]" ++ Str, Args);
         _ -> ok
     end;
-log(Level = error, Str, Args) ->
-    case application:get_env(rebar, log) of
-        {ok, LogState} ->
-            NewStr = lists:flatten(cf:format("~!^~ts~n", [Str])),
-            ec_cmd_log:Level( LogState, NewStr, Args);
-        undefined -> % fallback
-            io:format(standard_error, Str++"~n", Args)
-    end;
 log(Level, Str, Args) ->
-    case application:get_env(rebar, log) of
-        {ok, LogState} -> ec_cmd_log:Level(LogState, Str++"~n", Args);
-        undefined -> io:format(Str++"~n", Args)
-    end.
+    CompatLevel = old_level_compat_mapping(Level),
+    logger:CompatLevel(Str, Args, #{domain => [rebar], mfa => ?MFA}).
 
 crashdump(Str, Args) ->
     crashdump("rebar3.crashdump", Str, Args).
@@ -153,6 +170,15 @@ atom_to_level(Level) ->
         diagnostic -> ?DIAGNOSTIC_LEVEL
     end.
 
+level_to_atom(Level) ->
+    case Level of
+        ?ERROR_LEVEL -> error;
+        ?WARN_LEVEL  -> warn;
+        ?INFO_LEVEL  -> notice;
+        ?DEBUG_LEVEL -> debug;
+        ?DIAGNOSTIC_LEVEL -> debug % TODO: Handle Diagnostic mode later
+    end.
+
 %% ===================================================================
 %% Internal functions
 %% ===================================================================
@@ -174,3 +200,11 @@ take_bytes(N, [H|T]) when is_integer(H) ->
 take_bytes(N, [H|T]) when is_binary(H); is_list(H) ->
     Res = take_bytes(N, H),
     [Res | take_bytes(N-byte_size(Res), T)].
+
+old_level_compat_mapping(warn) -> warning;
+old_level_compat_mapping(info) -> notice;
+old_level_compat_mapping(Level) -> Level.
+
+new_level_compat_mapping(warning) -> warn;
+new_level_compat_mapping(notice) -> info;
+new_level_compat_mapping(Level) -> Level.
