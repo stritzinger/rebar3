@@ -101,7 +101,7 @@ init_per_testcase(bad_to_good=Name, Config0) ->
     Config = mock_config(Name, Config1),
     Source = filename:join(?config(data_dir, Config), <<"badpkg-1.0.0.tar">>),
     Dest = filename:join(?config(cache_dir, Config), <<"goodpkg-1.0.0.tar">>),
-    ec_file:copy(Source, Dest),
+    rebar_file_utils:copy(Source, Dest),
     Config;
 init_per_testcase(good_disconnect=Name, Config0) ->
     Pkg = {<<"goodpkg">>, <<"1.0.0">>},
@@ -393,4 +393,4 @@ copy_to_cache({Pkg,Vsn}, Config) ->
     Name = <<Pkg/binary, "-", Vsn/binary, ".tar">>,
     Source = filename:join(?config(data_dir, Config), Name),
     Dest = filename:join(?config(cache_dir, Config), Name),
-    ec_file:copy(Source, Dest).
+    rebar_file_utils:copy(Source, Dest).

@@ -2,9 +2,11 @@
 %% ex: ts=4 sw=4 et
 %% %CopyrightBegin%
 %%
-%% SPDX-License-Identifier: MIT
+%% SPDX-Licence-Identifier: MIT
 %%
 %% SPDX-FileCopyrightText: Copyright 2009 Dave Smith (dizzyd@dizzyd.com)
+%%
+%% SPDX-FileCopyrightText: Copyright 2015-2026 Rebar3 and its contributors
 %%
 %% SPDX-FileCopyrightText: Copyright 2026 Dipl. Phys. Peer Stritzinger GmbH
 %%
@@ -241,7 +243,7 @@ execute_template([{message, _} | Terms], Files, Template, Vars, Force) ->
 %% Create a directory
 execute_template([{dir, Path} | Terms], Files, Template, Vars, Force) ->
     ?DEBUG("Creating directory ~p", [Path]),
-    case ec_file:mkdir_p(expand_path(Path, Vars)) of
+    case filelib:ensure_path(expand_path(Path, Vars)) of
         ok ->
             ok;
         {error, Reason} ->

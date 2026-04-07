@@ -101,8 +101,8 @@ do(State, LibDirs) ->
 define_root_app(Apps, State) ->
     RootDir = rebar_dir:root_dir(State),
     case ec_lists:find(fun(X) ->
-                               ec_file:real_dir_path(rebar_app_info:dir(X)) =:=
-                                   ec_file:real_dir_path(RootDir)
+                               rebar_file_utils:real_dir_path(rebar_app_info:dir(X)) =:=
+                               rebar_file_utils:real_dir_path(RootDir)
                        end, Apps) of
         {ok, App} ->
             rebar_app_info:name(App);
@@ -199,7 +199,7 @@ parse_profile_deps(Profile, Name, Deps, Opts, State) ->
 maybe_reset_hooks_plugins(AppInfo, State) ->
     Dir = rebar_app_info:dir(AppInfo),
     CurrentProfiles = rebar_state:current_profiles(State),
-    case ec_file:real_dir_path(rebar_dir:root_dir(State)) of
+    case rebar_file_utils:real_dir_path(rebar_dir:root_dir(State)) of
         Dir ->
             Opts = reset_hooks(rebar_state:opts(State), CurrentProfiles),
             State1 = rebar_state:opts(State, Opts),
@@ -351,7 +351,7 @@ find_app(AppInfo, AppDir, Validate, State) ->
                [file:filename_all()], valid | invalid | all, rebar_state:t()) ->
     {true, rebar_app_info:t()} | false.
 find_app(AppInfo, AppDir, SrcDirs, Validate, State) ->
-    AppInfo1 = case ec_file:real_dir_path(rebar_dir:root_dir(State)) of
+    AppInfo1 = case rebar_file_utils:real_dir_path(rebar_dir:root_dir(State)) of
                    AppDir ->
                        Opts = rebar_state:opts(State),
                        rebar_app_info:default(rebar_app_info:opts(AppInfo, Opts), Opts);
