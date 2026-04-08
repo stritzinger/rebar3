@@ -1,3 +1,25 @@
+%% %CopyrightBegin%
+%%
+%% SPDX-License-Identifier: Apache-2.0
+%%
+%% SPDX-FileCopyrightText: Copyright 2014-2021 Tristan Sloughter and Contributors
+%%
+%% SPDX-FileCopyrightText: Copyright 2026 Dipl. Phys. Peer Stritzinger GmbH
+%%
+%% Licensed under the Apache License, Version 2.0 (the "License");
+%% you may not use this file except in compliance with the License.
+%% You may obtain a copy of the License at
+%%
+%%     http://www.apache.org/licenses/LICENSE-2.0
+%%
+%% Unless required by applicable law or agreed to in writing, software
+%% distributed under the License is distributed on an "AS IS" BASIS,
+%% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+%% See the License for the specific language governing permissions and
+%% limitations under the License.
+%%
+%% %CopyrightEnd%
+
 -module(providers).
 
 %% API
@@ -19,9 +41,6 @@
          get_target_providers/3,
          hooks/1,
          hooks/2,
-         help/1,
-         help/2,
-         help/3,
          format_error/1,
          format_error/2,
          format/1]).
@@ -121,55 +140,6 @@ hooks(Provider) ->
 -spec hooks(t(), {[t()], [t()]}) -> t().
 hooks(Provider, Hooks) ->
     Provider#provider{hooks=Hooks}.
-
-help(Providers) when is_list(Providers) ->
-    Dict = lists:foldl(
-        fun(P, Dict) when P#provider.bare =:= true ->
-            dict:append(P#provider.namespace,
-                        {ec_cnv:to_list(P#provider.name),
-                         P#provider.short_desc},
-                        Dict)
-        ;  (_, Dict) -> Dict
-        end,
-        dict:new(),
-        Providers),
-    Namespaces = [default |
-                 lists:usort([NS || #provider{namespace=NS} <- Providers,
-                                    NS =/= default])],
-    namespace_help(Dict, Namespaces);
-help(#provider{opts=Opts
-              ,desc=Desc
-              ,namespace=Namespace
-              ,name=Name}) ->
-    case Desc of
-        Desc when length(Desc) > 0 ->
-            io:format(Desc++"~n");
-        _ ->
-            ok
-    end,
-
-    StrNS = case Namespace of
-        default -> "";
-        _ -> atom_to_list(Namespace) ++ " "
-    end,
-
-    case Opts of
-        [] ->
-            io:format("Usage: rebar3 ~ts~ts~n", [StrNS, Name]);
-        _ ->
-            getopt:usage(Opts, "rebar3 " ++ StrNS ++ atom_to_list(Name), "", [])
-    end.
-
-help(Name, Providers) when is_list(Name) ->
-    help(list_to_atom(Name), Providers, default);
-help(Name, Providers) when is_atom(Name) ->
-    help(Name, Providers, default).
-
-help(Name, Providers, Namespace) when is_list(Name) ->
-    help(list_to_atom(Name), Providers, Namespace);
-help(Name, Providers, Namespace) when is_atom(Name) ->
-    Provider = providers:get_provider(Name, Providers, Namespace),
-    help(Provider).
 
 format_error({provider_not_found, Namespace, ProviderName}) ->
     io_lib:format("Unable to resolve provider ~ts in namespace ~ts", [ProviderName, Namespace]).
@@ -296,32 +266,3 @@ reorder_providers(OProviderList) ->
         {error, _} ->
             {error, "There was a cycle in the provider list. Unable to complete build!"}
     end.
-
-%% @doc Extract help values from a list on a per-namespace order
-namespace_help(_, []) -> ok;
-namespace_help(Dict, [NS|Namespaces]) ->
-    Providers = case dict:find(NS, Dict) of
-        {ok, Found} -> Found;
-        error -> []
-    end,
-    Help = [case NS of
-                default -> {Name, Desc};
-                _ -> {"  "++Name, Desc}
-            end || {Name, Desc} <- lists:sort(Providers)],
-    if Help =:= [] ->
-            no_public_providers;
-       NS =/= default ->
-            io:format("~n~ts <task>:~n", [NS]),
-            display_help(Help);
-       NS =:= default ->
-            display_help(Help)
-    end,
-    namespace_help(Dict, Namespaces).
-
-display_help(Help) ->
-    Longest = lists:max([length(X) || {X, _} <- Help]),
-    lists:foreach(fun({Name, ShortDesc}) ->
-                Length = length(Name),
-                Spacing = lists:duplicate(Longest - Length + 8, " "),
-                io:format("~ts~ts~ts~n", [Name, Spacing, ShortDesc])
-        end, Help).
