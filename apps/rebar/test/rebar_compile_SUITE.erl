@@ -1769,8 +1769,20 @@ clean_specific(Config) ->
         {ok, [{app, Name}, {app, DepName}, {app, PkgName}]}
     ),
 
-    %% Clean all
+    %% Clean specific comma separated args
     rebar_test_utils:run_and_check(Config, [], ["clean", "--apps="++DepName++","++Name],
+                                   {ok, [{app, Name, invalid},
+                                         {app, DepName, invalid},
+                                         {app, PkgName, valid}]}),
+
+    %% Build things
+    rebar_test_utils:run_and_check(
+        Config, RConf, ["compile"],
+        {ok, [{app, Name}, {app, DepName}, {app, PkgName}]}
+    ),
+
+    %% Clean specific space separated args
+    rebar_test_utils:run_and_check(Config, [], ["clean", "--apps", DepName, Name],
                                    {ok, [{app, Name, invalid},
                                          {app, DepName, invalid},
                                          {app, PkgName, valid}]}).

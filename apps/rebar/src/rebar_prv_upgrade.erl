@@ -66,7 +66,10 @@ cli() ->
           help => "Upgrade all dependencies."},
         #{name => package,
           type => string,
+          nargs => list,
           required => false,
+          action => append,
+          default => [],
           help => "List of packages to upgrade."}
     ]}.
 
@@ -110,10 +113,9 @@ do_(State) ->
     Deps = [Dep || Dep <- TopDeps ++ ProfileDeps, % TopDeps > ProfileDeps
                    is_atom(Dep) orelse is_atom(element(1, Dep))],
     Names = case handle_args(State) of
-        {false, undefined} -> throw(?PRV_ERROR(no_arg));
+        {false, []} -> throw(?PRV_ERROR(no_arg));
         {true, _} -> [Name || {Name, _, 0} <- Locks];
-        {false, Packages} -> Bin = rebar_utils:to_binary(Packages),
-                             lists:usort(re:split(Bin, <<" *, *">>, [trim, unicode]))
+        {false, Packages} -> rebar_utils:split_comma_separated_list(Packages)
     end,
     DepsDict = deps_dict(rebar_state:all_deps(State)),
     AltDeps = find_non_default_deps(Deps, State),

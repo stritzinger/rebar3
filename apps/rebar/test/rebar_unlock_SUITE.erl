@@ -3,7 +3,7 @@
 -include_lib("eunit/include/eunit.hrl").
 -compile(export_all).
 
-all() -> [pkgunlock, unlock, unlock_all, unlock_no_args].
+all() -> [pkgunlock, unlock, unlock_space_args, unlock_all, unlock_no_args].
 
 init_per_testcase(pkgunlock, Config0) ->
     Config = rebar_test_utils:init_rebar_state(Config0, "pkgunlock"),
@@ -50,6 +50,12 @@ unlock(Config) ->
     ?assertEqual(Locks -- ["uuid","gproc","itc"], read_locks(Config)),
     rebar_test_utils:run_and_check(Config, [], ["unlock", rebar_string:join(Locks,",")], {ok, []}),
     ?assertEqual({error, enoent}, read_locks(Config)),
+    ok.
+
+unlock_space_args(Config) ->
+    Locks = read_locks(Config),
+    rebar_test_utils:run_and_check(Config, [], ["unlock", "gproc", "itc"], {ok, []}),
+    ?assertEqual(Locks -- ["gproc","itc"], read_locks(Config)),
     ok.
 
 unlock_all(Config) ->

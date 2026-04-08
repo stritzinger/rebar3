@@ -56,6 +56,7 @@
          get_arch/0,
          wordsize/0,
          deps_to_binary/1,
+         split_comma_separated_list/1,
          to_binary/1,
          to_list/1,
          to_atom/1,
@@ -254,6 +255,14 @@ deps_to_binary([{Name, Source} | T]) ->
     [{to_binary(Name), Source} | deps_to_binary(T)];
 deps_to_binary([Name | T]) ->
     [to_binary(Name) | deps_to_binary(T)].
+
+% Splits [["Arg1", "Arg2"]] as well as [["Arg1,Arg2"]] to ["Arg1", "Arg2"]
+split_comma_separated_list(Names) when is_list(Names) ->
+    lists:usort(
+      lists:foldl(
+        fun(Name, Acc) ->
+                re:split(to_binary(Name), <<" *, *">>, [trim, unicode]) ++ Acc
+        end, [], lists:append(Names))).
 
 to_binary(A) when is_atom(A) -> atom_to_binary(A, unicode);
 to_binary(Str) -> unicode:characters_to_binary(Str).

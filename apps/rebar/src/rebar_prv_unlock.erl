@@ -61,8 +61,10 @@ cli() ->
           help => "Unlock all dependencies and remove the lock file."},
         #{name => package,
           type => string,
+          nargs => list,
           required => false,
-          default => "",
+          action => append,
+          default => [],
           help => "List of packages to unlock."}
     ]}.
 
@@ -118,11 +120,5 @@ handle_unlocks(State, Locks, LockFile) ->
 handle_args(State) -> 
     {Args, _} = rebar_state:command_parsed_args(State),
     All = proplists:get_value(all, Args, false),
-    Names = parse_names(rebar_utils:to_binary(proplists:get_value(package, Args, <<"">>))),
+    Names = rebar_utils:split_comma_separated_list(proplists:get_value(package, Args, [])),
     {All, Names}.
-
-parse_names(Bin) ->
-    case lists:usort(re:split(Bin, <<" *, *">>, [trim, unicode])) of
-        [<<"">>] -> []; % nothing submitted
-        Other -> Other
-    end.

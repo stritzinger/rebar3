@@ -60,7 +60,9 @@ cli() ->
           help => "Clean all apps include deps"},
         #{name => apps,
           long => "-apps",
-          type => string,
+          nargs => list,
+          action => append,
+          default => [],
           help => "Clean a specific list of apps or dependencies"},
         #{name => profile,
           short => $p,
@@ -143,16 +145,9 @@ handle_args(State) ->
     {Args, _} = rebar_state:command_parsed_args(State),
     All = proplists:get_value(all, Args, false),
     Profiles = proplists:get_value(profile, Args, []),
-    DepsRaw = proplists:get_value(apps, Args),
-    Deps = parse_deps(DepsRaw),
+    DepsRaw = proplists:get_value(apps, Args, []),
+    Deps = rebar_utils:split_comma_separated_list(DepsRaw),
     {All, Profiles, Deps}.
-
-parse_deps(undefined) -> [];
-parse_deps(Bin) ->
-    case lists:usort(re:split(Bin, <<" *, *">>, [trim, unicode])) of
-        [<<"">>] -> []; % nothing submitted
-        Other -> Other
-    end.
 
 filter_name(AppInfo, Names) ->
     Name = rebar_app_info:name(AppInfo),
