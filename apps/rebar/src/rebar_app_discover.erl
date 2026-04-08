@@ -100,7 +100,7 @@ do(State, LibDirs) ->
     root | binary().
 define_root_app(Apps, State) ->
     RootDir = rebar_dir:root_dir(State),
-    case ec_lists:find(fun(X) ->
+    case lists:search(fun(X) ->
                                rebar_file_utils:real_dir_path(rebar_app_info:dir(X)) =:=
                                rebar_file_utils:real_dir_path(RootDir)
                        end, Apps) of
