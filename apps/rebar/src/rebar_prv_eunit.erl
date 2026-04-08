@@ -64,7 +64,8 @@ cli() ->
         #{name => app, long => "-app", type => string, help => help(app)},
         #{name => application, long => "-application", type => string, help => help(app)},
         #{name => cover, short => $c, long => "-cover", type => boolean, help => help(cover)},
-        #{name => cover_export_name, long => "-cover_export_name", type => string, help => help(cover_export_name)},
+        #{name => cover_export_name, long => "-cover_export_name", type => string,
+          default => ?PROVIDER, help => help(cover_export_name)},
         #{name => profile, short => $p, long => "-profile", type => boolean, help => help(profile)},
         #{name => dir, short => $d, long => "-dir", type => string, help => help(dir)},
         #{name => file, short => $f, long => "-file", type => string, help => help(file)},
@@ -75,7 +76,8 @@ cli() ->
         #{name => verbose, long => "-verbose", type => boolean, help => help(verbose)},
         #{name => name, long => "-name", type => atom, help => help(name)},
         #{name => sname, long => "-sname", type => atom, help => help(sname)},
-        #{name => sys_config, long => "-sys_config", type => string, help => help(sys_config)},
+        #{name => sys_config, long => "-sys_config", type => string,
+          default => "", help => help(sys_config)},
         #{name => setcookie, long => "-setcookie", type => atom, help => help(setcookie)}
     ]}.
 

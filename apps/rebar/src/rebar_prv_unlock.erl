@@ -62,6 +62,7 @@ cli() ->
         #{name => package,
           type => string,
           required => false,
+          default => "",
           help => "List of packages to unlock."}
     ]}.
 

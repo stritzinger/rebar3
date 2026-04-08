@@ -78,7 +78,7 @@ cli() ->
           short => $f,
           long => "-format",
           type => atom,
-          default => json,
+          default => ?DEFAULT_FORMAT,
           help => "Format for the manifest. "
                   "Supported formats are: erlang, eetf (Erlang External Binary Format), json"},
         #{name => to,

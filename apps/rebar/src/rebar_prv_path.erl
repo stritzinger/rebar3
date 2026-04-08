@@ -60,7 +60,8 @@ cli() ->
         #{name => ebin, long => "-ebin", type => boolean, help => help(ebin)},
         #{name => lib, long => "-lib", type => boolean, help => help(lib)},
         #{name => priv, long => "-priv", type => boolean, help => help(priv)},
-        #{name => separator, short => $s, long => "-separator", type => string, help => help(separator)},
+        #{name => separator, short => $s, long => "-separator", type => string,
+          default => " ", help => help(separator)},
         #{name => src, long => "-src", type => boolean, help => help(src)},
         #{name => rel, long => "-rel", type => boolean, help => help(rel)}
     ]}.

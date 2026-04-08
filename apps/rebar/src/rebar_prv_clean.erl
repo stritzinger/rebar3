@@ -67,6 +67,7 @@ cli() ->
           long => "-profile",
           type => string,
           action => append,
+          default => [],
           help => "Clean under profile. Equivalent to `rebar3 as <profile> clean`"}
     ]}.
 

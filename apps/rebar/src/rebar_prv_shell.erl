@@ -101,13 +101,6 @@ cli() ->
         #{name => env_file, long => "-env-file", type => string,
           help => "Path to file of os environment variables to setup "
                   "before expanding vars in config files."},
-        #{name => user_drv_args, long => "-user_drv_args", type => string,
-          help => "For versions of Erlang prior to 26, this option "
-                  "can be used to pass arguments to the user_drv start "
-                  "function for creating custom shells. Starting "
-                  "with Erlang 26, the arguments defined with this "
-                  "option are applied to the shell start_interactive "
-                  "function."},
         #{name => eval, long => "-eval", type => string,
           help => "Erlang term(s) to execute after the apps have been "
                   "started, but before the shell is presented to the "

@@ -57,19 +57,23 @@ init(State) ->
 
 -spec cli() -> argparse:command().
 cli() ->
-    Opts = [#{name => update_plt, short => $u, long => "-update-plt", type => boolean,
+    Opts = [#{name => update_plt, short => $u, long => "-update-plt",
+              type => boolean, default => true,
               help => "Enable updating the PLT. Default: true"},
-            #{name => succ_typings, short => $s, long => "-succ-typings", type => boolean,
+            #{name => succ_typings, short => $s, long => "-succ-typings",
+              type => boolean, default => true,
               help => "Enable success typing analysis. Default: true"},
             #{name => base_plt_location, long => "-base-plt-location", type => string,
               help => "The location of base PLT file, defaults to $HOME/.cache/rebar3"},
             #{name => plt_location, long => "-plt-location", type => string,
               help => "The location of the PLT file, defaults to the profile's base directory"},
             #{name => plt_prefix, long => "-plt-prefix", type => string,
+              % no default here, because that would overwrite configurations
               help => "The prefix to the PLT file, defaults to \"rebar3\""},
             #{name => app, short => $a, long => "-app", type => string,
               help => "Perform success typing analysis of a single application"},
             #{name => base_plt_prefix, long => "-base-plt-prefix", type => string,
+              % no default here, because that would overwrite configurations
               help => "The prefix to the base PLT file, defaults to \"rebar3\""},
             #{name => statistics, long => "-statistics", type => boolean,
               help => "Print information about the progress of execution. Default: false"}],

@@ -67,6 +67,7 @@ cli() ->
           short => $s,
           long => "-separator",
           type => string,
+          default => " ",
           help => "In case of multiple return paths, the separator character "
                   "to use to join them."},
         #{name => outdir,

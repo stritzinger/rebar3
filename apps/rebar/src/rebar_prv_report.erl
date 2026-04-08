@@ -63,7 +63,8 @@ cli() ->
 do(State) ->
     %% Show command
     Task = rebar_state:command_args(State),
-    Command = parse_task(Task),
+    {Args, _} = rebar_state:command_parsed_args(State),
+    Command = proplists:get_value(task, Args),
     %% Show command version (if a plugin?)
     %% ...
     %% Show app versions (including rebar3)
@@ -124,6 +125,3 @@ format_error(Reason) ->
 time_to_string({{Y,M,D},{H,Min,S}}) ->
     lists:flatten(io_lib:format("~4..0w-~2..0w-~2..0wT~2..0w:~2..0w:~2..0w+00:00",
                   [Y,M,D,H,Min,S])).
-
-parse_task(Str) ->
-    hd(re:split(Str, " ", [unicode])).

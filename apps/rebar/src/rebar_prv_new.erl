@@ -67,6 +67,8 @@ cli() ->
           type => string,
           nargs => list,
           required => false,
+          action => append,
+          default => [],
           help => "Template options. Valid options: [var=foo,...]"}
     ]}.
 
@@ -74,7 +76,7 @@ cli() ->
 do(State) ->
     {Args, _} = rebar_state:command_parsed_args(State),
     TemplateName = proplists:get_value(template, Args),
-    Opts = proplists:get_value(vars, Args, []),
+    Opts = lists:append(proplists:get_value(vars, Args, [])),
     case {TemplateName, Opts} of
         {"help", []} ->
             ?CONSOLE("Call `rebar3 new help <template>` for a detailed description~n", []),

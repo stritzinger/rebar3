@@ -74,7 +74,8 @@ cli() ->
         #{name => logopts, long => "-logopts", type => string, help => help(logopts)},
         #{name => verbosity, long => "-verbosity", type => integer, help => help(verbosity)},
         #{name => cover, short => $c, long => "-cover", type => boolean, help => help(cover)},
-        #{name => cover_export_name, long => "-cover_export_name", type => string, help => help(cover_export_name)},
+        #{name => cover_export_name, long => "-cover_export_name", type => string,
+          default => ?PROVIDER, help => help(cover_export_name)},
         #{name => repeat, long => "-repeat", type => integer, help => help(repeat)},
         #{name => duration, long => "-duration", type => string, help => help(duration)},
         #{name => until, long => "-until", type => string, help => help(until)},
@@ -83,7 +84,8 @@ cli() ->
         #{name => stylesheet, long => "-stylesheet", type => string, help => help(stylesheet)},
         #{name => decrypt_key, long => "-decrypt_key", type => string, help => help(decrypt_key)},
         #{name => decrypt_file, long => "-decrypt_file", type => string, help => help(decrypt_file)},
-        #{name => abort_if_missing_suites, long => "-abort_if_missing_suites", type => boolean, help => help(abort_if_missing_suites)},
+        #{name => abort_if_missing_suites, long => "-abort_if_missing_suites",
+          type => boolean, default => true, help => help(abort_if_missing_suites)},
         #{name => multiply_timetraps, long => "-multiply_timetraps", type => integer, help => help(multiple_timetraps)},
         #{name => scale_timetraps, long => "-scale_timetraps", type => boolean, help => help(scale_timetraps)},
         #{name => create_priv_dir, long => "-create_priv_dir", type => string, help => help(create_priv_dir)},
@@ -93,7 +95,8 @@ cli() ->
         #{name => name, long => "-name", type => atom, help => help(name)},
         #{name => sname, long => "-sname", type => atom, help => help(sname)},
         #{name => setcookie, long => "-setcookie", type => atom, help => help(setcookie)},
-        #{name => sys_config, long => "-sys_config", type => string, help => help(sys_config)},
+        #{name => sys_config, long => "-sys_config", type => string,
+          default => "", help => help(sys_config)},
         #{name => compile_only, long => "-compile_only", type => boolean, help => help(compile_only)},
         #{name => retry, long => "-retry", type => boolean, help => help(retry)},
         #{name => fail_fast, long => "-fail_fast", type => boolean, help => help(fail_fast)}
@@ -266,7 +269,7 @@ transform_opts([{verbose, _}|Rest], Acc) ->
 %% drop fail_fast from opts, ct doesn't care about it
 transform_opts([{fail_fast, _}|Rest], Acc) ->
     transform_opts(Rest, Acc);
-%% getopt should handle anything else
+%% argparse should handle anything else
 transform_opts([Opt|Rest], Acc) ->
     transform_opts(Rest, [Opt|Acc]).
 

@@ -58,6 +58,7 @@ cli() ->
           type => string,
           nargs => nonempty_list,
           required => true,
+          action => append,
           help => "Tasks to run."}
     ]}.
 
