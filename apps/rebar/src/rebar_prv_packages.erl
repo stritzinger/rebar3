@@ -1,8 +1,31 @@
+%% %CopyrightBegin%
+%%
+%% SPDX-License-Identifier: Apache-2.0
+%%
+%% SPDX-FileCopyrightText: Copyright 2015-2026 Rebar3 and its contributors
+%%
+%% SPDX-FileCopyrightText: Copyright 2026 Dipl. Phys. Peer Stritzinger GmbH
+%%
+%% Licensed under the Apache License, Version 2.0 (the "License");
+%% you may not use this file except in compliance with the License.
+%% You may obtain a copy of the License at
+%%
+%%     http://www.apache.org/licenses/LICENSE-2.0
+%%
+%% Unless required by applicable law or agreed to in writing, software
+%% distributed under the License is distributed on an "AS IS" BASIS,
+%% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+%% See the License for the specific language governing permissions and
+%% limitations under the License.
+%%
+%% %CopyrightEnd%
+
 -module(rebar_prv_packages).
 
 -behaviour(provider).
 
 -export([init/1,
+         cli/0,
          do/1,
          format_error/1]).
 
@@ -19,13 +42,17 @@ init(State) ->
                                       providers:create([{name, ?PROVIDER},
                                                         {module, ?MODULE},
                                                         {bare, true},
-                                                        {deps, ?DEPS},
-                                                        {example, "rebar3 pkgs elli"},
-                                                        {short_desc, "List information for a package."},
-                                                        {desc, info("List information for a package")},
-                                                        {opts, [{package, undefined, undefined, string,
-                                                                 "Package to fetch information for."}]}])),
+                                                        {deps, ?DEPS}])),
     {ok, State1}.
+
+-spec cli() -> argparse:command().
+cli() ->
+    #{help => "List information for a package.",
+      arguments => [
+        #{name => package,
+          type => string,
+          help => "Package to fetch information for."}
+    ]}.
 
 -spec do(rebar_state:t()) -> {ok, rebar_state:t()} | {error, string()}.
 do(State) ->
@@ -101,6 +128,3 @@ join_tuple_list([{K, V}], _Sep) ->
     <<K/binary, ": ", V/binary>>;
 join_tuple_list([{K, V} | T], Sep) ->
     <<K/binary, ": ", V/binary, Sep/binary, (join_tuple_list(T, Sep))/binary>>.
-
-info(Description) ->
-    io_lib:format("~ts.~n", [Description]).

@@ -1,10 +1,32 @@
 %% -*- erlang-indent-level: 4;indent-tabs-mode: nil -*-
 %% ex: ts=4 sw=4 et
+%%
+%% %CopyrightBegin%
+%%
+%% SPDX-License-Identifier: Apache-2.0
+%%
+%% SPDX-FileCopyrightText: Copyright 2015-2026 Rebar3 and its contributors
+%%
+%% SPDX-FileCopyrightText: Copyright 2026 Dipl. Phys. Peer Stritzinger GmbH
+%%
+%% Licensed under the Apache License, Version 2.0 (the "License");
+%% you may not use this file except in compliance with the License.
+%% You may obtain a copy of the License at
+%%
+%%     http://www.apache.org/licenses/LICENSE-2.0
+%%
+%% Unless required by applicable law or agreed to in writing, software
+%% distributed under the License is distributed on an "AS IS" BASIS,
+%% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+%% See the License for the specific language governing permissions and
+%% limitations under the License.
+%%
+%% %CopyrightEnd%
 
 -module(rebar_relx).
 
 -export([do/2,
-         opt_spec_list/0,
+         cli/0,
          format_error/1]).
 
 -ifdef(TEST).
@@ -123,6 +145,45 @@ format_error({release_not_found, Relname}) ->
 format_error(Error) ->
     io_lib:format("~p", [Error]).
 
+-spec cli() -> argparse:command().
+cli() ->
+    #{arguments => [
+        #{name => all, long => "-all", type => boolean,
+          help => "If true runs the command against all configured  releases"},
+        #{name => relname, short => $n, long => "-relname", type => string,
+          help => "Specify the name for the release that will be generated"},
+        #{name => relvsn, long => "-relvsn", type => string,
+          help => "Specify the version for the release"},
+        #{name => upfrom, short => $u, long => "-upfrom", type => string,
+          help => "Only valid with relup target, specify the release to upgrade from"},
+        #{name => output_dir, short => $o, long => "-output-dir", type => string,
+          help => "The output directory for the release. This is `./` by default."},
+        #{name => lib_dir, short => $l, long => "-lib-dir", type => string,
+          help => "Additional dir that should be searched for OTP Apps"},
+        #{name => dev_mode, short => $d, long => "-dev-mode", type => boolean,
+          help => "Symlink the applications and configuration into the release instead of copying"},
+        #{name => include_erts, short => $i, long => "-include-erts", type => string,
+          help => "If true include a copy of erts used to build with, if a path include erts at that path. If false, do not include erts"},
+        #{name => override, short => $a, long => "-override", type => string,
+          help => "Provide an app name and a directory to override in the form <appname>:<app directory>"},
+        #{name => config, short => $c, long => "-config", type => string,
+          default => "",
+          help => "The path to a config file"},
+        #{name => overlay_vars, long => "-overlay_vars", type => string,
+          default => [],
+          help => "Path to a file of overlay variables"},
+        #{name => vm_args, long => "-vm_args", type => string,
+          help => "Path to a file to use for vm.args"},
+        #{name => sys_config, long => "-sys_config", type => string,
+          help => "Path to a file to use for sys.config"},
+        #{name => system_libs, long => "-system_libs", type => string,
+          help => "Boolean or path to dir of Erlang system libs"},
+        #{name => root_dir, short => $r, long => "-root", type => string,
+          help => "The project root directory"},
+        #{name => relnames, short => $m, long => "-relnames", type => string,
+          help => "Like --all, but only build the releases in the list, e.g. --relnames rel1,rel2"}
+    ]}.
+
 %%
 
 parallel_run(release, [Release], AllApps, RelxState) ->
@@ -156,9 +217,9 @@ rel_handler({ok, _}, _) ->
     ok.
 
 releases_to_build(Provider, Opts, RelxState)->
-    case {proplists:get_value(all, Opts, undefined),
-          proplists:get_value(relnames, Opts, undefined)} of
-        {undefined, undefined} ->
+    case {proplists:get_value(all, Opts, false),
+          proplists:get_value(relnames, Opts, false)} of
+        {false, false} ->
             case proplists:get_value(relname, Opts, undefined) of
                 undefined ->
                     [undefined];
@@ -272,33 +333,3 @@ app_info_to_relx(#{name := Name,
                    dir := Dir,
                    link := false}, AppType) ->
     rlx_app_info:new(Name, Vsn, Dir, Applications, IncludedApplications, OptionalApplications, AppType).
-
--spec opt_spec_list() -> [getopt:option_spec()].
-opt_spec_list() ->
-    [{all, undefined, "all",  boolean,
-      "If true runs the command against all configured  releases"},
-    {relname,  $n, "relname",  string,
-      "Specify the name for the release that will be generated"},
-     {relvsn, $v, "relvsn", string, "Specify the version for the release"},
-     {upfrom, $u, "upfrom", string,
-      "Only valid with relup target, specify the release to upgrade from"},
-     {output_dir, $o, "output-dir", string,
-      "The output directory for the release. This is `./` by default."},
-     {help, $h, "help", undefined,
-      "Print usage"},
-     {lib_dir, $l, "lib-dir", string,
-      "Additional dir that should be searched for OTP Apps"},
-     {dev_mode, $d, "dev-mode", boolean,
-      "Symlink the applications and configuration into the release instead of copying"},
-     {include_erts, $i, "include-erts", string,
-      "If true include a copy of erts used to build with, if a path include erts at that path. If false, do not include erts"},
-     {override, $a, "override", string,
-      "Provide an app name and a directory to override in the form <appname>:<app directory>"},
-     {config, $c, "config", {string, ""}, "The path to a config file"},
-     {overlay_vars, undefined, "overlay_vars", string, "Path to a file of overlay variables"},
-     {vm_args, undefined, "vm_args", string, "Path to a file to use for vm.args"},
-     {sys_config, undefined, "sys_config", string, "Path to a file to use for sys.config"},
-     {system_libs, undefined, "system_libs", string, "Boolean or path to dir of Erlang system libs"},
-     {version, undefined, "version", undefined, "Print relx version"},
-     {root_dir, $r, "root", string, "The project root directory"},
-     {relnames, $m, "relnames", string, "Like --all, but only build the releases in the list, e.g. --relnames rel1,rel2"}].

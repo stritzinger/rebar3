@@ -1,8 +1,31 @@
+%% %CopyrightBegin%
+%%
+%% SPDX-License-Identifier: Apache-2.0
+%%
+%% SPDX-FileCopyrightText: Copyright 2015-2026 Rebar3 and its contributors
+%%
+%% SPDX-FileCopyrightText: Copyright 2026 Dipl. Phys. Peer Stritzinger GmbH
+%%
+%% Licensed under the Apache License, Version 2.0 (the "License");
+%% you may not use this file except in compliance with the License.
+%% You may obtain a copy of the License at
+%%
+%%     http://www.apache.org/licenses/LICENSE-2.0
+%%
+%% Unless required by applicable law or agreed to in writing, software
+%% distributed under the License is distributed on an "AS IS" BASIS,
+%% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+%% See the License for the specific language governing permissions and
+%% limitations under the License.
+%%
+%% %CopyrightEnd%
+
 -module(rebar_prv_plugins).
 
 -behaviour(provider).
 
 -export([init/1,
+         cli/0,
          do/1,
          format_error/1,
          list_local_plugins/1]).
@@ -23,12 +46,13 @@ init(State) ->
                     {module, ?MODULE},
                     {namespace, ?NAMESPACE},
                     {bare, true},
-                    {deps, ?DEPS},
-                    {example, "rebar3 plugins list"},
-                    {short_desc, "List local and global plugins for this project"},
-                    {desc, "List local and global plugins for this project"},
-                    {opts, []}])),
+                    {deps, ?DEPS}])),
     {ok, State1}.
+
+-spec cli() -> argparse:command().
+cli() ->
+    #{help => "List local and global plugins for this project",
+      arguments => []}. 
 
 -spec do(rebar_state:t()) -> {ok, rebar_state:t()} | {error, string()}.
 do(State) ->

@@ -1,11 +1,34 @@
 %% -*- erlang-indent-level: 4;indent-tabs-mode: nil -*-
 %% ex: ts=4 sw=4 et
+%%
+%% %CopyrightBegin%
+%%
+%% SPDX-License-Identifier: Apache-2.0
+%%
+%% SPDX-FileCopyrightText: Copyright 2015-2026 Rebar3 and its contributors
+%%
+%% SPDX-FileCopyrightText: Copyright 2026 Dipl. Phys. Peer Stritzinger GmbH
+%%
+%% Licensed under the Apache License, Version 2.0 (the "License");
+%% you may not use this file except in compliance with the License.
+%% You may obtain a copy of the License at
+%%
+%%     http://www.apache.org/licenses/LICENSE-2.0
+%%
+%% Unless required by applicable law or agreed to in writing, software
+%% distributed under the License is distributed on an "AS IS" BASIS,
+%% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+%% See the License for the specific language governing permissions and
+%% limitations under the License.
+%%
+%% %CopyrightEnd%
 
 -module(rebar_prv_path).
 
 -behaviour(provider).
 
 -export([init/1,
+         cli/0,
          do/1,
          format_error/1]).
 
@@ -23,13 +46,25 @@ init(State) ->
     State1 = rebar_state:add_provider(State, providers:create([{name, ?PROVIDER},
                                                                {module, ?MODULE},
                                                                {bare, true},
-                                                               {deps, ?DEPS},
-                                                               {example, "rebar3 path"},
-                                                               {short_desc, "Print paths to build dirs in current profile."},
-                                                               {desc, "Print paths to build dirs in current profile."},
-                                                               {opts, path_opts(State)}])),
+                                                               {deps, ?DEPS}])),
 
     {ok, State1}.
+
+-spec cli() -> argparse:command().
+cli() ->
+    #{help => "Print paths to build dirs in current profile.",
+      arguments => [
+        #{name => app, long => "-app", type => string, help => help(app)},
+        #{name => base, long => "-base", type => boolean, help => help(base)},
+        #{name => bin, long => "-bin", type => boolean, help => help(bin)},
+        #{name => ebin, long => "-ebin", type => boolean, help => help(ebin)},
+        #{name => lib, long => "-lib", type => boolean, help => help(lib)},
+        #{name => priv, long => "-priv", type => boolean, help => help(priv)},
+        #{name => separator, short => $s, long => "-separator", type => string,
+          default => " ", help => help(separator)},
+        #{name => src, long => "-src", type => boolean, help => help(src)},
+        #{name => rel, long => "-rel", type => boolean, help => help(rel)}
+    ]}.
 
 -spec do(rebar_state:t()) -> {ok, rebar_state:t()} | {error, string()}.
 do(State) ->
@@ -112,17 +147,6 @@ name(Name) when is_binary(Name); is_list(Name); is_atom(Name) -> Name.
 normalize(AppName) when is_list(AppName) -> AppName;
 normalize(AppName) when is_atom(AppName) -> atom_to_list(AppName);
 normalize(AppName) when is_binary(AppName) -> binary_to_list(AppName).
-
-path_opts(_State) ->
-    [{app, undefined, "app", string, help(app)},
-     {base, undefined, "base", boolean, help(base)},
-     {bin, undefined, "bin", boolean, help(bin)},
-     {ebin, undefined, "ebin", boolean, help(ebin)},
-     {lib, undefined, "lib", boolean, help(lib)},
-     {priv, undefined, "priv", boolean, help(priv)},
-     {separator, $s, "separator", string, help(separator)},
-     {src, undefined, "src", boolean, help(src)},
-     {rel, undefined, "rel", boolean, help(rel)}].
 
 help(app)       -> "Comma separated list of applications to return paths for.";
 help(base)      -> "Return the `base' path of the current profile.";

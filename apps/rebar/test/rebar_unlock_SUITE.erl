@@ -1,9 +1,31 @@
+%% %CopyrightBegin%
+%%
+%% SPDX-License-Identifier: Apache-2.0
+%%
+%% SPDX-FileCopyrightText: Copyright 2015-2026 Rebar3 and its contributors
+%%
+%% SPDX-FileCopyrightText: Copyright 2026 Dipl. Phys. Peer Stritzinger GmbH
+%%
+%% Licensed under the Apache License, Version 2.0 (the "License");
+%% you may not use this file except in compliance with the License.
+%% You may obtain a copy of the License at
+%%
+%%     http://www.apache.org/licenses/LICENSE-2.0
+%%
+%% Unless required by applicable law or agreed to in writing, software
+%% distributed under the License is distributed on an "AS IS" BASIS,
+%% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+%% See the License for the specific language governing permissions and
+%% limitations under the License.
+%%
+%% %CopyrightEnd%
+
 -module(rebar_unlock_SUITE).
 -include_lib("common_test/include/ct.hrl").
 -include_lib("eunit/include/eunit.hrl").
 -compile(export_all).
 
-all() -> [pkgunlock, unlock, unlock_all, unlock_no_args].
+all() -> [pkgunlock, unlock, unlock_space_args, unlock_all, unlock_no_args].
 
 init_per_testcase(pkgunlock, Config0) ->
     Config = rebar_test_utils:init_rebar_state(Config0, "pkgunlock"),
@@ -50,6 +72,12 @@ unlock(Config) ->
     ?assertEqual(Locks -- ["uuid","gproc","itc"], read_locks(Config)),
     rebar_test_utils:run_and_check(Config, [], ["unlock", rebar_string:join(Locks,",")], {ok, []}),
     ?assertEqual({error, enoent}, read_locks(Config)),
+    ok.
+
+unlock_space_args(Config) ->
+    Locks = read_locks(Config),
+    rebar_test_utils:run_and_check(Config, [], ["unlock", "gproc", "itc"], {ok, []}),
+    ?assertEqual(Locks -- ["gproc","itc"], read_locks(Config)),
     ok.
 
 unlock_all(Config) ->

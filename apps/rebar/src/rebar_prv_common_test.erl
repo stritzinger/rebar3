@@ -1,11 +1,34 @@
 %% -*- erlang-indent-level: 4;indent-tabs-mode: nil -*-
 %% ex: ts=4 sw=4 et
+%%
+%% %CopyrightBegin%
+%%
+%% SPDX-License-Identifier: Apache-2.0
+%%
+%% SPDX-FileCopyrightText: Copyright 2015-2026 Rebar3 and its contributors
+%%
+%% SPDX-FileCopyrightText: Copyright 2026 Dipl. Phys. Peer Stritzinger GmbH
+%%
+%% Licensed under the Apache License, Version 2.0 (the "License");
+%% you may not use this file except in compliance with the License.
+%% You may obtain a copy of the License at
+%%
+%%     http://www.apache.org/licenses/LICENSE-2.0
+%%
+%% Unless required by applicable law or agreed to in writing, software
+%% distributed under the License is distributed on an "AS IS" BASIS,
+%% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+%% See the License for the specific language governing permissions and
+%% limitations under the License.
+%%
+%% %CopyrightEnd%
 
 -module(rebar_prv_common_test).
 
 -behaviour(provider).
 
 -export([init/1,
+         cli/0,
          do/1,
          format_error/1]).
 
@@ -31,12 +54,53 @@ init(State) ->
                                  {module, ?MODULE},
                                  {deps, ?DEPS},
                                  {bare, true},
-                                 {example, "rebar3 ct"},
-                                 {short_desc, "Run Common Tests."},
-                                 {desc, "Run Common Tests."},
-                                 {opts, ct_opts(State)},
                                  {profiles, [test]}]),
     {ok, rebar_state:add_provider(State, Provider)}.
+
+-spec cli() -> argparse:command().
+cli() ->
+    #{help => "Run Common Tests.",
+      arguments => [
+        #{name => dir, long => "-dir", type => string, help => help(dir)},
+        #{name => suite, long => "-suite", type => string, help => help(suite)},
+        #{name => group, long => "-group", type => string, help => help(group)},
+        #{name => testcase, long => "-case", type => string, help => help(testcase)},
+        #{name => label, long => "-label", type => string, help => help(label)},
+        #{name => config, long => "-config", type => string, help => help(config)},
+        #{name => spec, long => "-spec", type => string, help => help(spec)},
+        #{name => join_specs, long => "-join_specs", type => boolean, help => help(join_specs)},
+        #{name => allow_user_terms, long => "-allow_user_terms", type => boolean, help => help(allow_user_terms)},
+        #{name => logdir, long => "-logdir", type => string, help => help(logdir)},
+        #{name => logopts, long => "-logopts", type => string, help => help(logopts)},
+        #{name => verbosity, long => "-verbosity", type => integer, help => help(verbosity)},
+        #{name => cover, short => $c, long => "-cover", type => boolean, help => help(cover)},
+        #{name => cover_export_name, long => "-cover_export_name", type => string,
+          default => ?PROVIDER, help => help(cover_export_name)},
+        #{name => repeat, long => "-repeat", type => integer, help => help(repeat)},
+        #{name => duration, long => "-duration", type => string, help => help(duration)},
+        #{name => until, long => "-until", type => string, help => help(until)},
+        #{name => force_stop, long => "-force_stop", type => string, help => help(force_stop)},
+        #{name => basic_html, long => "-basic_html", type => boolean, help => help(basic_html)},
+        #{name => stylesheet, long => "-stylesheet", type => string, help => help(stylesheet)},
+        #{name => decrypt_key, long => "-decrypt_key", type => string, help => help(decrypt_key)},
+        #{name => decrypt_file, long => "-decrypt_file", type => string, help => help(decrypt_file)},
+        #{name => abort_if_missing_suites, long => "-abort_if_missing_suites",
+          type => boolean, default => true, help => help(abort_if_missing_suites)},
+        #{name => multiply_timetraps, long => "-multiply_timetraps", type => integer, help => help(multiple_timetraps)},
+        #{name => scale_timetraps, long => "-scale_timetraps", type => boolean, help => help(scale_timetraps)},
+        #{name => create_priv_dir, long => "-create_priv_dir", type => string, help => help(create_priv_dir)},
+        #{name => include, long => "-include", type => string, help => help(include)},
+        #{name => readable, long => "-readable", type => string, help => help(readable)},
+        #{name => verbose, long => "-verbose", type => boolean, help => help(verbose)},
+        #{name => name, long => "-name", type => atom, help => help(name)},
+        #{name => sname, long => "-sname", type => atom, help => help(sname)},
+        #{name => setcookie, long => "-setcookie", type => atom, help => help(setcookie)},
+        #{name => sys_config, long => "-sys_config", type => string,
+          default => "", help => help(sys_config)},
+        #{name => compile_only, long => "-compile_only", type => boolean, help => help(compile_only)},
+        #{name => retry, long => "-retry", type => boolean, help => help(retry)},
+        #{name => fail_fast, long => "-fail_fast", type => boolean, help => help(fail_fast)}
+    ]}.
 
 -spec do(rebar_state:t()) -> {ok, rebar_state:t()} | {error, string()}.
 do(State) ->
@@ -205,7 +269,7 @@ transform_opts([{verbose, _}|Rest], Acc) ->
 %% drop fail_fast from opts, ct doesn't care about it
 transform_opts([{fail_fast, _}|Rest], Acc) ->
     transform_opts(Rest, Acc);
-%% getopt should handle anything else
+%% argparse should handle anything else
 transform_opts([Opt|Rest], Acc) ->
     transform_opts(Rest, [Opt|Acc]).
 
@@ -854,45 +918,6 @@ maybe_write_coverdata(State) ->
     end,
     Name = proplists:get_value(cover_export_name, RawOpts, ?PROVIDER),
     rebar_prv_cover:maybe_write_coverdata(State1, Name).
-
-ct_opts(_State) ->
-    [{dir, undefined, "dir", string, help(dir)}, %% comma-separated list
-     {suite, undefined, "suite", string, help(suite)}, %% comma-separated list
-     {group, undefined, "group", string, help(group)}, %% comma-separated list
-     {testcase, undefined, "case", string, help(testcase)}, %% comma-separated list
-     {label, undefined, "label", string, help(label)}, %% String
-     {config, undefined, "config", string, help(config)}, %% comma-separated list
-     {spec, undefined, "spec", string, help(spec)}, %% comma-separated list
-     {join_specs, undefined, "join_specs", boolean, help(join_specs)},
-     {allow_user_terms, undefined, "allow_user_terms", boolean, help(allow_user_terms)}, %% Bool
-     {logdir, undefined, "logdir", string, help(logdir)}, %% dir
-     {logopts, undefined, "logopts", string, help(logopts)}, %% comma-separated list
-     {verbosity, undefined, "verbosity", integer, help(verbosity)}, %% Integer
-     {cover, $c, "cover", {boolean, false}, help(cover)},
-     {cover_export_name, undefined, "cover_export_name", string, help(cover_export_name)},
-     {repeat, undefined, "repeat", integer, help(repeat)}, %% integer
-     {duration, undefined, "duration", string, help(duration)}, % format: HHMMSS
-     {until, undefined, "until", string, help(until)}, %% format: YYMoMoDD[HHMMSS]
-     {force_stop, undefined, "force_stop", string, help(force_stop)}, %% String
-     {basic_html, undefined, "basic_html", boolean, help(basic_html)}, %% Boolean
-     {stylesheet, undefined, "stylesheet", string, help(stylesheet)}, %% String
-     {decrypt_key, undefined, "decrypt_key", string, help(decrypt_key)}, %% String
-     {decrypt_file, undefined, "decrypt_file", string, help(decrypt_file)}, %% String
-     {abort_if_missing_suites, undefined, "abort_if_missing_suites", {boolean, true}, help(abort_if_missing_suites)}, %% Boolean
-     {multiply_timetraps, undefined, "multiply_timetraps", integer, help(multiple_timetraps)}, %% Integer
-     {scale_timetraps, undefined, "scale_timetraps", boolean, help(scale_timetraps)},
-     {create_priv_dir, undefined, "create_priv_dir", string, help(create_priv_dir)},
-     {include, undefined, "include", string, help(include)},
-     {readable, undefined, "readable", string, help(readable)},
-     {verbose, $v, "verbose", boolean, help(verbose)},
-     {name, undefined, "name", atom, help(name)},
-     {sname, undefined, "sname", atom, help(sname)},
-     {setcookie, undefined, "setcookie", atom, help(setcookie)},
-     {sys_config, undefined, "sys_config", string, help(sys_config)}, %% comma-separated list
-     {compile_only, undefined, "compile_only", boolean, help(compile_only)},
-     {retry, undefined, "retry", boolean, help(retry)},
-     {fail_fast, undefined, "fail_fast", {boolean, false}, help(fail_fast)}
-    ].
 
 help(compile_only) ->
     "Compile modules in the project with the test configuration but do not run the tests";

@@ -1,11 +1,34 @@
 %% -*- erlang-indent-level: 4;indent-tabs-mode: nil -*-
 %% ex: ts=4 sw=4 et
+%%
+%% %CopyrightBegin%
+%%
+%% SPDX-License-Identifier: Apache-2.0
+%%
+%% SPDX-FileCopyrightText: Copyright 2015-2026 Rebar3 and its contributors
+%%
+%% SPDX-FileCopyrightText: Copyright 2026 Dipl. Phys. Peer Stritzinger GmbH
+%%
+%% Licensed under the Apache License, Version 2.0 (the "License");
+%% you may not use this file except in compliance with the License.
+%% You may obtain a copy of the License at
+%%
+%%     http://www.apache.org/licenses/LICENSE-2.0
+%%
+%% Unless required by applicable law or agreed to in writing, software
+%% distributed under the License is distributed on an "AS IS" BASIS,
+%% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+%% See the License for the specific language governing permissions and
+%% limitations under the License.
+%%
+%% %CopyrightEnd%
 
 -module(rebar_prv_report).
 
 -behaviour(provider).
 
 -export([init/1,
+         cli/0,
          do/1,
          format_error/1]).
 
@@ -24,20 +47,24 @@ init(State) ->
     State1 = rebar_state:add_provider(State, providers:create([{name, ?PROVIDER},
                                                                {module, ?MODULE},
                                                                {bare, true},
-                                                               {deps, ?DEPS},
-                                                               {example, "rebar3 report \"<task>\""},
-                                                               {short_desc, "Provide a crash report to be sent to the rebar3 issues page."},
-                                                               {desc, "Provide a crash report to be sent to the rebar3 issues page."},
-                                                               {opts, [
-                                                                      {task, undefined, undefined, string, "Task to print details for."}
-                                                                      ]}])),
+                                                               {deps, ?DEPS}])),
     {ok, State1}.
+
+-spec cli() -> argparse:command().
+cli() ->
+    #{help => "Provide a crash report to be sent to the rebar3 issues page.",
+      arguments => [
+        #{name => task,
+          type => string,
+          help => "Task to print details for."}
+    ]}.
 
 -spec do(rebar_state:t()) -> {ok, rebar_state:t()} | {error, string()}.
 do(State) ->
     %% Show command
     Task = rebar_state:command_args(State),
-    Command = parse_task(Task),
+    {Args, _} = rebar_state:command_parsed_args(State),
+    Command = proplists:get_value(task, Args),
     %% Show command version (if a plugin?)
     %% ...
     %% Show app versions (including rebar3)
@@ -98,6 +125,3 @@ format_error(Reason) ->
 time_to_string({{Y,M,D},{H,Min,S}}) ->
     lists:flatten(io_lib:format("~4..0w-~2..0w-~2..0wT~2..0w:~2..0w:~2..0w+00:00",
                   [Y,M,D,H,Min,S])).
-
-parse_task(Str) ->
-    hd(re:split(Str, " ", [unicode])).

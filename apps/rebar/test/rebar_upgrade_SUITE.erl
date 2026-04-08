@@ -1,3 +1,25 @@
+%% %CopyrightBegin%
+%%
+%% SPDX-License-Identifier: Apache-2.0
+%%
+%% SPDX-FileCopyrightText: Copyright 2015-2026 Rebar3 and its contributors
+%%
+%% SPDX-FileCopyrightText: Copyright 2026 Dipl. Phys. Peer Stritzinger GmbH
+%%
+%% Licensed under the Apache License, Version 2.0 (the "License");
+%% you may not use this file except in compliance with the License.
+%% You may obtain a copy of the License at
+%%
+%%     http://www.apache.org/licenses/LICENSE-2.0
+%%
+%% Unless required by applicable law or agreed to in writing, software
+%% distributed under the License is distributed on an "AS IS" BASIS,
+%% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+%% See the License for the specific language governing permissions and
+%% limitations under the License.
+%%
+%% %CopyrightEnd%
+
 -module(rebar_upgrade_SUITE).
 -include_lib("common_test/include/ct.hrl").
 -include_lib("eunit/include/eunit.hrl").
@@ -7,7 +29,7 @@ all() -> [{group, git}, {group, pkg}, novsn_pkg, upgrade_no_args].
 
 groups() ->
     [{all, [], [top_a, top_b, top_c, top_d1, top_d2, top_e,
-                pair_a, pair_b, pair_ab, pair_c, pair_all,
+                pair_a, pair_b, pair_ab_comma, pair_ab_space, pair_c, pair_all,
                 triplet_a, triplet_b, triplet_c,
                 tree_a, tree_b, tree_c, tree_c2, tree_cj, tree_ac, tree_all,
                 delete_d, promote, stable_lock, fwd_lock,
@@ -208,7 +230,7 @@ upgrades(pair_b) ->
      ],
      ["A","B","C","D"],
      {"B", [{"A","1.0.0"},{"C","1.0.0"},{"B","2.0.0"},{"D","2.0.0"}]}};
-upgrades(pair_ab) ->
+upgrades(pair_ab_comma) ->
     {[{"A", "1.0.0", [{"C", "1.0.0", []}]},
       {"B", "1.0.0", [{"D", "1.0.0", []}]}
      ],
@@ -217,6 +239,15 @@ upgrades(pair_ab) ->
      ],
      ["A","B","C","D"],
      {"A,B", [{"A","2.0.0"},{"C","2.0.0"},{"B","2.0.0"},{"D","2.0.0"}]}};
+upgrades(pair_ab_space) ->
+    {[{"A", "1.0.0", [{"C", "1.0.0", []}]},
+      {"B", "1.0.0", [{"D", "1.0.0", []}]}
+     ],
+     [{"A", "2.0.0", [{"C", "2.0.0", []}]},
+      {"B", "2.0.0", [{"D", "2.0.0", []}]}
+     ],
+     ["A","B","C","D"],
+     {["A","B"], [{"A","2.0.0"},{"C","2.0.0"},{"B","2.0.0"},{"D","2.0.0"}]}};
 upgrades(pair_c) ->
     {[{"A", "1.0.0", [{"C", "1.0.0", []}]},
       {"B", "1.0.0", [{"D", "1.0.0", []}]}
@@ -548,6 +579,9 @@ mock_deps(pkg, OldDeps, Deps, Upgrades) ->
 normalize_unlocks({[], Locks}) ->
     {"--all",
      normalize_unlocks_expect(Locks)};
+normalize_unlocks({[App|_] = Apps, Locks}) when is_list(App) ->
+    {Apps,
+     normalize_unlocks_expect(Locks)};
 normalize_unlocks({App, Locks}) ->
     {iolist_to_binary(App),
      normalize_unlocks_expect(Locks)};
@@ -576,7 +610,8 @@ top_e(Config) -> run(Config).
 
 pair_a(Config) -> run(Config).
 pair_b(Config) -> run(Config).
-pair_ab(Config) -> run(Config).
+pair_ab_comma(Config) -> run(Config).
+pair_ab_space(Config) -> run(Config).
 pair_c(Config) -> run(Config).
 pair_all(Config) -> run(Config).
 
@@ -619,7 +654,7 @@ stable_lock(Config) ->
                                                   [{deps, ?config(next_top_deps, Config)}]),
     {ok, NewRebarConfig} = file:consult(NewRebarConf),
     rebar_test_utils:run_and_check(
-        Config, NewRebarConfig, ["lock", App], Expectation
+        Config, NewRebarConfig, ["lock"], Expectation
     ).
 
 fwd_lock(Config) ->
@@ -639,7 +674,7 @@ fwd_lock(Config) ->
                                                   [{deps, ?config(next_top_deps, Config)}]),
     {ok, NewRebarConfig} = file:consult(NewRebarConf),
     rebar_test_utils:run_and_check(
-        Config, NewRebarConfig, ["lock", App], Expectation
+        Config, NewRebarConfig, ["lock"], Expectation
     ).
 
 compile_upgrade_parity(Config) ->
@@ -758,8 +793,8 @@ run(Config) ->
     {ok, RebarConfig} = file:consult(ConfigPath),
     %% Install dependencies before re-mocking for an upgrade
     rebar_test_utils:run_and_check(Config, RebarConfig, ["lock"], {ok, []}),
-    {App, Unlocks} = ?config(expected, Config),
-    ct:pal("Upgrades: ~p -> ~p", [App, Unlocks]),
+    {Apps, Unlocks} = ?config(expected, Config),
+    ct:pal("Upgrades: ~p -> ~p", [Apps, Unlocks]),
     Expectation = case Unlocks of
         {error, Term} -> {error, Term};
         _ -> {ok, Unlocks}
@@ -773,8 +808,12 @@ run(Config) ->
     NewRebarConf = rebar_test_utils:create_config(filename:dirname(ConfigPath),
                                                   [{deps, ?config(next_top_deps, Config)}]),
     {ok, NewRebarConfig} = file:consult(NewRebarConf),
+    Command = case Apps of
+                  [App | _] when is_list(App) -> ["upgrade" | Apps];
+                  _ -> ["upgrade", Apps]
+              end,
     rebar_test_utils:run_and_check(
-        Config, NewRebarConfig, ["upgrade", App], Expectation
+        Config, NewRebarConfig, Command, Expectation
      ),
     meck:unload(rebar_prv_upgrade).
 

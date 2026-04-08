@@ -1,3 +1,25 @@
+%% %CopyrightBegin%
+%%
+%% SPDX-License-Identifier: Apache-2.0
+%%
+%% SPDX-FileCopyrightText: Copyright 2015-2026 Rebar3 and its contributors
+%%
+%% SPDX-FileCopyrightText: Copyright 2026 Dipl. Phys. Peer Stritzinger GmbH
+%%
+%% Licensed under the Apache License, Version 2.0 (the "License");
+%% you may not use this file except in compliance with the License.
+%% You may obtain a copy of the License at
+%%
+%%     http://www.apache.org/licenses/LICENSE-2.0
+%%
+%% Unless required by applicable law or agreed to in writing, software
+%% distributed under the License is distributed on an "AS IS" BASIS,
+%% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+%% See the License for the specific language governing permissions and
+%% limitations under the License.
+%%
+%% %CopyrightEnd%
+
 %% ===================================================================
 %% Manifest Provider
 %% ===================================================================
@@ -7,6 +29,7 @@
 -behaviour(provider).
 
 -export([init/1,
+         cli/0,
          do/1,
          format_error/1,
          is_json_available/0]).
@@ -44,13 +67,26 @@ init(State) ->
                                                         {namespace, ?NAMESPACE},
                                                         {module, ?MODULE},
                                                         {bare, true},
-                                                        {deps, [{default, install_deps}]},
-                                                        {example, "rebar3 manifest"},
-                                                        {short_desc, short_desc()},
-                                                        {desc, desc()},
-                                                        {opts, options()}
-                                                       ])),
+                                                        {deps, [{default, install_deps}]}])),
     {ok, State1}.
+
+-spec cli() -> argparse:command().
+cli() ->
+    #{help => short_desc(),
+      arguments => [
+        #{name => format,
+          short => $f,
+          long => "-format",
+          type => atom,
+          default => ?DEFAULT_FORMAT,
+          help => "Format for the manifest. "
+                  "Supported formats are: erlang, eetf (Erlang External Binary Format), json"},
+        #{name => to,
+          short => $t,
+          long => "-to",
+          type => string,
+          help => "If specified, write the manifest to file"}
+    ]}.
 
 -spec do(rebar_state:t()) -> {ok, rebar_state:t()} | {error, string()}.
 do(State) ->
@@ -87,18 +123,6 @@ format_error(Reason) ->
 -spec short_desc() -> string().
 short_desc() ->
     "Produce a project manifest".
-
--spec desc() -> string().
-desc() ->
-    short_desc().
-
--spec options() -> [tuple()].
-options() ->
-    [{format, $f, "format", {atom, ?DEFAULT_FORMAT},
-      "Format for the manifest. "
-      "Supported formats are: erlang, eetf (Erlang External Binary Format), json"},
-     {to, $t, "to", {string, undefined},
-      "If specified, write the manifest to file"}].
 
 -spec get_manifest(rebar_state:t()) -> manifest().
 get_manifest(State) ->

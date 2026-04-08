@@ -14,7 +14,7 @@ end_per_testcase(_, _Config) ->
     ok.
 
 all() -> [command, args, many, override_default, no_circular, release,
-          check_namespaces, create_lib, command_console].
+          check_namespaces, create_lib, command_console, alias_help].
 
 command() ->
     [{doc, "Runs multiple regular commands as one alias"}].
@@ -204,3 +204,25 @@ command_console(Config) ->
         Aliases,
         AllCaptured
     ).
+
+alias_help() ->
+    [{doc, "Alias help shows the generated alias description and usage"}].
+alias_help(Config) ->
+    State = ?config(state, Config),
+    AppDir = ?config(apps, Config),
+    Alias = test_all,
+    RebarConfig = [{alias, [{Alias, [ct, eunit]}]}],
+    ct:capture_start(),
+    rebar3:run(rebar_state:new(State, RebarConfig, AppDir),
+               ["help", atom_to_list(Alias)]),
+    ct:capture_stop(),
+    Captured = lists:flatten(ct:capture_get()),
+    ?assertNotEqual(nomatch,
+                    re:run(Captured,
+                           "Equivalent to running: rebar3 do ct,eunit",
+                           [{capture, none}])),
+    ?assertNotEqual(nomatch,
+                    re:run(Captured,
+                           "Usage:\\s+rebar3 test_all",
+                           [{capture, none}])),
+    ok.

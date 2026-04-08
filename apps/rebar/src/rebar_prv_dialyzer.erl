@@ -1,11 +1,34 @@
 %% -*- erlang-indent-level: 4;indent-tabs-mode: nil -*-
 %% ex: ts=4 sw=4 et
+%%
+%% %CopyrightBegin%
+%%
+%% SPDX-License-Identifier: Apache-2.0
+%%
+%% SPDX-FileCopyrightText: Copyright 2015-2026 Rebar3 and its contributors
+%%
+%% SPDX-FileCopyrightText: Copyright 2026 Dipl. Phys. Peer Stritzinger GmbH
+%%
+%% Licensed under the Apache License, Version 2.0 (the "License");
+%% you may not use this file except in compliance with the License.
+%% You may obtain a copy of the License at
+%%
+%%     http://www.apache.org/licenses/LICENSE-2.0
+%%
+%% Unless required by applicable law or agreed to in writing, software
+%% distributed under the License is distributed on an "AS IS" BASIS,
+%% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+%% See the License for the specific language governing permissions and
+%% limitations under the License.
+%%
+%% %CopyrightEnd%
 
 -module(rebar_prv_dialyzer).
 
 -behaviour(provider).
 
 -export([init/1,
+         cli/0,
          do/1,
          format_error/1]).
 
@@ -26,79 +49,44 @@
 
 -spec init(rebar_state:t()) -> {ok, rebar_state:t()}.
 init(State) ->
-    Opts = [{update_plt, $u, "update-plt", boolean, "Enable updating the PLT. Default: true"},
-            {succ_typings, $s, "succ-typings", boolean, "Enable success typing analysis. Default: true"},
-            {base_plt_location, undefined, "base-plt-location", string, "The location of base PLT file, defaults to $HOME/.cache/rebar3"},
-            {plt_location, undefined, "plt-location", string, "The location of the PLT file, defaults to the profile's base directory"},
-            {plt_prefix, undefined, "plt-prefix", string, "The prefix to the PLT file, defaults to \"rebar3\"" },
-            {app, $a, "app", string, "Perform success typing analysis of a single application"},
-            {base_plt_prefix, undefined, "base-plt-prefix", string, "The prefix to the base PLT file, defaults to \"rebar3\"" },
-            {statistics, undefined, "statistics", boolean, "Print information about the progress of execution. Default: false" }],
-    Opts1 =
-        case is_incremental_available() of
-            true ->
-                IncrOpt = {incremental, $i, "incremental", boolean, "Enable incremental analysis mode. Default: false"},
-                [IncrOpt|Opts];
-            false ->
-                Opts
-        end,
     State1 = rebar_state:add_provider(State, providers:create([{name, ?PROVIDER},
                                                                {module, ?MODULE},
                                                                {bare, true},
-                                                               {deps, ?DEPS},
-                                                               {example, "rebar3 dialyzer"},
-                                                               {short_desc, short_desc()},
-                                                               {desc, desc()},
-                                                               {opts, Opts1}])),
+                                                               {deps, ?DEPS}])),
     {ok, State1}.
 
-desc() ->
-    short_desc() ++ "\n"
-    "\n"
-    "This command will build, and keep up-to-date, a suitable PLT and will use "
-    "it to carry out success typing analysis on the current project.\n"
-    "\n"
-    "The following (optional) configurations can be added to a `proplist` of "
-    "options `dialyzer` in rebar.config:\n"
-    "`warnings` - a list of dialyzer warnings\n"
-    "`get_warnings` - display warnings when altering a PLT file (boolean)\n"
-    "`plt_apps` - the strategy for determining the applications which included "
-    "in the PLT file, `top_level_deps` to include just the direct dependencies "
-    "or `all_deps` to include all nested dependencies "
-    "or `all_apps` to include all project apps and nested dependencies*\n"
-    "`plt_extra_apps` - a list of extra applications to include in the PLT "
-    "file\n"
-    "`plt_extra_mods` - a list of extra modules to includes in the PLT file\n"
-    "`plt_location` - the location of the PLT file, `local` to store in the "
-    "profile's base directory (default) or a custom directory.\n"
-    "`plt_prefix` - the prefix to the PLT file, defaults to \"rebar3\"**\n"
-    "`base_plt_apps` - a list of applications to include in the base "
-    "PLT file***\n"
-    "`base_plt_mods` - a list of modules to include in the base "
-    "PLT file***\n"
-    "`base_plt_location` - the location of base PLT file, `global` to store in "
-    "$HOME/.cache/rebar3 (default) or  a custom directory***\n"
-    "`base_plt_prefix` - the prefix to the base PLT file, defaults to "
-    "\"rebar3\"** ***\n"
-    "`exclude_apps` - a list of applications to exclude from PLT files and "
-    "success typing analysis, `plt_extra_mods` and `base_plt_mods` can add "
-    "modules from excluded applications\n"
-    "`exclude_mods` - a list of modules to exclude from PLT files and "
-    "success typing analysis\n"
-    "`output_format` - configure whether the dialyzer_warnings file will have "
-    "the `raw` or `formatted` output\n"
-    "`incremental` - incremental analysis mode, defaults to `false`\n"
-    "\n"
-    "For example, to warn on unmatched returns: \n"
-    "{dialyzer, [{warnings, [unmatched_returns]}]}.\n"
-    "\n"
-    "*The direct dependent applications are listed in `applications` and "
-    "`included_applications` of their .app files.\n"
-    "**PLT files are named \"<prefix>_<otp_release>_plt\".\n"
-    "***The base PLT is a PLT containing the core applications often required "
-    "for a project's PLT. One base PLT is created per OTP version and "
-    "stored in `base_plt_location`. A base PLT is used to build project PLTs."
-    "\n".
+-spec cli() -> argparse:command().
+cli() ->
+    Opts = [#{name => update_plt, short => $u, long => "-update-plt",
+              type => boolean, default => true,
+              help => "Enable updating the PLT. Default: true"},
+            #{name => succ_typings, short => $s, long => "-succ-typings",
+              type => boolean, default => true,
+              help => "Enable success typing analysis. Default: true"},
+            #{name => base_plt_location, long => "-base-plt-location", type => string,
+              help => "The location of base PLT file, defaults to $HOME/.cache/rebar3"},
+            #{name => plt_location, long => "-plt-location", type => string,
+              help => "The location of the PLT file, defaults to the profile's base directory"},
+            #{name => plt_prefix, long => "-plt-prefix", type => string,
+              % no default here, because that would overwrite configurations
+              help => "The prefix to the PLT file, defaults to \"rebar3\""},
+            #{name => app, short => $a, long => "-app", type => string,
+              help => "Perform success typing analysis of a single application"},
+            #{name => base_plt_prefix, long => "-base-plt-prefix", type => string,
+              % no default here, because that would overwrite configurations
+              help => "The prefix to the base PLT file, defaults to \"rebar3\""},
+            #{name => statistics, long => "-statistics", type => boolean,
+              help => "Print information about the progress of execution. Default: false"}],
+    Args = case is_incremental_available() of
+               true ->
+                   [#{name => incremental, short => $i, long => "-incremental",
+                      type => boolean,
+                      help => "Enable incremental analysis mode. Default: false"}|Opts];
+               false ->
+                   Opts
+           end,
+    #{help => short_desc(),
+      arguments => Args}.
 
 short_desc() ->
     "Run the Dialyzer analyzer on the project.".

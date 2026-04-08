@@ -1,8 +1,31 @@
+%% %CopyrightBegin%
+%%
+%% SPDX-License-Identifier: Apache-2.0
+%%
+%% SPDX-FileCopyrightText: Copyright 2015-2026 Rebar3 and its contributors
+%%
+%% SPDX-FileCopyrightText: Copyright 2026 Dipl. Phys. Peer Stritzinger GmbH
+%%
+%% Licensed under the Apache License, Version 2.0 (the "License");
+%% you may not use this file except in compliance with the License.
+%% You may obtain a copy of the License at
+%%
+%%     http://www.apache.org/licenses/LICENSE-2.0
+%%
+%% Unless required by applicable law or agreed to in writing, software
+%% distributed under the License is distributed on an "AS IS" BASIS,
+%% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+%% See the License for the specific language governing permissions and
+%% limitations under the License.
+%%
+%% %CopyrightEnd%
+
 -module(rebar_prv_unlock).
 
 -behaviour(provider).
 
 -export([init/1,
+         cli/0,
          do/1,
          format_error/1]).
 
@@ -23,19 +46,27 @@ init(State) ->
         providers:create([{name, ?PROVIDER},
                           {module, ?MODULE},
                           {bare, true},
-                          {deps, ?DEPS},
-                          {example, ""},
-                          {short_desc, "Unlock dependencies."},
-                          {desc, "Unlock project dependencies. Use the --all option "
-                                 "to unlock all dependencies. To unlock specific dependencies, "
-                                 "their name can be listed in the command."},
-                          {opts, [{all, $a, "all", undefined, "Unlock all dependencies and remove the lock file."},
-                            {package, undefined, undefined, string,
-                             "List of packages to unlock."}
-                          ]}
-                         ])
+                          {deps, ?DEPS}])
     ),
     {ok, State1}.
+
+-spec cli() -> argparse:command().
+cli() ->
+    #{help => "Unlock dependencies.",
+      arguments => [
+        #{name => all,
+          short => $a,
+          long => "-all",
+          type => boolean,
+          help => "Unlock all dependencies and remove the lock file."},
+        #{name => package,
+          type => string,
+          nargs => list,
+          required => false,
+          action => append,
+          default => [],
+          help => "List of packages to unlock."}
+    ]}.
 
 do(State) ->
     Dir = rebar_state:dir(State),
@@ -89,11 +120,5 @@ handle_unlocks(State, Locks, LockFile) ->
 handle_args(State) -> 
     {Args, _} = rebar_state:command_parsed_args(State),
     All = proplists:get_value(all, Args, false),
-    Names = parse_names(rebar_utils:to_binary(proplists:get_value(package, Args, <<"">>))),
+    Names = rebar_utils:split_comma_separated_list(proplists:get_value(package, Args, [])),
     {All, Names}.
-
-parse_names(Bin) ->
-    case lists:usort(re:split(Bin, <<" *, *">>, [trim, unicode])) of
-        [<<"">>] -> []; % nothing submitted
-        Other -> Other
-    end.

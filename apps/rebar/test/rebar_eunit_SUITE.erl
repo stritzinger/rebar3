@@ -720,14 +720,11 @@ syscfg_app_opts(Config) ->
                                              ["eunit" | Opts], return),
     ok.
 
-eunit_parse(State, Args) ->
-    Providers = rebar_state:providers(State),
-    Namespace = rebar_state:namespace(State),
-    CommandProvider = providers:get_provider(eunit, Providers, Namespace),
-    Cli = rebar_legacy_cli:to_command(CommandProvider),
+eunit_parse(_State, Args) ->
+    Cli = rebar_prv_eunit:cli(),
     case argparse:parse(Args, Cli) of
         {ok, ParsedMap, _Path, _Command} ->
             {ok, {maps:to_list(ParsedMap), []}};
-        {error, ParseError} ->
-            {error, argparse:format_error(ParseError)}
+        {error, _} = Error ->
+            Error
     end.

@@ -1,3 +1,25 @@
+%% %CopyrightBegin%
+%%
+%% SPDX-License-Identifier: Apache-2.0
+%%
+%% SPDX-FileCopyrightText: Copyright 2015-2026 Rebar3 and its contributors
+%%
+%% SPDX-FileCopyrightText: Copyright 2026 Dipl. Phys. Peer Stritzinger GmbH
+%%
+%% Licensed under the Apache License, Version 2.0 (the "License");
+%% you may not use this file except in compliance with the License.
+%% You may obtain a copy of the License at
+%%
+%%     http://www.apache.org/licenses/LICENSE-2.0
+%%
+%% Unless required by applicable law or agreed to in writing, software
+%% distributed under the License is distributed on an "AS IS" BASIS,
+%% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+%% See the License for the specific language governing permissions and
+%% limitations under the License.
+%%
+%% %CopyrightEnd%
+ 
 %%% @doc Meta-provider that dynamically compiles providers
 %%% to run aliased commands.
 %%%
@@ -8,7 +30,7 @@
 
 -behaviour(provider).
 
--export([init/1, do/1, format_error/1]).
+-export([init/1, cli/0, alias_cli/1, do/1, format_error/1]).
 -include("rebar.hrl").
 
 -define(PROVIDER, alias).
@@ -38,14 +60,15 @@ init(State) ->
     AliasProvider = providers:create([{name, ?PROVIDER},
                                       {module, ?MODULE},
                                       {bare, true},
-                                      {deps, []},
-                                      {example, "rebar3 alias"},
-                                      {short_desc, "List aliases' definitions."},
-                                      {desc, "List aliases' definitions."},
-                                      {opts, []}]),
+                                      {deps, []}]),
     StateWithProvider = rebar_state:add_provider(StateWithAliases, AliasProvider),
     StateWithAliasesDefs = rebar_state:set(StateWithProvider, ?CREATED_ALIASES_KEY, AliasesDefs),
     {ok, StateWithAliasesDefs}.
+
+-spec cli() -> argparse:command().
+cli() ->
+    #{help => "List aliases' definitions.",
+      arguments => []}. 
 
 -spec do(rebar_state:t()) -> {ok, rebar_state:t()}.
 do(State) ->
@@ -69,21 +92,17 @@ init_alias(Alias, Cmds, State) ->
 
     MF = module(Module),
     EF = exports(),
+    CF = cli_func(Cmds),
     FF = do_func(Cmds),
 
-    {ok, _, Bin} = compile:forms([MF, EF, FF]),
+    {ok, _, Bin} = compile:forms([MF, EF, CF, FF]),
     code:load_binary(Module, "none", Bin),
 
     Provider = providers:create([
             {name, Alias},
             {module, Module},
             {bare, true},
-            {deps, []},
-            {example, example(Alias)},
-            {opts, []},
-            {short_desc, desc(Cmds)},
-            {desc, desc(Cmds)}
-    ]),
+            {deps, []}]),
     rebar_state:add_provider(State, Provider).
 
 validate_provider(Alias, Cmds, State) ->
@@ -107,9 +126,10 @@ validate_provider(Alias, Cmds, State) ->
             false
     end.
 
--dialyzer({no_unused, example/1}). % required since we suppress warnings for init_alias/3
-example(Alias) ->
-    "rebar3 " ++ atom_to_list(Alias).
+-spec alias_cli([term()]) -> argparse:command().
+alias_cli(Cmds) ->
+    #{help => lists:flatten(desc(Cmds)),
+      arguments => []}.
 
 -dialyzer({no_unused, desc/1}). % required since we suppress warnings for init_alias/3
 desc(Cmds) ->
@@ -119,20 +139,36 @@ desc(Cmds) ->
 cmds_string(Cmds) ->
     rebar_string:join(lists:map(fun to_desc/1, Cmds), ",").
 
+to_desc({Cmd, []}) ->
+    cmd_to_list(Cmd);
 to_desc({Cmd, Args}) when is_list(Args) ->
-    atom_to_list(Cmd) ++ " " ++ Args;
+    cmd_to_list(Cmd) ++ " " ++ Args;
 to_desc({Namespace, Cmd}) ->
     atom_to_list(Namespace) ++ " " ++ atom_to_list(Cmd);
 to_desc({Namespace, Cmd, Args}) ->
     atom_to_list(Namespace) ++ " " ++ atom_to_list(Cmd) ++ " " ++ Args;
 to_desc(Cmd) ->
-    atom_to_list(Cmd).
+    cmd_to_list(Cmd).
+
+cmd_to_list(Cmd) when is_atom(Cmd) ->
+    atom_to_list(Cmd);
+cmd_to_list(Cmd) when is_list(Cmd) ->
+    Cmd.
 
 module(Name) ->
     {attribute, 1, module, Name}.
 
 exports() ->
-    {attribute, 1, export, [{do, 1}]}.
+    {attribute, 1, export, [{cli, 0}, {do, 1}]}.
+
+cli_func(Cmds) ->
+    {function, 1, cli, 0,
+     [{clause, 1,
+       [],
+       [],
+       [{call, 1,
+         {remote, 1, {atom, 1, rebar_prv_alias}, {atom, 1, alias_cli}},
+         [make_args(Cmds)]}]}]}.
 
 do_func(Cmds) ->
     {function, 1, do, 1,

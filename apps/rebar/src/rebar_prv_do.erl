@@ -1,11 +1,34 @@
 %% -*- erlang-indent-level: 4;indent-tabs-mode: nil -*-
 %% ex: ts=4 sw=4 et
+%%
+%% %CopyrightBegin%
+%%
+%% SPDX-License-Identifier: Apache-2.0
+%%
+%% SPDX-FileCopyrightText: Copyright 2015-2026 Rebar3 and its contributors
+%%
+%% SPDX-FileCopyrightText: Copyright 2026 Dipl. Phys. Peer Stritzinger GmbH
+%%
+%% Licensed under the Apache License, Version 2.0 (the "License");
+%% you may not use this file except in compliance with the License.
+%% You may obtain a copy of the License at
+%%
+%%     http://www.apache.org/licenses/LICENSE-2.0
+%%
+%% Unless required by applicable law or agreed to in writing, software
+%% distributed under the License is distributed on an "AS IS" BASIS,
+%% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+%% See the License for the specific language governing permissions and
+%% limitations under the License.
+%%
+%% %CopyrightEnd%
 
 -module(rebar_prv_do).
 
 -behaviour(provider).
 
 -export([init/1,
+         cli/0,
          do/1,
          do_tasks/2,
          format_error/1]).
@@ -24,12 +47,20 @@ init(State) ->
     State1 = rebar_state:add_provider(State, providers:create([{name, ?PROVIDER},
                                                                {module, ?MODULE},
                                                                {bare, true},
-                                                               {deps, ?DEPS},
-                                                               {example, "rebar3 do <task1>, <task2>, ..."},
-                                                               {short_desc, "Higher order provider for running multiple tasks in a sequence."},
-                                                               {desc, "Higher order provider for running multiple tasks in a sequence."},
-                                                               {opts, []}])),
+                                                               {deps, ?DEPS}])),
     {ok, State1}.
+
+-spec cli() -> argparse:command().
+cli() ->
+    #{help => "Higher order provider for running multiple tasks in a sequence.",
+      arguments => [
+        #{name => task,
+          type => string,
+          nargs => nonempty_list,
+          required => true,
+          action => append,
+          help => "Tasks to run."}
+    ]}.
 
 -spec do(rebar_state:t()) -> {ok, rebar_state:t()} | {error, string()}.
 do(State) ->
@@ -37,8 +68,7 @@ do(State) ->
         [] ->
             AllProviders = rebar_state:providers(State),
             Namespace = rebar_state:namespace(State),
-            Providers = providers:get_providers_by_namespace(Namespace, AllProviders),
-            providers:help(Providers),
+            print_namespace_help(Namespace, AllProviders),
             {ok, State};
         Tasks ->
             do_tasks(Tasks, State)
@@ -115,3 +145,18 @@ maybe_namespace(State, Task, Args) ->
         {error, Reason} ->
             {error, Reason}
     end.
+
+print_namespace_help(default, Providers) ->
+    io:format(
+        "~ts",
+        [argparse:help(rebar_cli:global_cli(Providers), #{progname => "rebar3"})]
+    );
+print_namespace_help(Namespace, Providers) ->
+    io:format(
+        "~ts",
+        [argparse:help(
+             rebar_cli:global_cli(Providers),
+             #{progname => "rebar3",
+               command => [atom_to_list(Namespace)]}
+         )]
+    ).

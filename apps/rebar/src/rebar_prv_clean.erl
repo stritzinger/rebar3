@@ -1,11 +1,34 @@
 %% -*- erlang-indent-level: 4;indent-tabs-mode: nil -*-
 %% ex: ts=4 sw=4 et
+%%
+%% %CopyrightBegin%
+%%
+%% SPDX-License-Identifier: Apache-2.0
+%%
+%% SPDX-FileCopyrightText: Copyright 2015-2026 Rebar3 and its contributors
+%%
+%% SPDX-FileCopyrightText: Copyright 2026 Dipl. Phys. Peer Stritzinger GmbH
+%%
+%% Licensed under the Apache License, Version 2.0 (the "License");
+%% you may not use this file except in compliance with the License.
+%% You may obtain a copy of the License at
+%%
+%%     http://www.apache.org/licenses/LICENSE-2.0
+%%
+%% Unless required by applicable law or agreed to in writing, software
+%% distributed under the License is distributed on an "AS IS" BASIS,
+%% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+%% See the License for the specific language governing permissions and
+%% limitations under the License.
+%%
+%% %CopyrightEnd%
 
 -module(rebar_prv_clean).
 
 -behaviour(provider).
 
 -export([init/1,
+         cli/0,
          do/1,
          format_error/1]).
 
@@ -23,14 +46,32 @@ init(State) ->
     State1 = rebar_state:add_provider(State, providers:create([{name, ?PROVIDER},
                                                                {module, ?MODULE},
                                                                {bare, true},
-                                                               {deps, ?DEPS},
-                                                               {example, "rebar3 clean"},
-                                                               {short_desc, "Remove compiled beam files from apps."},
-                                                               {desc, "Remove compiled beam files from apps."},
-                                                               {opts, [{all, $a, "all", undefined, "Clean all apps include deps"},
-                                                                       {apps, undefined, "apps", string, "Clean a specific list of apps or dependencies"},
-                                                                       {profile, $p, "profile", string, "Clean under profile. Equivalent to `rebar3 as <profile> clean`"}]}])),
+                                                               {deps, ?DEPS}])),
     {ok, State1}.
+
+-spec cli() -> argparse:command().
+cli() ->
+    #{help => "Remove compiled beam files from apps.",
+      arguments => [
+        #{name => all,
+          short => $a,
+          long => "-all",
+          type => boolean,
+          help => "Clean all apps include deps"},
+        #{name => apps,
+          long => "-apps",
+          nargs => list,
+          action => append,
+          default => [],
+          help => "Clean a specific list of apps or dependencies"},
+        #{name => profile,
+          short => $p,
+          long => "-profile",
+          type => string,
+          action => append,
+          default => [],
+          help => "Clean under profile. Equivalent to `rebar3 as <profile> clean`"}
+    ]}.
 
 -spec do(rebar_state:t()) -> {ok, rebar_state:t()} | {error, string()}.
 do(State) ->
@@ -103,17 +144,10 @@ clean_extras(State) ->
 handle_args(State) ->
     {Args, _} = rebar_state:command_parsed_args(State),
     All = proplists:get_value(all, Args, false),
-    Profiles = proplists:get_all_values(profile, Args),
-    DepsRaw = proplists:get_value(apps, Args),
-    Deps = parse_deps(DepsRaw),
+    Profiles = proplists:get_value(profile, Args, []),
+    DepsRaw = proplists:get_value(apps, Args, []),
+    Deps = rebar_utils:split_comma_separated_list(DepsRaw),
     {All, Profiles, Deps}.
-
-parse_deps(undefined) -> [];
-parse_deps(Bin) ->
-    case lists:usort(re:split(Bin, <<" *, *">>, [trim, unicode])) of
-        [<<"">>] -> []; % nothing submitted
-        Other -> Other
-    end.
 
 filter_name(AppInfo, Names) ->
     Name = rebar_app_info:name(AppInfo),

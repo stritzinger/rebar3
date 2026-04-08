@@ -1,8 +1,31 @@
+%% %CopyrightBegin%
+%%
+%% SPDX-License-Identifier: Apache-2.0
+%%
+%% SPDX-FileCopyrightText: Copyright 2015-2026 Rebar3 and its contributors
+%%
+%% SPDX-FileCopyrightText: Copyright 2026 Dipl. Phys. Peer Stritzinger GmbH
+%%
+%% Licensed under the Apache License, Version 2.0 (the "License");
+%% you may not use this file except in compliance with the License.
+%% You may obtain a copy of the License at
+%%
+%%     http://www.apache.org/licenses/LICENSE-2.0
+%%
+%% Unless required by applicable law or agreed to in writing, software
+%% distributed under the License is distributed on an "AS IS" BASIS,
+%% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+%% See the License for the specific language governing permissions and
+%% limitations under the License.
+%%
+%% %CopyrightEnd%
+
 -module(rebar_prv_bare_compile).
 
 -behaviour(provider).
 
 -export([init/1,
+         cli/0,
          do/1,
          format_error/1]).
 
@@ -26,24 +49,34 @@ init(State) ->
             {module, ?MODULE},
             {namespace, ?NAMESPACE},
             {bare, false},
-            {deps, ?DEPS},
-            {example, ""},
-            {short_desc, ""},
-            {desc, ""},
-            {opts, [
-                {paths, $p, "paths", string,
-                 "Wildcard paths of ebin directories to add to code path, "
-                 "separated by a colon"},
-                {separator, $s, "separator", string,
-                 "In case of multiple return paths, the separator character "
-                 "to use to join them."},
-                {outdir, $o, "outdir", string,
-                 "Path where build artifacts are located. Defaults to the "
-                 "current directory."}
-            ]}
-        ])
+            {deps, ?DEPS}])
     ),
     {ok, State1}.
+
+-spec cli() -> argparse:command().
+cli() ->
+    #{help => "Compile application code from a bare source directory.",
+      arguments => [
+        #{name => paths,
+          short => $p,
+          long => "-paths",
+          type => string,
+          help => "Wildcard paths of ebin directories to add to code path, "
+                  "separated by a colon"},
+        #{name => separator,
+          short => $s,
+          long => "-separator",
+          type => string,
+          default => " ",
+          help => "In case of multiple return paths, the separator character "
+                  "to use to join them."},
+        #{name => outdir,
+          short => $o,
+          long => "-outdir",
+          type => string,
+          help => "Path where build artifacts are located. Defaults to the "
+                  "current directory."}
+    ]}.
 
 -spec do(rebar_state:t()) -> {ok, rebar_state:t()} | {error, string()}.
 do(State) ->

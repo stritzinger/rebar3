@@ -1,11 +1,34 @@
 %% -*- erlang-indent-level: 4;indent-tabs-mode: nil -*-
 %% ex: ts=4 sw=4 et
+%%
+%% %CopyrightBegin%
+%%
+%% SPDX-License-Identifier: Apache-2.0
+%%
+%% SPDX-FileCopyrightText: Copyright 2015-2026 Rebar3 and its contributors
+%%
+%% SPDX-FileCopyrightText: Copyright 2026 Dipl. Phys. Peer Stritzinger GmbH
+%%
+%% Licensed under the Apache License, Version 2.0 (the "License");
+%% you may not use this file except in compliance with the License.
+%% You may obtain a copy of the License at
+%%
+%%     http://www.apache.org/licenses/LICENSE-2.0
+%%
+%% Unless required by applicable law or agreed to in writing, software
+%% distributed under the License is distributed on an "AS IS" BASIS,
+%% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+%% See the License for the specific language governing permissions and
+%% limitations under the License.
+%%
+%% %CopyrightEnd%
 
 -module(rebar_prv_upgrade).
 
 -behaviour(provider).
 
 -export([init/1,
+         cli/0,
          do/1,
          format_error/1]).
 
@@ -29,17 +52,26 @@ init(State) ->
                                  providers:create([{name, ?PROVIDER},
                                                    {module, ?MODULE},
                                                    {bare, true},
-                                                   {deps, ?DEPS},
-                                                   {example, "rebar3 upgrade [cowboy[,ranch]]"},
-                                                   {short_desc, "Upgrade dependencies."},
-                                                   {desc, "Upgrade project dependencies. Use the -a/--all option to "
-                                                          "upgrade all dependencies. To upgrade specific dependencies, "
-                                                          "their names can be listed in the command."},
-                                                   {opts, [{all, $a, "all", undefined, "Upgrade all dependencies."},
-                                                          {package, undefined, undefined, string,
-                                                           "List of packages to upgrade."}
-                                                          ]}])),
+                                                   {deps, ?DEPS}])),
     {ok, State1}.
+
+-spec cli() -> argparse:command().
+cli() ->
+    #{help => "Upgrade dependencies.",
+      arguments => [
+        #{name => all,
+          short => $a,
+          long => "-all",
+          type => boolean,
+          help => "Upgrade all dependencies."},
+        #{name => package,
+          type => string,
+          nargs => list,
+          required => false,
+          action => append,
+          default => [],
+          help => "List of packages to upgrade."}
+    ]}.
 
 -spec do(rebar_state:t()) -> {ok, rebar_state:t()} | {error, string()}.
 do(State) ->
@@ -81,10 +113,9 @@ do_(State) ->
     Deps = [Dep || Dep <- TopDeps ++ ProfileDeps, % TopDeps > ProfileDeps
                    is_atom(Dep) orelse is_atom(element(1, Dep))],
     Names = case handle_args(State) of
-        {false, undefined} -> throw(?PRV_ERROR(no_arg));
+        {false, []} -> throw(?PRV_ERROR(no_arg));
         {true, _} -> [Name || {Name, _, 0} <- Locks];
-        {false, Packages} -> Bin = rebar_utils:to_binary(Packages),
-                             lists:usort(re:split(Bin, <<" *, *">>, [trim, unicode]))
+        {false, Packages} -> rebar_utils:split_comma_separated_list(Packages)
     end,
     DepsDict = deps_dict(rebar_state:all_deps(State)),
     AltDeps = find_non_default_deps(Deps, State),

@@ -1,10 +1,13 @@
 %% -*- erlang-indent-level: 4;indent-tabs-mode: nil -*-
 %% ex: ts=4 sw=4 et
-%% -------------------------------------------------------------------
 %%
-%% rebar: Erlang Build Tools
+%% %CopyrightBegin%
 %%
-%% Copyright (c) 2009, 2010 Dave Smith (dizzyd@dizzyd.com)
+%% SPDX-License-Identifier: MIT
+%%
+%% Copyright (c) 2009-2010 Dave Smith (dizzyd@dizzyd.com)
+%% Copyright (c) 2015-2026 Rebar3 and its contributors
+%% Copyright (c) 2026 Dipl. Phys. Peer Stritzinger GmbH
 %%
 %% Permission is hereby granted, free of charge, to any person obtaining a copy
 %% of this software and associated documentation files (the "Software"), to deal
@@ -23,7 +26,8 @@
 %% LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 %% OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 %% THE SOFTWARE.
-%% -------------------------------------------------------------------
+%%
+%% %CopyrightEnd%
 -module(rebar_utils).
 
 -export([sort_deps/1,
@@ -56,6 +60,7 @@
          get_arch/0,
          wordsize/0,
          deps_to_binary/1,
+         split_comma_separated_list/1,
          to_binary/1,
          to_list/1,
          to_atom/1,
@@ -254,6 +259,14 @@ deps_to_binary([{Name, Source} | T]) ->
     [{to_binary(Name), Source} | deps_to_binary(T)];
 deps_to_binary([Name | T]) ->
     [to_binary(Name) | deps_to_binary(T)].
+
+% Splits [["Arg1", "Arg2"]] as well as [["Arg1,Arg2"]] to ["Arg1", "Arg2"]
+split_comma_separated_list(Names) when is_list(Names) ->
+    lists:usort(
+      lists:foldl(
+        fun(Name, Acc) ->
+                re:split(to_binary(Name), <<" *, *">>, [trim, unicode]) ++ Acc
+        end, [], lists:append(Names))).
 
 to_binary(A) when is_atom(A) -> atom_to_binary(A, unicode);
 to_binary(Str) -> unicode:characters_to_binary(Str).
