@@ -66,10 +66,10 @@ from_state(BaseConfig, State) ->
 -spec get_repo_config(unicode:unicode_binary(), rebar_state:t() | [repo()])
                      -> {ok, repo()} | error.
 get_repo_config(RepoName, Repos) when is_list(Repos) ->
-    case ec_lists:find(fun(#{name := N}) -> N =:= RepoName end, Repos) of
-        error ->
+    case lists:search(fun(#{name := N}) -> N =:= RepoName end, Repos) of
+        false ->
             throw(?PRV_ERROR({repo_not_found, RepoName}));
-        {ok, RepoConfig} ->
+        {value, RepoConfig} ->
             {ok, RepoConfig}
     end;
 get_repo_config(RepoName, State) ->

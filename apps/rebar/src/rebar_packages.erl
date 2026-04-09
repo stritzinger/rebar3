@@ -117,7 +117,7 @@ get_package(Dep, Vsn, Hash, Repos, Table, State) ->
                 [] ->
                     not_found
             end;
-            
+
         _ ->
             not_found
     end.
@@ -219,7 +219,7 @@ find_highest_matching_(Dep, DepVsn, #{name := Repo}, Table, State) when is_binar
     case rebar_semver:parse_version(DepVsn) of
         {ok, _} ->
             resolve_version_(Dep, <<"~> "/utf8, DepVsn/binary>>, Repo, Table, State);
-            
+
         {error, _} ->
             resolve_version_(Dep, DepVsn, Repo, Table, State)
     end.
@@ -333,7 +333,7 @@ resolve_version(Dep, DepVsn, _OldHash, Hash, HexRegistry, State) ->
 resolve_version_no_package(Dep, DepVsn, Hash, HexRegistry, State) ->
     case rebar_semver:parse_constraint(DepVsn) of
         {ok, _} ->
-            Fun = fun(Repo) ->
+            Fun = fun(#{name := Repo}) ->
                 case resolve_version_(Dep, DepVsn, Repo, HexRegistry, State) of
                     none ->
                         not_found;
@@ -342,16 +342,20 @@ resolve_version_no_package(Dep, DepVsn, Hash, HexRegistry, State) ->
                 end
             end,
             handle_missing_no_exception(Fun, Dep, State);
-        
         Error ->
             Error
     end.
 
-    
-check_all_repos(Fun, RepoConfigs) ->
-    ec_lists:search(fun(#{name := R}) ->
-                            Fun(R)
-                    end, RepoConfigs).
+
+check_all_repos(_, []) ->
+    not_found;
+check_all_repos(Fun, [Config | OtherConfigs]) ->
+    case Fun(Config) of
+        {ok, Value} ->
+            {ok, Value, Config};
+        not_found ->
+            check_all_repos(Fun, OtherConfigs)
+    end.
 
 handle_missing_no_exception(Fun, Dep, State) ->
     Resources = rebar_state:resources(State),
@@ -361,14 +365,14 @@ handle_missing_no_exception(Fun, Dep, State) ->
     %% if none is found then we step through checking after updating the repo registry
     case check_all_repos(Fun, RepoConfigs) of
         not_found ->
-            ec_lists:search(fun(Config=#{name := R}) ->
+            check_all_repos(fun(Config) ->
                                     case ?MODULE:update_package(Dep, Config, State) of
                                         ok ->
-                                            Fun(R);
+                                            Fun(Config);
                                         _ ->
                                             not_found
                                     end
-                            end, RepoConfigs);
+                             end, RepoConfigs);
         Result ->
             Result
     end.
@@ -379,11 +383,10 @@ resolve_version_(Dep, Constraint, Repo, HexRegistry, State) ->
             AllowPreRelease = rebar_semver:is_prerelease_or_build(Constraint),
             AllVersions = get_package_versions(Dep, AllowPreRelease, Repo, HexRegistry, State),
             resolve_version_loop(Match, AllVersions, none);
-        
         Error ->
             Error
     end.
-    
+
 resolve_version_loop(_Constraint, [], none) -> none;
 resolve_version_loop(_Constraint, [], BestMatch) -> {ok, BestMatch};
 resolve_version_loop(Constraint, [Vsn|R], none) ->
