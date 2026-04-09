@@ -171,25 +171,6 @@ compile(App, FirstFiles) ->
                      ,{outdir,  filename:join(Dir, "ebin")}
                      ,return | additional_defines()]) || X <- Sources].
 
-bootstrap_app(App, FirstFiles) ->
-    Name = atom_to_list(App),
-    SourceDir = filename:absname(filename:join(["apps", Name])),
-    TargetDir = filename:absname(filename:join(["_build/default/lib", Name])),
-    filelib:ensure_dir(filename:join(TargetDir, "dummy")),
-    Res1 = symlink_or_copy(filename:join(SourceDir, "src"),
-                           filename:join(TargetDir, "src")),
-    true = Res1 == ok orelse Res1 == exists,
-    case filelib:is_dir(filename:join(SourceDir, "include")) of
-        true ->
-            Res2 = symlink_or_copy(filename:join(SourceDir, "include"),
-                                   filename:join(TargetDir, "include")),
-            true = Res2 == ok orelse Res2 == exists;
-        false ->
-            ok
-    end,
-    compile(Name, FirstFiles),
-    code:add_patha(filename:join(TargetDir, "ebin")).
-
 compile_xrl_file(File) ->
     {ok, _} = leex:file(File).
 
@@ -212,6 +193,25 @@ compile_erl_file(File, Opts) ->
             io:format("~s ~s~n", [format_errors(File, Es), format_warnings(File, Ws)]),
             halt(1)
     end.
+
+bootstrap_app(App, FirstFiles) ->
+    Name = atom_to_list(App),
+    SourceDir = filename:absname(filename:join(["apps", Name])),
+    TargetDir = filename:absname(filename:join(["_build/default/lib", Name])),
+    filelib:ensure_dir(filename:join(TargetDir, "dummy")),
+    Res1 = symlink_or_copy(filename:join(SourceDir, "src"),
+                           filename:join(TargetDir, "src")),
+    true = Res1 == ok orelse Res1 == exists,
+    case filelib:is_dir(filename:join(SourceDir, "include")) of
+        true ->
+            Res2 = symlink_or_copy(filename:join(SourceDir, "include"),
+                                   filename:join(TargetDir, "include")),
+            true = Res2 == ok orelse Res2 == exists;
+        false ->
+            ok
+    end,
+    compile(Name, FirstFiles),
+    code:add_patha(filename:join(TargetDir, "ebin")).
 
 %%rebar.hrl
 -define(FMT(Str, Args), lists:flatten(io_lib:format(Str, Args))).
