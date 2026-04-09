@@ -23,6 +23,28 @@
 %%
 %% %CopyrightEnd%
 
+%% %CopyrightBegin%
+%%
+%% SPDX-License-Identifier: Apache-2.0
+%%
+%% SPDX-FileCopyrightText: Copyright 2015-2026 Rebar3 and its contributors
+%%
+%% SPDX-FileCopyrightText: Copyright 2026 Dipl. Phys. Peer Stritzinger GmbH
+%%
+%% Licensed under the Apache License, Version 2.0 (the "License");
+%% you may not use this file except in compliance with the License.
+%% You may obtain a copy of the License at
+%%
+%%     http://www.apache.org/licenses/LICENSE-2.0
+%%
+%% Unless required by applicable law or agreed to in writing, software
+%% distributed under the License is distributed on an "AS IS" BASIS,
+%% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+%% See the License for the specific language governing permissions and
+%% limitations under the License.
+%%
+%% %CopyrightEnd%
+
 -module(rebar_prv_upgrade).
 
 -behaviour(provider).
@@ -161,12 +183,12 @@ format_error({transitive_dependency, Name}) ->
 format_error({checkout_dependency, Name}) ->
     io_lib:format("Dependency ~ts is a checkout dependency under _checkouts/ and checkouts cannot be upgraded.",
                   [Name]);
-format_error(no_arg) -> 
+format_error(no_arg) ->
     "Specify a list of dependencies to upgrade, or --all to upgrade them all";
 format_error(Reason) ->
     io_lib:format("~p", [Reason]).
 
-handle_args(State) -> 
+handle_args(State) ->
     {Args, _} = rebar_state:command_parsed_args(State),
     All = proplists:get_value(all, Args, false),
     Package = proplists:get_value(package, Args),
@@ -177,7 +199,7 @@ update_pkg_deps([], _, _) ->
     ok;
 update_pkg_deps([{Name, _, _} | Rest], AppInfos, State) ->
     case rebar_app_utils:find(Name, AppInfos) of
-        {ok, AppInfo} ->
+        {value, AppInfo} ->
             Source = rebar_app_info:source(AppInfo),
             case element(1, Source) of
                 pkg ->
