@@ -1,6 +1,27 @@
 #!/usr/bin/env escript
 %% -*- mode: erlang;erlang-indent-level: 4;indent-tabs-mode: nil -*-
 %% ex: ft=erlang ts=4 sw=4 et
+%% %CopyrightBegin%
+%%
+%% SPDX-License-Identifier: Apache-2.0
+%%
+%% SPDX-FileCopyrightText: Copyright 2015-2026 Rebar3 and its contributors
+%%
+%% SPDX-FileCopyrightText: Copyright 2026 Dipl. Phys. Peer Stritzinger GmbH
+%%
+%% Licensed under the Apache License, Version 2.0 (the "License");
+%% you may not use this file except in compliance with the License.
+%% You may obtain a copy of the License at
+%%
+%%     http://www.apache.org/licenses/LICENSE-2.0
+%%
+%% Unless required by applicable law or agreed to in writing, software
+%% distributed under the License is distributed on an "AS IS" BASIS,
+%% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+%% See the License for the specific language governing permissions and
+%% limitations under the License.
+%%
+%% %CopyrightEnd%
 
 main(Args) ->
     case lists:member("--offline", Args) of
@@ -41,15 +62,15 @@ main(Args) ->
     compile_vendored(),
 
     %% Fetch and build deps required to build rebar3
-    BaseDeps = [{providers, []}
-               ,{getopt, []}
+    BaseDeps = [{getopt, []}
                ,{cf, []}
                ,{erlware_commons, ["ec_dictionary.erl", "ec_vsn.erl"]}],
     Deps = get_deps(),
     [fetch_and_compile(Dep, Deps) || Dep <- BaseDeps],
+    bootstrap_app(providers, []),
 
     %% Build rebar3 modules with compile:file
-    bootstrap_rebar3(),
+    bootstrap_app(rebar, ["rebar_resource_v2.erl", "rebar_resource.erl"]),
 
     %% Build rebar.app from rebar.app.src.script
     {ok, App} = rebar_app_info:new(rebar, "3.27.0", filename:absname("_build/default/lib/rebar/")),
@@ -163,7 +184,9 @@ compile(App, FirstFiles) ->
     [compile_xrl_file(X) || X <- LeexFiles],
     YeccFiles = filelib:wildcard(filename:join([Dir, "src", "*.yrl"])),
     [compile_yrl_file(X) || X <- YeccFiles],
-    Sources =  FirstFilesPaths ++ filelib:wildcard(filename:join([Dir, "src", "*.erl"])),
+    Sources =  FirstFilesPaths ++
+        [File || File <- filelib:wildcard(filename:join([Dir, "src", "*.erl"])),
+                 not lists:member(File, FirstFilesPaths)],
     [compile_erl_file(X, [{i, filename:join(Dir, "include")}
                      ,debug_info
                      ,{outdir,  filename:join(Dir, "ebin")}
@@ -192,17 +215,24 @@ compile_erl_file(File, Opts) ->
             halt(1)
     end.
 
-bootstrap_rebar3() ->
-    filelib:ensure_dir("_build/default/lib/rebar/ebin/dummy.beam"),
-    code:add_path("_build/default/lib/rebar/ebin/"),
-    Res = symlink_or_copy(filename:absname("apps/rebar/src"),
-                          filename:absname("_build/default/lib/rebar/src")),
-    true = Res == ok orelse Res == exists,
-    Sources = ["apps/rebar/src/rebar_resource_v2.erl", "apps/rebar/src/rebar_resource.erl"
-               | filelib:wildcard("apps/rebar/src/*.erl") ],
-    [compile_erl_file(X, [{outdir, "_build/default/lib/rebar/ebin/"}
-                     ,return | additional_defines()]) || X <- Sources],
-    code:add_patha(filename:absname("_build/default/lib/rebar/ebin")).
+bootstrap_app(App, FirstFiles) ->
+    Name = atom_to_list(App),
+    SourceDir = filename:absname(filename:join(["apps", Name])),
+    TargetDir = filename:absname(filename:join(["_build/default/lib", Name])),
+    filelib:ensure_dir(filename:join(TargetDir, "dummy")),
+    Res1 = symlink_or_copy(filename:join(SourceDir, "src"),
+                           filename:join(TargetDir, "src")),
+    true = Res1 == ok orelse Res1 == exists,
+    case filelib:is_dir(filename:join(SourceDir, "include")) of
+        true ->
+            Res2 = symlink_or_copy(filename:join(SourceDir, "include"),
+                                   filename:join(TargetDir, "include")),
+            true = Res2 == ok orelse Res2 == exists;
+        false ->
+            ok
+    end,
+    compile(Name, FirstFiles),
+    code:add_patha(filename:join(TargetDir, "ebin")).
 
 %%rebar.hrl
 -define(FMT(Str, Args), lists:flatten(io_lib:format(Str, Args))).
