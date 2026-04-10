@@ -102,7 +102,8 @@ init(Caller, Verbosity) ->
         formatter => {?REBAR_LOG_FORMATER, #{
             intensity => Intensity
         }},
-        level => Level
+        level => Level,
+        filter_default => stop
     },
     case logger:add_handler(?REBAR_LOGGER, rebar_log_h, Config) of
         {error, {already_exist, ?REBAR_LOGGER}} ->
@@ -112,6 +113,8 @@ init(Caller, Verbosity) ->
     end,
     Filter = {fun logger_filters:domain/2, {stop, sub, [rebar]}},
     logger:add_handler_filter(default, rebar_filter, Filter),
+    RebarFilter = {fun logger_filters:domain/2, {log, sub, [rebar]}},
+    logger:add_handler_filter(?REBAR_LOGGER, rebar_filter, RebarFilter),
     application:set_env(rebar, log_caller, Caller),
     set_level(valid_level(Verbosity)).
 
