@@ -20,7 +20,7 @@
 
 -module(rebar_legacy_cli).
 
--export([to_command/1, to_parse_command/1, provider_help/2]).
+-export([to_command/1, to_parse_command/1]).
 
 -include("rebar.hrl").
 
@@ -173,27 +173,6 @@ sanitize_short(Arg, SeenShorts) ->
         error ->
             {Arg, SeenShorts}
     end.
-
-%% Fallback `rebar3 help` resolver for legacy/non-bare providers.
--spec provider_help([string()], [providers:t()]) -> ok | {error, string()}.
-provider_help([Task], Providers) ->
-    case providers:get_provider(list_to_atom(Task), Providers, default) of
-        not_found ->
-            {error, "Command " ++ Task ++ " not found"};
-        Provider ->
-            providers:help(Provider),
-            ok
-    end;
-provider_help([Namespace, Task], Providers) ->
-    case providers:get_provider(list_to_atom(Task), Providers, list_to_atom(Namespace)) of
-        not_found ->
-            {error, "Command " ++ Task ++ " not found in namespace " ++ Namespace};
-        Provider ->
-            providers:help(Provider),
-            ok
-    end;
-provider_help(Path, _Providers) ->
-    {error, "Command " ++ string:join(Path, " ") ++ " not found"}.
 
 warn_legacy_provider(Provider) ->
     ?WARN("Provider ~ts is using deprecated legacy CLI compatibility.",

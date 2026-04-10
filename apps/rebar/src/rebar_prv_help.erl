@@ -88,17 +88,32 @@ help(State) ->
 
 command_help(Path, State) ->
     Providers = rebar_state:providers(State),
-    try argparse:help(rebar_cli:global_cli(Providers),
-                      #{progname => "rebar3", command => Path}) of
-        HelpText ->
+    Cli = rebar_cli:global_cli(Providers),
+    case command_exists(Path, Cli) of
+        true ->
+            HelpText = argparse:help(Cli, #{progname => "rebar3", command => Path}),
             io:format("~ts", [HelpText]),
-            {ok, State}
-    catch
-        _:_ ->
-            case rebar_legacy_cli:provider_help(Path, Providers) of
-                ok ->
-                    {ok, State};
-                {error, _} = Error ->
-                    Error
-            end
+            {ok, State};
+        false ->
+            help_not_found(Path)
     end.
+
+command_exists([], _Cli) ->
+    true;
+command_exists([Segment | Rest], Cli) ->
+    case maps:find(commands, Cli) of
+        {ok, Commands} ->
+            case maps:find(Segment, Commands) of
+                {ok, Subcommand} ->
+                    command_exists(Rest, Subcommand);
+                error ->
+                    false
+            end;
+        error ->
+            false
+    end.
+
+help_not_found([Command]) ->
+    {error, "Command " ++ Command ++ " not found"};
+help_not_found([Namespace, Command]) ->
+    {error, "Command " ++ Command ++ " not found in namespace " ++ Namespace}.

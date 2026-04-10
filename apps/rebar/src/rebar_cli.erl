@@ -45,13 +45,12 @@ global_cli(Providers) ->
     }.
 
 provider_commands(Providers) ->
-    BareProviders = [P || P <- Providers, is_bare_provider(P)],
     Default = maps:from_list(
         [{atom_to_list(providers:impl(P)), provider_command(P)}
-         || P <- BareProviders, providers:namespace(P) =:= default]),
+         || P <- Providers, providers:namespace(P) =:= default]),
     Namespaced = maps:groups_from_list(
         fun(P) -> providers:namespace(P) end,
-        [P || P <- BareProviders, providers:namespace(P) =/= default]),
+        [P || P <- Providers, providers:namespace(P) =/= default]),
     maps:fold(
         fun(NS, Ps, Acc) ->
             NSName = atom_to_list(NS),
@@ -69,18 +68,24 @@ provider_commands(Providers) ->
 namespace_commands(Namespace, Providers) ->
     maps:from_list(
         [{atom_to_list(providers:impl(P)), provider_command(P)}
-         || P <- Providers, is_bare_provider(P),
+         || P <- Providers,
             providers:namespace(P) =:= Namespace]).
 
 provider_command(Provider) ->
     Mod = providers:module(Provider),
     {module, Mod} = code:ensure_loaded(Mod),
-    case erlang:function_exported(Mod, cli, 0) of
+    Command = case erlang:function_exported(Mod, cli, 0) of
+                  true ->
+                      Mod:cli();
+                  false ->
+                      %% Legacy providers may only expose getopt-style opts.
+                      rebar_legacy_cli:to_command(Provider)
+              end,
+    case is_bare_provider(Provider) of
         true ->
-            Mod:cli();
+            Command;
         false ->
-            %% Legacy providers may only expose getopt-style opts.
-            rebar_legacy_cli:to_command(Provider)
+            Command#{help => hidden}
     end.
 
 is_bare_provider(P) when is_tuple(P), tuple_size(P) >= 5 ->
