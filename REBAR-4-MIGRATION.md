@@ -30,6 +30,16 @@ tooling, plugins, and shell workflows to rebar `4.x`.
 
 For plugin provider CLI migration, see [PLUGIN-CLI-MIGRATION.md](PLUGIN-CLI-MIGRATION.md).
 
+### Template listing
+
+The `new` provider allows to create projects using templates.
+
+#### Change
+
+To list available templates, use `rebar new help`.
+
+Passing no template to `rebar new` is no longer the way to list templates.
+
 ### Experimental `r3` module shell API
 
 The `r3` module is the shell-facing convenience wrapper around `rebar_agent`

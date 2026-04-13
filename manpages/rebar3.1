@@ -201,10 +201,12 @@ Fetch dependencies.
 \fBhelp\fR 
 Display a list of tasks or help for a given task or subtask.
 .TP
-\fBnew\fR [\fI-f\fR|\fI--force\fR] 
+\fBnew\fR [\fI-f\fR|\fI--force\fR] \fItemplate\fR [\fIvar=value\fR] \.\.\.
 Create new project from templates.
 .IP
 \fI--force\fR: overwrite existing files
+.IP
+Use \fBrebar3 new help\fR to list templates or \fBrebar3 new help \fItemplate\fR for template details.
 .TP
 \fBpath\fR [\fI--app\fR] [\fI--base\fR] [\fI--bin\fR] [\fI--ebin\fR] [\fI--lib\fR] [\fI--priv\fR] [\fI-s\fR|\fI--separator\fR] [\fI--src\fR] [\fI--rel\fR] 
 Print paths to build dirs in current profile.
