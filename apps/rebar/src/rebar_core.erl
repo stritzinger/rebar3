@@ -188,13 +188,17 @@ parse_command_args(CommandProvider, State) ->
     Module = providers:module(CommandProvider),
     case erlang:function_exported(Module, cli, 0) of
         true ->
-            argparse:parse(rebar_state:command_args(State), Module:cli());
+            argparse:parse(rebar_state:command_args(State), Module:cli(), parse_opts());
         false ->
             argparse:parse(
               rebar_state:command_args(State),
-              rebar_legacy_cli:to_parse_command(CommandProvider)
+              rebar_legacy_cli:to_parse_command(CommandProvider),
+              parse_opts()
             )
     end.
+
+parse_opts() ->
+    #{progname => "rebar3"}.
 
 normalize_parsed_args(ParsedMap) ->
     Rest = maps:get(rest, ParsedMap, []),
