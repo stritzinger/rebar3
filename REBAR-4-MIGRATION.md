@@ -46,16 +46,16 @@ For commands that accept multiple dependency or app names `rebar` now supports s
 
 Examples:
 
-- `rebar3 clean --apps app1 app2`
-- `rebar3 unlock dep1 dep2`
-- `rebar3 upgrade dep1 dep2`
+- `rebar clean --apps app1 app2`
+- `rebar unlock dep1 dep2`
+- `rebar upgrade dep1 dep2`
 
 Comma-separated values are still accepted for backwards compatibility.
 
 ### Experimental `r3` module shell API
 
 The `r3` module is the shell-facing convenience wrapper around `rebar_agent`
-that is available from `rebar3 shell`.
+that is available from `rebar shell`.
 
 #### Change
 
