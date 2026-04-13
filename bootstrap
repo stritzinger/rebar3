@@ -62,8 +62,7 @@ main(Args) ->
     compile_vendored(),
 
     %% Fetch and build deps required to build rebar3
-    BaseDeps = [{getopt, []}
-               ,{cf, []}
+    BaseDeps = [{cf, []}
                ,{erlware_commons, ["ec_dictionary.erl", "ec_vsn.erl"]}],
     Deps = get_deps(),
     [fetch_and_compile(Dep, Deps) || Dep <- BaseDeps],
