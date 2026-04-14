@@ -1,3 +1,28 @@
+<!--
+%%
+%% %CopyrightBegin%
+%%
+%% SPDX-License-Identifier: Apache-2.0
+%%
+%% SPDX-FileCopyrightText: Copyright 2015-2026 Rebar3 and its contributors
+%%
+%% SPDX-FileCopyrightText: Copyright 2026 Dipl. Phys. Peer Stritzinger GmbH
+%%
+%% Licensed under the Apache License, Version 2.0 (the "License");
+%% you may not use this file except in compliance with the License.
+%% You may obtain a copy of the License at
+%%
+%%     http://www.apache.org/licenses/LICENSE-2.0
+%%
+%% Unless required by applicable law or agreed to in writing, software
+%% distributed under the License is distributed on an "AS IS" BASIS,
+%% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+%% See the License for the specific language governing permissions and
+%% limitations under the License.
+%%
+%% %CopyrightEnd%
+-->
+
 # Rebar3
 
 [![Build Status](https://github.com/erlang/rebar3/workflows/Common%20Test/badge.svg)](https://github.com/erlang/rebar3/actions)
@@ -152,7 +177,7 @@ others via the plugin ecosystem:
 | Releases             | Rebar3 supports [building releases](https://rebar3.org/docs/deployment/releases) with the `relx` tool, providing a way to ship fully self-contained Erlang systems. Release update scripts for live code updates can also be generated. |
 | Shell                | A full shell with your applications available can be started with `rebar3 shell`. From there, call tasks as `r3:do(compile)` to automatically recompile and reload the code without interruption |
 | Tarballs             | Releases can be packaged into tarballs ready to be deployed. |
-| Templates            | Configurable templates ship out of the box (try `rebar3 new` for a list or `rebar3 new help <template>` for a specific one). [Custom templates](https://rebar3.org/docs/tutorials/templates) are also supported, and plugins can also add their own. |
+| Templates            | Configurable templates ship out of the box (use `rebar3 new help` for a list or `rebar3 new help <template>` for a specific one). [Custom templates](https://rebar3.org/docs/tutorials/templates) are also supported, and plugins can also add their own. |
 | Xref                 | Run cross-reference analysis on the project with [xref](http://www.erlang.org/doc/apps/tools/xref_chapter.html) by calling `rebar3 xref`. |
 
 ## Migrating From rebar2

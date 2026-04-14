@@ -1,3 +1,25 @@
+%% %CopyrightBegin%
+%%
+%% SPDX-License-Identifier: Apache-2.0
+%%
+%% SPDX-FileCopyrightText: Copyright 2015-2026 Rebar3 and its contributors
+%%
+%% SPDX-FileCopyrightText: Copyright 2026 Dipl. Phys. Peer Stritzinger GmbH
+%%
+%% Licensed under the Apache License, Version 2.0 (the "License");
+%% you may not use this file except in compliance with the License.
+%% You may obtain a copy of the License at
+%%
+%%     http://www.apache.org/licenses/LICENSE-2.0
+%%
+%% Unless required by applicable law or agreed to in writing, software
+%% distributed under the License is distributed on an "AS IS" BASIS,
+%% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+%% See the License for the specific language governing permissions and
+%% limitations under the License.
+%%
+%% %CopyrightEnd%
+
 %%% This suite can't run tests for built-in templates because
 %%% they require being escriptize and we currently don't support
 %%% this in here!
@@ -7,7 +29,8 @@
 -include_lib("eunit/include/eunit.hrl").
 
 all() -> [app_git_user, app_hg_user, app_with_fallbacks,
-          app_with_flags1, app_with_flags2, plugin_tpl, unknown_template].
+          app_with_flags1, app_with_flags2, plugin_tpl,
+          missing_template_uses_rebar3_progname, unknown_template].
 
 
 init_per_testcase(plugin_tpl, Config) ->
@@ -158,6 +181,13 @@ plugin_tpl(Config) ->
     Result = filename:join(["src", Name++".erl"]), % In CWD
     {ok, Bin} = file:read_file(Result),
     {match, _} = re:run(Bin, Name, [multiline,global]).
+
+missing_template_uses_rebar3_progname(Config) ->
+    ?assertEqual({error, "rebar3: required argument missing: template"},
+                 case rebar_test_utils:run_and_check(Config, [], ["new"], return) of
+                     {error, Msg} -> {error, lists:flatten(Msg)};
+                     Other -> Other
+                 end).
 
 unknown_template(Config) ->
     Name = float_to_list(rand:uniform()),
