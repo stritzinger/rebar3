@@ -25,7 +25,7 @@
 -export([]).
 
 -callback init(any()) -> {ok, any()}.
--callback cli() -> map().
+-callback cli() -> argparse:command().
 -callback do(any()) -> {ok, any()} | {error, string()} | {error, {module(), any()}}.
 -callback format_error(any()) -> iolist().
 -optional_callbacks([cli/0]).
