@@ -79,7 +79,7 @@ generate_plugin(PluginBaseDir, PluginName) ->
     ProviderFile = filename:join([PluginDir, "src", PluginName ++ "_prv.erl"]),
     PluginBeam = filename:join([PluginDir, "_build", "default", "lib",
                                 PluginName, "ebin", PluginName ++ ".beam"]),
-    ok = filelib:ensure_path(filename:join(PluginBaseDir, "dummy")),
+    ok = filelib:ensure_path(PluginBaseDir),
     ?assertMatch({ok, _}, run_in_dir(PluginBaseDir, fun() ->
         rebar3:run(["new", "plugin", PluginName])
     end)),
@@ -96,8 +96,10 @@ run_in_dir(Dir, Fun) ->
 
 assert_file_contains(Path, Patterns) ->
     {ok, Bin} = file:read_file(Path),
-    [begin
-         {Pos, _Len} = binary:match(Bin, unicode:characters_to_binary(Pattern)),
-         ?assert(is_integer(Pos))
-     end || Pattern <- Patterns],
-    ok.
+    lists:foreach(
+      fun(Pattern) ->
+              ?assertNotEqual(
+                 nomatch,
+                 binary:match(Bin, unicode:characters_to_binary(Pattern))
+                )
+      end, Patterns).
