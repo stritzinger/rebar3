@@ -83,7 +83,7 @@
 -export_type([t/0,
               project_type/0]).
 
--type project_type() :: rebar3 | mix | undefined.
+-type project_type() :: rebar | mix | undefined.
 -type app_vsn() :: binary() | string() | {git, short} | {git, long}.
 
 -record(app_info_t, {name               :: binary() | undefined,
@@ -637,7 +637,7 @@ valid(#app_info_t{valid=Valid}) ->
     Valid.
 
 %% @doc sets whether the app is valid (built) or not. If left unset,
-%% rebar3 will do the detection of the status itself.
+%% rebar will do the detection of the status itself.
 %% Explicitly setting the value to `undefined' can force a re-evaluation.
 -spec valid(t(), boolean() | undefined) -> t().
 valid(AppInfo=#app_info_t{}, Valid) ->
@@ -705,8 +705,8 @@ apply_profiles(AppInfo, [default]) ->
     AppInfo;
 apply_profiles(AppInfo=#app_info_t{default = Defaults, profiles=CurrentProfiles}, Profiles) ->
     AppliedProfiles = case Profiles of
-                          %% Head of list global profile is special, only for use by rebar3
-                          %% It does not clash if a user does `rebar3 as global...` but when
+                          %% Head of list global profile is special, only for use by rebar
+                          %% It does not clash if a user does `rebar as global...` but when
                           %% it is the head we must make sure not to prepend `default`
                           [global | _] ->
                               Profiles;
