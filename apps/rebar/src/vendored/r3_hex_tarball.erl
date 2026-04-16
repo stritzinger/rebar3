@@ -17,8 +17,8 @@
 -define(VERSION, <<"3">>).
 -define(BUILD_TOOL_FILES, [
     {<<"mix.exs">>, <<"mix">>},
-    {<<"rebar.config">>, <<"rebar3">>},
-    {<<"rebar">>, <<"rebar3">>},
+    {<<"rebar.config">>, <<"rebar">>},
+    {<<"rebar">>, <<"rebar">>},
     {<<"Makefile">>, <<"make">>},
     {<<"Makefile.win">>, <<"make">>}
 ]).

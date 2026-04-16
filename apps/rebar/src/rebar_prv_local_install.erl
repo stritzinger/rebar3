@@ -88,9 +88,9 @@ format_error(Reason) ->
 
 bin_contents(OutputDir, Vsn) ->
     <<"#!/usr/bin/env sh
-## Rebar3 ", (iolist_to_binary(Vsn))/binary, "
-REBAR3_VSN=${REBAR3_VSN:-", (iolist_to_binary(Vsn))/binary, "}
-erl -pz ", (rebar_utils:to_binary(OutputDir))/binary,"/${REBAR3_VSN}/lib/*/ebin +sbtu +A1 -noshell -boot start_clean -s rebar main $REBAR3_ERL_ARGS -extra \"$@\"
+## Rebar ", (iolist_to_binary(Vsn))/binary, "
+REBAR_VSN=${REBAR_VSN:-", (iolist_to_binary(Vsn))/binary, "}
+erl -pz ", (rebar_utils:to_binary(OutputDir))/binary,"/${REBAR_VSN}/lib/*/ebin +sbtu +A1 -noshell -boot start_clean -s rebar main $REBAR_ERL_ARGS -extra \"$@\"
 ">>.
 
 extract_escript(State, ScriptPath) ->

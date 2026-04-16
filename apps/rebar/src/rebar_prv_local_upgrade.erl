@@ -74,14 +74,14 @@ do(State) ->
                           get_md5(ScriptPath)
                   end,
 
-            case maybe_fetch_rebar3(Md5) of
-                {saved, TmpRebar3} ->
+            case maybe_fetch_rebar(Md5) of
+                {saved, TmpRebar} ->
                     {Vsn, Archive} =
                         try
-                            {ok, Escript} = escript:extract(TmpRebar3, []),
-                            {comment, "Rebar3 " ++ Rebar3Vsn} = lists:keyfind(comment, 1, Escript),
+                            {ok, Escript} = escript:extract(TmpRebar, []),
+                            {comment, "Rebar " ++ RebarVsn} = lists:keyfind(comment, 1, Escript),
                             {archive, FullArchive} = lists:keyfind(archive, 1, Escript),
-                            {Rebar3Vsn, FullArchive}
+                            {RebarVsn, FullArchive}
                         catch
                             C:T:S ->
                                 ?DIAGNOSTIC("local upgrade version extraction exception: ~p:~p:~p", [C, T, S]),
@@ -105,16 +105,16 @@ format_error(Reason) ->
 
 %% Internal
 
-get_md5(Rebar3Path) ->
-    {ok, Rebar3File} = file:read_file(Rebar3Path),
-    Digest = crypto:hash(md5, Rebar3File),
+get_md5(RebarPath) ->
+    {ok, RebarFile} = file:read_file(RebarPath),
+    Digest = crypto:hash(md5, RebarFile),
     DigestHex = lists:flatten([io_lib:format("~2.16.0B", [X]) || X <- binary_to_list(Digest)]),
     rebar_string:lowercase(DigestHex).
 
-maybe_fetch_rebar3(Rebar3Md5) ->
+maybe_fetch_rebar(RebarMd5) ->
     TmpDir = ec_file:insecure_mkdtemp(),
-    TmpFile = filename:join(TmpDir, "rebar3"),
-    case request("https://s3.amazonaws.com/rebar3/rebar3", Rebar3Md5) of
+    TmpFile = filename:join(TmpDir, "rebar"),
+    case request("https://s3.amazonaws.com/rebar3/rebar3", RebarMd5) of
         {ok, Binary, ETag} ->
             file:write_file(TmpFile, Binary),
             case etag(TmpFile) of
