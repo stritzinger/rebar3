@@ -59,7 +59,7 @@ cli() ->
           short => $a,
           long => "-aliases",
           type => string,
-          help => "Comma separated list of OS level aliases on which rebar3 completion will be triggered (e.g. \"rebar\" or \"r3\")."},
+          help => "Comma separated list of OS level aliases on which rebar completion will be triggered (e.g. \"r3\")."},
         #{name => file,
           short => $f,
           long => "-file",
@@ -75,7 +75,7 @@ cli() ->
 -spec do(rebar_state:t()) -> {ok, rebar_state:t()} | {error, string()}.
 do(State) ->
     DefaultOpts = #{aliases => [],
-                    file => "_rebar3",
+                    file => "_rebar",
                     shell => detect_shell()},
     {CliOptsList, _} = rebar_state:command_parsed_args(State),
     CliOpts0 = maps:from_list(CliOptsList),

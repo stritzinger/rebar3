@@ -12,21 +12,21 @@ generate(Commands, #{shell:=zsh, aliases:=As}=CmplOpts) ->
         io_lib:nl(),
         main(Commands, CmplOpts),
         io_lib:nl(),
-        compdefs(["rebar3" | As])].
+        compdefs(["rebar" | As])].
 
 compdefs(As) ->
-    [["compdef _rebar3 ", A, io_lib:nl()] || A <- As].
+    [["compdef _rebar ", A, io_lib:nl()] || A <- As].
 
 main(Commands, CmplOpts) ->
     H = #{short=>$s,
             long=>"help",
-            help=>"rebar3 help",
+            help=>"rebar help",
             type=>boolean},
     V = #{short=>$v,
             long=>"version",
-            help=>"Version of rebar3",
+            help=>"Version of rebar",
             type=>boolean},
-    Rebar = #{name=>"rebar3",
+    Rebar = #{name=>"rebar",
             cmds=>Commands,
             args=>[H,V],
             help=>"Erlang build tool"},

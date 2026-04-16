@@ -52,27 +52,27 @@ do_match_prev_if_body([P | Rest],Cnt) ->
 main(Commands, #{shell:=bash, aliases:=Aliases}) ->
     MaxDepth=cmd_depth(Commands,1,0),
     CmdNames = [Name || #{name:=Name} <- Commands],
-    Triggers = ["rebar3" | Aliases],
+    Triggers = ["rebar" | Aliases],
     TriggerConds = [["${prev1} == \"",T,"\""] || T <- Triggers],
     Trigger = lists:join(" || ", TriggerConds),
     IfTriggerThen = ["if [[ ",Trigger," ]] ; then\n"],
 
-    ["_rebar3_ref_idx() {\n",
+    ["_rebar_ref_idx() {\n",
     "   startc=$1\n",
     "   # is at least one of the two previous words a flag?\n",
     "    prev=${COMP_CWORD}-${startc}+",?str(MaxDepth-1),"\n",
     "    if [[ ${COMP_WORDS[${prev}]} == -* || ${COMP_WORDS[${prev}-1]} == -*  ]] ; then\n",
     "        startc=$((startc+1))\n",
-    "        _rebar3_ref_idx $startc\n",
+    "        _rebar_ref_idx $startc\n",
     "    fi\n",
     "    return $startc\n",
     "}\n",
     "\n",
-    "_rebar3(){\n",
+    "_rebar(){\n",
     "   local cur sopts lopts cmdsnvars refidx \n",
     "   local ",lists:join(" ", ["prev"++?str(I) || I <- lists:seq(1, MaxDepth)]),"\n",
     "   COMPREPLY=()\n",
-    "   _rebar3_ref_idx ",?str(MaxDepth),"\n",
+    "   _rebar_ref_idx ",?str(MaxDepth),"\n",
     "   refidx=$?\n",
     "   cur=\"${COMP_WORDS[COMP_CWORD]}\"\n",
     prev_definitions(MaxDepth,1),
@@ -120,5 +120,5 @@ cmd_depth([_ | Rest],Depth,Max) ->
     cmd_depth(Rest,Depth,max(Depth,Max)).
 
 complete(#{shell:=bash, aliases:=Aliases}) ->
-    Triggers = ["rebar3" | Aliases],
-    [["complete -o filenames -F _rebar3 ", Trigger, "\n"] || Trigger <- Triggers].
+    Triggers = ["rebar" | Aliases],
+    [["complete -o filenames -F _rebar ", Trigger, "\n"] || Trigger <- Triggers].

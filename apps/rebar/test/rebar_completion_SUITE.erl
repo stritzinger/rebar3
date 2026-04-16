@@ -74,13 +74,13 @@ check_bash(Config) ->
     completion_gen(Config, Opts),
     {ok, Completion} = file:read_file(ComplFile),
     %% function definition
-    {match, _} = re:run(Completion, "_rebar3\\(\\)\\{"),
+    {match, _} = re:run(Completion, "_rebar\\(\\)\\{"),
     %% aliases
-    CompleteCmd = "complete -o filenames -F _rebar3 ",
+    CompleteCmd = "complete -o filenames -F _rebar ",
     lists:foreach(fun(Alias) ->
                     ?assertMatch({Alias, {match, _}}, {Alias, re:run(Completion, CompleteCmd++Alias++"\n")})
                   end,
-                  ["rebar3" | Aliases]).
+                  ["rebar" | Aliases]).
 
 check_zsh(Config) ->
     ComplFile = ?config(compl_file, Config),
@@ -91,12 +91,12 @@ check_zsh(Config) ->
     completion_gen(Config, Opts),
     {ok, Completion} = file:read_file(ComplFile),
     %% function definition
-    {match, _} = re:run(Completion, "function _rebar3 {"),
-    CompleteCmd = "compdef _rebar3 ",
+    {match, _} = re:run(Completion, "function _rebar {"),
+    CompleteCmd = "compdef _rebar ",
     lists:foreach(fun(Alias) ->
                     ?assertMatch({Alias, {match, _}}, {Alias, re:run(Completion, CompleteCmd++Alias++"\n")})
                   end,
-                  ["rebar3" | Aliases]).
+                  ["rebar" | Aliases]).
 
 check_bash_file_completion(Config) ->
     ComplFile = ?config(compl_file, Config),
@@ -127,4 +127,4 @@ completion_gen(Config, CmplOpts) ->
     {ok, _} = Res.
 
 compl_file(Config) ->
-    filename:absname(filename:join(?config(priv_dir,Config), "_rebar3")).
+    filename:absname(filename:join(?config(priv_dir,Config), "_rebar")).
