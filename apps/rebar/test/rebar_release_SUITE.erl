@@ -246,7 +246,7 @@ profile_overlays(Config) ->
     {ok, RebarConfig} =
     file:consult(rebar_test_utils:create_config(AppDir,
         %% Paths are relative, but to cwd in relx, not the project root as
-        %% seen by rebar3 (in non-test cases, they're the same).
+        %% seen by rebar (in non-test cases, they're the same).
         %% Work around by being explicit.
         [{relx, [{release, {list_to_atom(Name), Vsn},
                  [list_to_atom(Name)]},
@@ -341,7 +341,7 @@ overlay_vars(Config) ->
                   {var_tuple, {{{var_tuple}}}},
                   {var_list, {{{var_list}}}},
                   {var_bin, {{{var_bin}}}},
-                  {var_profile_string, {{profile_string}}}]], % this comes from `rebar3'
+                  {var_profile_string, {{profile_string}}}]], % this comes from `rebar'
     rebar_test_utils:create_config(AppDir,
                                    filename:join([AppDir, "config", "app.config"]),
                                    AppConfig),

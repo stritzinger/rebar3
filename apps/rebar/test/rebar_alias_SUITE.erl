@@ -138,7 +138,7 @@ release(Config) ->
     ok.
 
 check_namespaces() ->
-    [{doc, "Test calling commands with namespaces from rebar3"}].
+    [{doc, "Test calling commands with namespaces from rebar"}].
 check_namespaces(Config) ->
     AppDir = ?config(apps, Config),
     Name = rebar_test_utils:create_random_name("alias_args_"),
@@ -150,7 +150,7 @@ check_namespaces(Config) ->
     ok.
 
 create_lib() ->
-    [{doc, "Test calling commands with namespaces from rebar3"}].
+    [{doc, "Test calling commands with namespaces from rebar"}].
 create_lib(Config) ->
     AppDir = ?config(apps, Config),
     Name = rebar_test_utils:create_random_name("create_lib_"),
@@ -165,7 +165,7 @@ create_lib(Config) ->
     ok.
 
 command_console() ->
-    [{doc, "Test console output as per `rebar3 alias`"}].
+    [{doc, "Test console output as per `rebar alias`"}].
 command_console(Config) ->
     State = ?config(state, Config),
     RebarConfig

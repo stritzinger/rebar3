@@ -105,10 +105,10 @@ warn_vsn_once() ->
     case Warn of
         false -> ok;
         true ->
-            ?WARN("Rebar3 detected a lock file from a newer version. "
+            ?WARN("Rebar detected a lock file from a newer version. "
                   "It will be loaded in compatibility mode, but important "
                   "information may be missing or lost. It is recommended to "
-                  "upgrade Rebar3.", [])
+                  "upgrade Rebar.", [])
     end.
 
 %% Only call `write_lock_file/2' if the locks have changed.

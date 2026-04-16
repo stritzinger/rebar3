@@ -900,7 +900,7 @@ data_in_app_test_folder(Config) ->
     {ok, #file_info{type = regular}} = file:read_link_info(SymFile),
     ?assertEqual({ok, <<"I'm the content of a file in the root folder">>}, file:read_file(SymFile)).
 
-%% this test probably only fails when this suite is run via rebar3 with the --cover flag
+%% this test probably only fails when this suite is run via rebar with the --cover flag
 data_dir_correct(Config) ->
     DataDir = ?config(data_dir, Config),
     Parts = filename:split(DataDir),

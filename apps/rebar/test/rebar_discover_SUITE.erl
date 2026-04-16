@@ -7,7 +7,7 @@
 all() ->
     [empty_app_src, bad_app_src, invalid_app_src, overwrite_extension].
      %% note: invalid .app files without a .app.src also present
-     %% has rebar3 just ignoring the directory as not OTP-related.
+     %% has rebar just ignoring the directory as not OTP-related.
 
 
 init_per_testcase(_, Config) ->

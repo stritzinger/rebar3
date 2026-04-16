@@ -19,7 +19,7 @@ function __fish_rebar_using_command
 end
 
 ## ➜ ~ rebar --help
-## Rebar3 is a tool for working with Erlang projects.
+## Rebar is a tool for working with Erlang projects.
 ##
 ##
 ## Usage: rebar [-h] [-v] [<task>]

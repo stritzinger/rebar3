@@ -60,7 +60,7 @@ init_per_testcase(Case, Config) ->
     [{base_paths, BasePaths}, {root_dir, Dir}, {state, S6} | Config].
 
 end_per_testcase(_, Config) ->
-    %% this is deeply annoying because we interfere with rebar3's own
+    %% this is deeply annoying because we interfere with rebar's own
     %% path handling!
     rebar_paths:unset_paths([plugins, deps], ?config(state, Config)),
     Config.

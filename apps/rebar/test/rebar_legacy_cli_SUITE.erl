@@ -166,7 +166,7 @@ to_command_argparse_matches_legacy_runtime_for_getopt_types(Config) ->
 
 to_command_argparse_accepts_iodata_provider_help(_Config) ->
     Cli = rebar_legacy_cli:to_command(iodata_help_provider()),
-    Help = argparse:help(Cli, #{progname => "rebar3 xref"}),
+    Help = argparse:help(Cli, #{progname => "rebar xref"}),
     ?assert(is_list(Help) orelse is_binary(Help)).
 
 legacy_runtime_accepts_reserved_global_short_options(_Config) ->

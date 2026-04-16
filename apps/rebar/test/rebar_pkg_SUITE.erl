@@ -277,13 +277,13 @@ mock_config(Name, Config) ->
     TmpDir = filename:join([Priv, "tmp", atom_to_list(Name)]),
     Tid = ets:new(registry_table, [public]),
     AllDeps = [
-        {{<<"badindexchk">>,<<"1.0.0">>}, [[], ?bad_checksum, ?bad_checksum, [<<"rebar3">>]]},
-        {{<<"goodpkg">>,<<"1.0.0">>}, [[], ?good_checksum, ?good_checksum, [<<"rebar3">>]]},
-        {{<<"goodpkg">>,<<"1.0.1">>}, [[], ?good_checksum, ?good_checksum, [<<"rebar3">>]]},
-        {{<<"goodpkg">>,<<"1.1.1">>}, [[], ?good_checksum, ?good_checksum, [<<"rebar3">>]]},
-        {{<<"goodpkg">>,<<"2.0.0">>}, [[], ?good_checksum, ?good_checksum, [<<"rebar3">>]]},
-        {{<<"goodpkg">>,<<"3.0.0-rc.0">>}, [[], ?good_checksum, ?good_checksum, [<<"rebar3">>]]},
-        {{<<"badpkg">>,<<"1.0.0">>}, [[], ?badpkg_checksum, ?badpkg_checksum, [<<"rebar3">>]]}
+        {{<<"badindexchk">>,<<"1.0.0">>}, [[], ?bad_checksum, ?bad_checksum, [<<"rebar">>]]},
+        {{<<"goodpkg">>,<<"1.0.0">>}, [[], ?good_checksum, ?good_checksum, [<<"rebar">>]]},
+        {{<<"goodpkg">>,<<"1.0.1">>}, [[], ?good_checksum, ?good_checksum, [<<"rebar">>]]},
+        {{<<"goodpkg">>,<<"1.1.1">>}, [[], ?good_checksum, ?good_checksum, [<<"rebar">>]]},
+        {{<<"goodpkg">>,<<"2.0.0">>}, [[], ?good_checksum, ?good_checksum, [<<"rebar">>]]},
+        {{<<"goodpkg">>,<<"3.0.0-rc.0">>}, [[], ?good_checksum, ?good_checksum, [<<"rebar">>]]},
+        {{<<"badpkg">>,<<"1.0.0">>}, [[], ?badpkg_checksum, ?badpkg_checksum, [<<"rebar">>]]}
     ],
     ets:insert_new(Tid, AllDeps),
     CacheDir = filename:join([CacheRoot, "hex", "com", "test", "packages"]),

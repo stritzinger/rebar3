@@ -205,7 +205,7 @@ find_highest_matching_(Dep, DepVsn, #{name := Repo}, Table, State) when is_binar
 verify_table(State) ->
     ets:info(?PACKAGE_TABLE, named_table) =:= true orelse load_and_verify_version(State).
 
-%% Filter out optional dependencies. Rebar3 does not support optional
+%% Filter out optional dependencies. Rebar does not support optional
 %% dependencies, so we simply ignore them. For full parity with Mix, we would
 %% need to check if the dependency is included elsewhere (even transitively)
 %% without the optional flag, and only exclude it if all references are

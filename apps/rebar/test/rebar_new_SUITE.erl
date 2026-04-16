@@ -30,7 +30,7 @@
 
 all() -> [app_git_user, app_hg_user, app_with_fallbacks,
           app_with_flags1, app_with_flags2, plugin_tpl,
-          missing_template_uses_rebar3_progname, unknown_template].
+          missing_template_uses_rebar_progname, unknown_template].
 
 
 init_per_testcase(plugin_tpl, Config) ->
@@ -182,7 +182,7 @@ plugin_tpl(Config) ->
     {ok, Bin} = file:read_file(Result),
     {match, _} = re:run(Bin, Name, [multiline,global]).
 
-missing_template_uses_rebar3_progname(Config) ->
+missing_template_uses_rebar_progname(Config) ->
     ?assertEqual({error, "rebar: required argument missing: template"},
                  case rebar_test_utils:run_and_check(Config, [], ["new"], return) of
                      {error, Msg} -> {error, lists:flatten(Msg)};

@@ -197,13 +197,13 @@ mock_config(Name, Config) ->
      {<<"goodpkg">>,[[<<"1.0.0">>]]},
      {<<"topdep">>,[[<<"1.0.0">>]]},
      {<<"transitive">>, [[<<"1.0.0">>]]},
-     {{<<"fakelib">>,<<"1.0.0">>}, [[], ChkFake, [<<"rebar3">>]]},
-     {{<<"goodpkg">>,<<"1.0.0">>}, [[], ChkGood, [<<"rebar3">>]]},
+     {{<<"fakelib">>,<<"1.0.0">>}, [[], ChkFake, [<<"rebar">>]]},
+     {{<<"goodpkg">>,<<"1.0.0">>}, [[], ChkGood, [<<"rebar">>]]},
      {{<<"topdep">>,<<"1.0.0">>},
       [[
         {<<"transitive">>, <<"1.0.0">>, false, <<"transitive_app">>}
-       ], ChkTop, [<<"rebar3">>]]},
-     {{<<"transitive">>,<<"1.0.0">>}, [[], ChkTrans, [<<"rebar3">>]]}
+       ], ChkTop, [<<"rebar">>]]},
+     {{<<"transitive">>,<<"1.0.0">>}, [[], ChkTrans, [<<"rebar">>]]}
     ],
     Tid = ets:new(registry_table, [public]),
     ets:insert_new(Tid, AllDeps),
