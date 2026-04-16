@@ -1,13 +1,13 @@
-# bash completion for rebar3
+# bash completion for rebar
 
-_rebar3()
+_rebar()
 {
     local cur prev sopts lopts cmdsnvars
     COMPREPLY=()
     cur="${COMP_WORDS[COMP_CWORD]}"
     prev="${COMP_WORDS[COMP_CWORD-1]}"
 
-    if [[ ${prev} == rebar3 ]] ; then
+    if [[ ${prev} == rebar ]] ; then
         sopts="-h -v"
         lopts="--help --version"
         cmdsnvars=" \
@@ -218,7 +218,7 @@ _rebar3()
     fi
     return 0
 }
-complete -o nospace -F _rebar3 rebar3
+complete -o nospace -F _rebar rebar
 
 # Local variables:
 # mode: shell-script

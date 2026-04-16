@@ -1,15 +1,15 @@
-#compdef rebar3
+#compdef rebar
 
 
 
-_rebar3 () {
+_rebar () {
     typeset -A opt_args
     local curcontext="$curcontext" state line
 
     local ret=1
 
     _arguments -C \
-        '1: :_rebar3_tasks' \
+        '1: :_rebar_tasks' \
         '*::arg:->args' \
     && ret=0
 
@@ -20,7 +20,7 @@ _rebar3 () {
                 (as)
                     _arguments \
                         '1:name' \
-                        '2: :_rebar3_tasks' \
+                        '2: :_rebar_tasks' \
                     && ret=0
                 ;;
                 (clean)
@@ -100,7 +100,7 @@ _rebar3 () {
                     && ret=0
                 ;;
                 (help)
-                    _arguments '1: :_rebar3_tasks' && ret=0
+                    _arguments '1: :_rebar_tasks' && ret=0
                 ;;
                 (new)
                     _arguments \
@@ -175,7 +175,7 @@ _rebar3 () {
                     && ret=0
                 ;;
                 (report)
-                    _arguments '1: :_rebar3_tasks' && ret=0
+                    _arguments '1: :_rebar_tasks' && ret=0
                 ;;
                 (shell)
                     _message 'Start a shell with project and deps preloaded' && ret=0
@@ -210,7 +210,7 @@ _rebar3 () {
                 ;;
                 (unlock)
                     _arguments \
-                        '*: :_rebar3_list_deps' \
+                        '*: :_rebar_list_deps' \
                     && ret=0
                 ;;
                 (unstable)
@@ -223,7 +223,7 @@ _rebar3 () {
                 ;;
                 (upgrade)
                     _arguments \
-                        '*: :_rebar3_list_deps' \
+                        '*: :_rebar_list_deps' \
                     && ret=0
                 ;;
                 (version)
@@ -235,8 +235,8 @@ _rebar3 () {
     esac
 }
 
-(( $+functions[_rebar3_tasks] )) ||
-_rebar3_tasks() {
+(( $+functions[_rebar_tasks] )) ||
+_rebar_tasks() {
     local tasks; tasks=(
         'as:Higher order provider for running multiple tasks in a sequence as a certain profiles.'
         'clean:Remove compiled beam files from apps.'
@@ -255,7 +255,7 @@ _rebar3_tasks() {
         'plugins:List or upgrade plugins.'
         'release:Build release of project.'
         'relup:Create relup from 2 releases.'
-        'report:Provide a crash report to be sent to the rebar3 issues page.'
+        'report:Provide a crash report to be sent to the rebar issues page.'
         'shell:Run shell with project apps and deps in path.'
         'tar:Tar archive of release built of project.'
         'tree:Print dependency tree.'
@@ -266,18 +266,18 @@ _rebar3_tasks() {
         'version:Print version for rebar and current Erlang.'
         'xref:Run cross reference analysis.'
     )
-    _describe -t tasks 'rebar3 tasks' tasks "$@"
+    _describe -t tasks 'rebar tasks' tasks "$@"
 }
 
-(( $+functions[_rebar3_list_deps] )) ||
-_rebar3_list_deps() {
+(( $+functions[_rebar_list_deps] )) ||
+_rebar_list_deps() {
     local -a cmd packages deps_long
     deps_long=($PWD/_build/default/lib/*(/))
     packages=( ${${deps_long#$PWD/_build/default/lib/}%-*-*} )
     compadd "$@" -a packages
 }
 
-_rebar3 "$@"
+_rebar "$@"
 
 # Local variables:
 # mode: shell-script
