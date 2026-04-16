@@ -7,14 +7,14 @@
 
 ### Environment ###
 
-- Add the result of `rebar3 report` to your message:
+- Add the result of `rebar report` to your message:
 
 ```
-$ rebar3 report "my failing command"
+$ rebar report "my failing command"
 ...
 ```
 
-- Verify whether the version of rebar3 you're running is the latest release (see https://github.com/erlang/rebar3/releases)
+- Verify whether the version of rebar you're running is the latest release (see https://github.com/erlang/rebar3/releases)
 - If possible, include information about your project and its structure. Open source projects or examples are always easier to debug.
   If you can provide an example code base to reproduce the issue on, we will generally be able to provide more help, and faster.
 
@@ -23,7 +23,7 @@ $ rebar3 report "my failing command"
 Describe the current behaviour. In case of a failure, crash, or exception, please include the result of running the command with debug information:
 
 ```
-DEBUG=1 rebar3 <my failing command>
+DEBUG=1 rebar <my failing command>
 ```
 
 ### Expected behaviour ###

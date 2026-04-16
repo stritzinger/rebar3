@@ -100,7 +100,7 @@ get_level() ->
 
 log(diagnostic, Str, Args) ->
     %% The diagnostic level is intended for debug info
-    %% that is useful for rebar3 developers and implementers who
+    %% that is useful for rebar developers and implementers who
     %% understand the internal structure; the debug level
     %% itself should aim to be useful for users themselves.
     %% The underlying library only supports debug at its lowest

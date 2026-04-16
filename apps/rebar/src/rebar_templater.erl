@@ -342,7 +342,7 @@ cache_escript_files(State) ->
                     [], rebar_state:escript_path(State)),
     Files.
 
-%% Find all the template indexes hiding in the rebar3 escript.
+%% Find all the template indexes hiding in the rebar escript.
 find_escript_templates(Files) ->
     [{escript, Name}
      || {Name, _Bin} <- Files,

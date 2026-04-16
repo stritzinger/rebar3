@@ -454,7 +454,7 @@ try_handle_resource_files(AppInfo, AppDir, [{Type, AppSrcFile} | _Rest], Validat
     when Type =:= app_src orelse Type =:= script ->
     try_handle_app_src_file(AppInfo, AppDir, AppSrcFile, Validate);
 try_handle_resource_files(AppInfo, AppDir, [{mix_exs, _MixExs} | Rest], Validate) ->
-    %% prefer a rebar3 buildable app if both are found
+    %% prefer a rebar buildable app if both are found
     case try_handle_resource_files(AppInfo, AppDir, Rest, Validate) of
         false ->
             {true, rebar_app_info:project_type(AppInfo, mix)};

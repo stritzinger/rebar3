@@ -179,7 +179,7 @@ del_dep(OldValue, [Value|Values]) ->
 
 %% @private
 %% If the initial deletion did not work remove it as always
-%% to ensure rebar3 at least maintains its old behaviour.
+%% to ensure rebar at least maintains its old behaviour.
 del_dep(OldValue, OldValue, Value) ->
     OldValue--Value;
 del_dep(NewValue, _OldValue, _Value) ->

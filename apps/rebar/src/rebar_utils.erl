@@ -850,7 +850,7 @@ update_code(Paths, Opts) ->
                                   ok;
                               {ok, Modules} ->
                                   %% replace_path causes problems when running
-                                  %% tests in projects like erlware_commons that rebar3
+                                  %% tests in projects like erlware_commons that rebar
                                   %% also includes
                                   %code:replace_path(App, Path),
                                   code:del_path(App),
@@ -886,7 +886,7 @@ remove_from_code_path(Paths) ->
                           code:del_path(Path)
                   end, lists:usort(Paths)).
 
-%% @doc Revert to only having the beams necessary for running rebar3 and
+%% @doc Revert to only having the beams necessary for running rebar and
 %% plugins in the path
 -spec cleanup_code_path([string()]) -> true | {error, term()}.
 cleanup_code_path(OrigPath) ->

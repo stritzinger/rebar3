@@ -474,7 +474,7 @@ reread_config(AppsToStart, State) ->
             ok;
         ConfigList ->
             %% This allows people who use applications that are also
-            %% depended on by rebar3 or its plugins to change their
+            %% depended on by rebar or its plugins to change their
             %% configuration at runtime based on the configuration files.
             %%
             %% To do this, we stop apps that are already started before
@@ -483,11 +483,11 @@ reread_config(AppsToStart, State) ->
             %% We make an exception for apps that:
             %%  - are not already running
             %%  - would not be restarted (and hence would break some
-            %%    compatibility with rebar3)
+            %%    compatibility with rebar)
             %%  - are not in the config files and would see no config
             %%    changes
             %%  - are not in a blacklist, where changing their config
-            %%    would be risky to the shell or the rebar3 agent
+            %%    would be risky to the shell or the rebar agent
             %%    functionality (i.e. changing inets may break proxy
             %%    settings, stopping `kernel' would break everything)
             Running = [App || {App, _, _} <- application:which_applications()],

@@ -51,7 +51,7 @@ clashing_apps(Targets, State) ->
 -spec normalize_targets(targets()) -> targets().
 normalize_targets(List) ->
     %% Plan for the eventuality of getting values piped in
-    %% from future versions of rebar3, possibly from plugins and so on,
+    %% from future versions of rebar, possibly from plugins and so on,
     %% which means we'd risk failing kind of violently. We only support
     %% deps, plugins and runtime deps.
     TmpList = lists:foldl(

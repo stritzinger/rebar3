@@ -63,7 +63,7 @@ consult_app_file(File) ->
     consult_file_(File).
 
 %% @doc reads the lock file for the project, and re-formats its
-%% content to match the internals for rebar3.
+%% content to match the internals for rebar.
 -spec consult_lock_file(file:filename()) -> [any()]. % TODO: refine lock()
 consult_lock_file(File) ->
     Terms = consult_file_(File),
@@ -73,7 +73,7 @@ consult_lock_file(File) ->
         [Locks] when is_list(Locks) -> % beta/1.0.0 lock file
             read_attrs(beta, Locks, []);
         [{Vsn, Locks}|Attrs] when is_list(Locks) -> % versioned lock file
-            %% Because this is the first version of rebar3 to introduce a lock
+            %% Because this is the first version of rebar to introduce a lock
             %% file, all versioned lock files with a different version have
             %% to be newer.
             case Vsn of
@@ -130,7 +130,7 @@ maybe_write_lock_file(LockFile, Locks, Locks) ->
     end.
 
 %% @doc Converts the internal format for locks into the multi-version
-%% compatible one used within rebar3 lock files.
+%% compatible one used within rebar lock files.
 %% @end
 %% TODO: refine type for lock()
 -spec write_lock_file(file:filename(), [any()]) -> ok | {error, term()}.
@@ -404,7 +404,7 @@ check_newly_added_(Dep, LockedDeps) when is_atom(Dep) ->
                     {true, Name};
                 _ ->
                     ?WARN("Newly added dep ~ts is locked at a lower level. "
-                          "If you really want to unlock it, use 'rebar3 upgrade ~ts'",
+                          "If you really want to unlock it, use 'rebar upgrade ~ts'",
                           [Name, Name]),
                     false
             end

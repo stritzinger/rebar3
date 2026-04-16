@@ -3,7 +3,7 @@
 %%% boot or to remove dead comments.
 %%%
 %%% Its usage is required because unlike the standard (new) shell, it is
-%%% not possible to get rid of the old one without killing the rebar3 escript
+%%% not possible to get rid of the old one without killing the rebar escript
 %%% at the same time. As such, this module is being used to duplicate
 %%% the old shell while stealing the usage of the IO driver {fd,0,1}
 %%% (stdio) and then booting our own shell with paths and stuff in it.

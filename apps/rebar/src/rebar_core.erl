@@ -30,7 +30,7 @@
 %% %CopyrightEnd%
 
 %% @doc Module providing core functionality about command dispatch, namespacing,
-%% and chaining for rebar3.
+%% and chaining for rebar.
 -module(rebar_core).
 
 -export([init_command/2, process_namespace/2, process_command/2, do/2, format_error/1]).

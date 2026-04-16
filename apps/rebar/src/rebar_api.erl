@@ -89,7 +89,7 @@ unset_paths(List, State) ->
 add_deps_to_path(State) ->
   code:add_pathsa(rebar_state:code_paths(State, all_deps)).
 
-%% @doc Revert to only having the beams necessary for running rebar3 and
+%% @doc Revert to only having the beams necessary for running rebar and
 %% plugins in the path
 -spec restore_code_path(rebar_state:t()) -> true | {error, term()}.
 restore_code_path(State) ->

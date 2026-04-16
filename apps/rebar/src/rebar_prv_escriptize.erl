@@ -215,7 +215,7 @@ get_extra(State) ->
                                       resolve_incl_priv(Entry, AllApps)
                               end, InclPriv),
     % `escript_incl_extra` is kept for historical reasons as its internal use in
-    % rebar3 has been replaced with `escript_incl_priv`.
+    % rebar has been replaced with `escript_incl_priv`.
     InclExtraPaths = rebar_state:get(State, escript_incl_extra, []),
     lists:foldl(fun({Wildcard, Dir}, Files) ->
                         load_files(Wildcard, Dir) ++ Files

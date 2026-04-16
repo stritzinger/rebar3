@@ -1,5 +1,5 @@
 %%% Common functions to boot/stop distributed setups for
-%%% the rebar3 script.
+%%% the rebar script.
 -module(rebar_dist_utils).
 -export([either/3, short/2, long/2, find_options/1]).
 -include("rebar.hrl").
@@ -33,7 +33,7 @@ long(Name, Opts) ->
     start(Name, longnames, Opts).
 
 %% @doc utility function to extract all distribution options
-%% from a rebar3 state tuple.
+%% from a rebar state tuple.
 -spec find_options(rebar_state:t()) -> {Long, Short, Opts} when
       Long :: atom(),
       Short :: atom(),

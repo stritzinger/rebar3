@@ -220,7 +220,7 @@ prepare_compiler_env(Compiler, Apps) ->
             %% We use code:add_pathz for better caching speed when
             %% dealing with overall projects and deps under profiles,
             %% but for correctness' sake, we also have to
-            %% use code:add_patha to go above rebar3's own dependencies
+            %% use code:add_patha to go above rebar's own dependencies
             %% when they clash to avoid overtaking the project's
             %% path for includes and priv/
             case lists:member(rebar_app_info:name(AppInfo), RebarLibs) of

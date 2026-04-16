@@ -991,7 +991,7 @@ help(retry) ->
     "Experimental feature. If any specification for previously failing test is found, runs them.";
 help(fail_fast) ->
     "Experimental feature. If any test fails, the run is aborted. Since common test does not "
-    "support this natively, we abort the rebar3 run on a failure. This May break CT's disk logging and "
-    "other rebar3 features.";
+    "support this natively, we abort the rebar run on a failure. This May break CT's disk logging and "
+    "other rebar features.";
 help(_) ->
     "".

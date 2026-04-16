@@ -70,7 +70,7 @@ cli() ->
           type => string,
           action => append,
           default => [],
-          help => "Clean under profile. Equivalent to `rebar3 as <profile> clean`"}
+          help => "Clean under profile. Equivalent to `rebar as <profile> clean`"}
     ]}.
 
 -spec do(rebar_state:t()) -> {ok, rebar_state:t()} | {error, string()}.

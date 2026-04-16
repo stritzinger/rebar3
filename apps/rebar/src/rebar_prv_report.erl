@@ -52,7 +52,7 @@ init(State) ->
 
 -spec cli() -> argparse:command().
 cli() ->
-    #{help => "Provide a crash report to be sent to the rebar3 issues page.",
+    #{help => "Provide a crash report to be sent to the rebar issues page.",
       arguments => [
         #{name => task,
           type => string,
@@ -67,7 +67,7 @@ do(State) ->
     Command = proplists:get_value(task, Args),
     %% Show command version (if a plugin?)
     %% ...
-    %% Show app versions (including rebar3)
+    %% Show app versions (including rebar)
     {ok, Vsn} = application:get_key(rebar, vsn),
     {ok, Apps} = application:get_key(rebar, applications),
     [application:load(App) || App <- Apps],
@@ -85,7 +85,7 @@ do(State) ->
     UTC = calendar:universal_time(),
     %%
     ?CONSOLE(
-        "Rebar3 report~n"
+        "Rebar report~n"
         " version ~ts~n"
         " generated at ~ts~n"
         "=================~n"

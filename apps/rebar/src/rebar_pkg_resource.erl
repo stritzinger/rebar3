@@ -127,7 +127,7 @@ make_vsn(_, _) ->
 format_error({bad_registry_checksum, Name, Vsn, Expected, Found}) ->
     io_lib:format("The checksum for package at ~ts-~ts (~ts) does not match the "
                   "checksum expected from the registry (~ts). "
-                  "Run `rebar3 do unlock ~ts, update` and then try again.",
+                  "Run `rebar do unlock ~ts, update` and then try again.",
                   [Name, Vsn, Found, Expected, Name]).
 
 %%------------------------------------------------------------------------------
@@ -252,7 +252,7 @@ serve_from_memory(TmpDir, Binary, {pkg, _Name, _Vsn, OldHash, Hash, _RepoConfig}
             #{inner_checksum := <<OldChecksum:256/big-unsigned>>} = Res,
             %% Not triggerable in tests, but code feels logically wrong without it since inner checksums are not hard
             %% deprecated. This logic should be removed when inner checksums do become hard deprecated and/or no longer
-            %% supported by rebar3.
+            %% supported by rebar.
             case OldRegistryChecksum == OldChecksum of
                 true ->
                     ?DEBUG("Expected hash ~64.16.0B does not match outer checksum of fetched package ~64.16.0B, but

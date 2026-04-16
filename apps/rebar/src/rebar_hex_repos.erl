@@ -36,7 +36,7 @@ from_state(BaseConfig, State) ->
     Repos = repos(HexConfig),
     %% auth is stored in a separate config file since the plugin generates and modifies it
     Auth = ?MODULE:auth_config(State),
-    %% add base config entries that are specific to use by rebar3 and not overridable
+    %% add base config entries that are specific to use by rebar and not overridable
     Repos1 = merge_with_base_and_auth(Repos, BaseConfig, Auth),
     %% merge organizations parent repo options into each oraganization repo
     update_organizations(maybe_override_default_repo_url(Repos1, State)).

@@ -127,7 +127,7 @@ terminate(#state{acc=Acc}) ->
     Path = filename:join(lists:droplast(filename:split(Cwd))++["retry.spec"]),
     io:format(user,
               "EXPERIMENTAL: Writing retry specification at ~s~n"
-              "              call rebar3 ct with '--retry' to re-run failing cases.~n",
+              "              call rebar ct with '--retry' to re-run failing cases.~n",
              [Path]),
     file:write_file(Path, Spec),
     ok.

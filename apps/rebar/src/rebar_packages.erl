@@ -114,7 +114,7 @@ load_and_verify_version(State) ->
                 V ->
                     %% no reason to confuse the user since we just start fresh and they
                     %% shouldn't notice, so log as a debug message only
-                    ?DEBUG("Package index version mismatch. Current version ~p, this rebar3 expecting ~p",
+                    ?DEBUG("Package index version mismatch. Current version ~p, this rebar expecting ~p",
                            [V, ?PACKAGE_INDEX_VERSION]),
                     (catch ets:delete(?PACKAGE_TABLE)),
                     new_package_table()
@@ -166,7 +166,7 @@ package_dir(Repo, State) ->
 
 
 %% Hex supports use of ~> to specify the version required for a dependency.
-%% Since rebar3 requires exact versions to choose from we find the highest
+%% Since rebar requires exact versions to choose from we find the highest
 %% available version of the dep that passes the constraint.
 
 %% `~>` will never include pre-release versions of its upper bound.

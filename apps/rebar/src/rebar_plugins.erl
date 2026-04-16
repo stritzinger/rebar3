@@ -146,7 +146,7 @@ handle_plugin(Profile, Plugin, State, SrcPlugins, Upgrade) ->
     catch
         ?WITH_STACKTRACE(C,T,S)
             ?DEBUG("~p ~p ~p", [C, T, S]),
-            ?WARN("Errors loading plugin ~p. Run rebar3 with DEBUG=1 set to see errors.", [Plugin]),
+            ?WARN("Errors loading plugin ~p. Run rebar with DEBUG=1 set to see errors.", [Plugin]),
             {[], State}
     end.
 

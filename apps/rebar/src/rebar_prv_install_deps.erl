@@ -134,7 +134,7 @@ format_error(Reason) ->
     io_lib:format("~p", [Reason]).
 
 %% @doc Allows other providers to install deps in a given profile
-%% manually, outside of what is provided by rebar3's deps tuple.
+%% manually, outside of what is provided by rebar's deps tuple.
 -spec handle_deps_as_profile(Profile, State, Deps, Upgrade) -> {Apps, State} when
       Profile :: atom(),
       State :: rebar_state:t(),
@@ -219,7 +219,7 @@ maybe_lock(Profile, AppInfo, Seen, State, Level) ->
                             %% shallower than the existing lock, replace the
                             %% existing lock. This prevents weird transient
                             %% lock-tree states (which would self-heal on a
-                            %% later run) after a `rebar3 upgrade <app>'
+                            %% later run) after a `rebar upgrade <app>'
                             %% command when a deep dep switches lineages for
                             %% another newer parent.
                             Locks = rebar_state:lock(State),
