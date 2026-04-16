@@ -16,5 +16,5 @@ erl_crash.dump
 logs
 .idea
 *.iml
-rebar3.crashdump
+rebar.crashdump
 *~

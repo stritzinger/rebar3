@@ -113,13 +113,13 @@ do_(State) ->
 format_error({dep_app_not_found, AppDir, AppName}) ->
     io_lib:format("Dependency failure: Application ~ts not found at the top level of directory ~ts", [AppName, AppDir]);
 format_error({load_registry_fail, Dep}) ->
-    io_lib:format("Error loading registry to resolve version of ~ts. Try fixing by running 'rebar3 update'", [Dep]);
+    io_lib:format("Error loading registry to resolve version of ~ts. Try fixing by running 'rebar update'", [Dep]);
 format_error({bad_constraint, Name, Constraint}) ->
     io_lib:format("Unable to parse version for package ~ts: ~ts", [Name, Constraint]);
 format_error({parse_dep, Dep}) ->
     io_lib:format("Failed parsing dep ~p", [Dep]);
 format_error({not_rebar_package, Package, Version}) ->
-    io_lib:format("Package not buildable with rebar3: ~ts-~ts", [Package, Version]);
+    io_lib:format("Package not buildable with rebar: ~ts-~ts", [Package, Version]);
 format_error({missing_package, Package, Version}) ->
     io_lib:format("Package not found in registry: ~ts-~ts", [Package, Version]);
 format_error({missing_package, Package}) ->

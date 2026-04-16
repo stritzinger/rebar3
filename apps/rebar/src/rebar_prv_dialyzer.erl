@@ -41,7 +41,7 @@
 
 -define(PROVIDER, dialyzer).
 -define(DEPS, [compile]).
--define(PLT_PREFIX, "rebar3").
+-define(PLT_PREFIX, "rebar").
 
 %% ===================================================================
 %% Public API
@@ -64,17 +64,17 @@ cli() ->
               type => boolean, default => true,
               help => "Enable success typing analysis. Default: true"},
             #{name => base_plt_location, long => "-base-plt-location", type => string,
-              help => "The location of base PLT file, defaults to $HOME/.cache/rebar3"},
+              help => "The location of base PLT file, defaults to $HOME/.cache/rebar"},
             #{name => plt_location, long => "-plt-location", type => string,
               help => "The location of the PLT file, defaults to the profile's base directory"},
             #{name => plt_prefix, long => "-plt-prefix", type => string,
               % no default here, because that would overwrite configurations
-              help => "The prefix to the PLT file, defaults to \"rebar3\""},
+              help => "The prefix to the PLT file, defaults to \"rebar\""},
             #{name => app, short => $a, long => "-app", type => string,
               help => "Perform success typing analysis of a single application"},
             #{name => base_plt_prefix, long => "-base-plt-prefix", type => string,
               % no default here, because that would overwrite configurations
-              help => "The prefix to the base PLT file, defaults to \"rebar3\""},
+              help => "The prefix to the base PLT file, defaults to \"rebar\""},
             #{name => statistics, long => "-statistics", type => boolean,
               help => "Print information about the progress of execution. Default: false"}],
     Args = case is_incremental_available() of

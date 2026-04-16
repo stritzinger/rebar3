@@ -118,7 +118,7 @@ format_error({eval_parse, Exp, Msg}) ->
     io_lib:format("Failed to parse -eval expression: \"~ts\". Error message: ~ts", [Exp, Msg]);
 format_error({eval_exprs, Exp, {C, E, S}}) ->
     ?DEBUG("--eval failure details: ~p:~p~nStacktrace: ~p", [C, E, S]),
-    io_lib:format("Failed to evaluate expression: \"~ts\". Error: ~p:~p. Run with DIAGNOSTIC=1 to stacktrace or consult rebar3.crashdump", [Exp, C, E]);
+    io_lib:format("Failed to evaluate expression: \"~ts\". Error: ~p:~p. Run with DIAGNOSTIC=1 to stacktrace or consult rebar.crashdump", [Exp, C, E]);
 format_error(Reason) ->
     io_lib:format("~p", [Reason]).
 

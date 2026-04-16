@@ -241,7 +241,7 @@ init_config() ->
     Config1 = rebar_config:merge_locks(Config, rebar_config:consult_lock_file(?LOCK_FILE)),
     InitState = rebar_state:new(Config1),
 
-    %% If $HOME/.config/rebar3/rebar.config exists load and use as global config
+    %% If $HOME/.config/rebar/rebar.config exists load and use as global config
     GlobalConfigFile = rebar_dir:global_config(InitState),
     State = case filelib:is_regular(GlobalConfigFile) of
                 true ->
@@ -368,9 +368,9 @@ handle_error({error, {Module, Reason}}, Stacktrace) ->
     case code:which(Module) of
         non_existing ->
             ?CRASHDUMP("~p: ~p~n~p~n~n", [Module, Reason, Stacktrace]),
-            ?ERROR("Uncaught error in rebar_core. Run with DIAGNOSTIC=1 to stacktrace or consult rebar3.crashdump", []),
+            ?ERROR("Uncaught error in rebar_core. Run with DIAGNOSTIC=1 to stacktrace or consult rebar.crashdump", []),
             ?DEBUG("Uncaught error: ~p ~p", [Module, Reason]),
-            ?INFO("When submitting a bug report, please include the output of `rebar3 report \"your command\"`", []);
+            ?INFO("When submitting a bug report, please include the output of `rebar report \"your command\"`", []);
         _ ->
             ?ERROR("~ts", [Module:format_error(Reason)])
     end,
@@ -382,14 +382,14 @@ handle_error(Error, StackTrace) ->
     %% Nothing should percolate up from rebar_core;
     %% Dump this error to console
     ?CRASHDUMP("Error: ~p~n~p~n~n", [Error, StackTrace]),
-    ?ERROR("Uncaught error in rebar_core. Run with DIAGNOSTIC=1 to see stacktrace or consult rebar3.crashdump", []),
+    ?ERROR("Uncaught error in rebar_core. Run with DIAGNOSTIC=1 to see stacktrace or consult rebar.crashdump", []),
     ?DEBUG("Uncaught error: ~p", [Error]),
     case StackTrace of
         [] -> ok;
         Trace ->
             ?DEBUG("Stack trace to the error location:~n~p", [Trace])
     end,
-    ?INFO("When submitting a bug report, please include the output of `rebar3 report \"your command\"`", []),
+    ?INFO("When submitting a bug report, please include the output of `rebar report \"your command\"`", []),
     erlang:halt(1).
 
 %% @private Boot Erlang dependencies; problem is that escripts don't auto-boot
@@ -420,7 +420,7 @@ ensure_running(App, Caller) ->
         ok -> ok;
         {error, {already_started, App}} -> ok;
         {error, Reason} ->
-            %% These errors keep rebar3's own configuration to be loaded,
+            %% These errors keep rebar's own configuration to be loaded,
             %% which disables the log level and causes a failure without
             %% showing the error message. Bypass this entirely by overriding
             %% the default value (which allows logging to take place)

@@ -124,7 +124,7 @@ log(Level, Str, Args) ->
     end.
 
 crashdump(Str, Args) ->
-    crashdump("rebar3.crashdump", Str, Args).
+    crashdump("rebar.crashdump", Str, Args).
 crashdump(File, Str, Args) ->
     case application:get_env(rebar, log_caller) of
         {ok, api} ->

@@ -60,7 +60,7 @@ init(State) ->
 
 -spec cli() -> argparse:command().
 cli() ->
-    #{help => "Extract libs from rebar3 escript along with a run script.",
+    #{help => "Extract libs from rebar escript along with a run script.",
       arguments => []}. 
 
 -spec do(rebar_state:t()) -> {ok, rebar_state:t()} | {error, string()}.
@@ -72,7 +72,7 @@ do(State) ->
         _ ->
             case rebar_state:escript_path(State) of
                 undefined ->
-                    ?INFO("Already running from an unpacked rebar3. Nothing to do...", []),
+                    ?INFO("Already running from an unpacked rebar. Nothing to do...", []),
                     {ok, State};
                 ScriptPath ->
                     extract_escript(State, ScriptPath)
@@ -100,8 +100,8 @@ extract_escript(State, ScriptPath) ->
     install_escript(State, Vsn, Archive).
 
 install_escript(State, Vsn, Archive) ->
-    %% Extract contents of Archive to ~/.cache/rebar3/vsns/<VSN>/lib
-    %% And add a rebar3 bin script to ~/.cache/rebar3/bin
+    %% Extract contents of Archive to ~/.cache/rebar/vsns/<VSN>/lib
+    %% And add a rebar bin script to ~/.cache/rebar/bin
     Opts = rebar_state:opts(State),
     VersionsDir = filename:join(rebar_dir:global_cache_dir(Opts), "vsns"),
     OutputDir = filename:join([VersionsDir, Vsn, "lib"]),
@@ -112,14 +112,14 @@ install_escript(State, Vsn, Archive) ->
             throw(?PRV_ERROR({non_writeable, OutputDir}))
     end,
 
-    ?INFO("Extracting rebar3 libs to ~ts...", [OutputDir]),
+    ?INFO("Extracting rebar libs to ~ts...", [OutputDir]),
     zip:extract(Archive, [{cwd, OutputDir}]),
 
     BinDir = filename:join(rebar_dir:global_cache_dir(Opts), "bin"),
-    BinFile = filename:join(BinDir, "rebar3"),
+    BinFile = filename:join(BinDir, "rebar"),
     filelib:ensure_dir(BinFile),
 
-    ?INFO("Writing rebar3 run script ~ts...", [BinFile]),
+    ?INFO("Writing rebar run script ~ts...", [BinFile]),
     file:write_file(BinFile, bin_contents(VersionsDir, Vsn)),
     ok = file:write_file_info(BinFile, #file_info{mode=33277}),
 

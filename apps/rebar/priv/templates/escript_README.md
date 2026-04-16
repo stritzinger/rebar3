@@ -6,7 +6,7 @@
 Build
 -----
 
-    $ rebar3 escriptize
+    $ rebar escriptize
 
 Run
 ---
