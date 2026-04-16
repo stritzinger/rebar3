@@ -140,11 +140,11 @@ home_dir() ->
     {ok, [[Home]]} = init:get_argument(home),
     Home.
 
-%% @doc returns the directory where the global configuration files for rebar3
+%% @doc returns the directory where the global configuration files for rebar
 %% may be stored.
 -spec global_config_dir(rebar_state:t()) -> file:filename_all().
 global_config_dir(State) ->
-    filename:join([rebar_config_dir(State), ".config", "rebar3"]).
+    filename:join([rebar_config_dir(State), ".config", "rebar"]).
 
 rebar_config_dir(State) ->
     case os:getenv("REBAR_GLOBAL_CONFIG_DIR") of
@@ -163,18 +163,18 @@ global_config(State) ->
 -spec global_config() -> file:filename_all().
 global_config() ->
     Home = home_dir(),
-    filename:join([Home, ".config", "rebar3", "rebar.config"]).
+    filename:join([Home, ".config", "rebar", "rebar.config"]).
 
 %% @doc returns the location for the global cache directory
 -spec global_cache_dir(rebar_dict()) -> file:filename_all().
 global_cache_dir(Opts) ->
     Home = home_dir(),
-    rebar_opts:get(Opts, global_rebar_dir, filename:join([Home, ".cache", "rebar3"])).
+    rebar_opts:get(Opts, global_rebar_dir, filename:join([Home, ".cache", "rebar"])).
 
 %% @doc appends the cache directory to the path passed to this function.
 -spec local_cache_dir(file:filename_all()) -> file:filename_all().
 local_cache_dir(Dir) ->
-    filename:join(Dir, ".rebar3").
+    filename:join(Dir, ".rebar").
 
 %% @doc returns the current working directory, with some specific
 %% conversions and handling done to be cross-platform compatible.

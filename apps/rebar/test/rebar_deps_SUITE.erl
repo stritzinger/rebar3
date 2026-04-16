@@ -50,8 +50,8 @@ init_per_testcase(http_proxy_settings, Config) ->
     %% Create private rebar.config
     Priv = ?config(priv_dir, Config),
     GlobalDir = filename:join(Priv, "global"),
-    GlobalConfigDir = filename:join([GlobalDir, ".config", "rebar3"]),
-    GlobalConfig = filename:join([GlobalDir, ".config", "rebar3", "rebar.config"]),
+    GlobalConfigDir = filename:join([GlobalDir, ".config", "rebar"]),
+    GlobalConfig = filename:join([GlobalDir, ".config", "rebar", "rebar.config"]),
 
     meck:new(rebar_dir, [passthrough]),
     meck:expect(rebar_dir, global_config, fun() -> GlobalConfig end),
@@ -74,8 +74,8 @@ init_per_testcase(https_proxy_settings, Config) ->
             %% Create private rebar.config
             Priv = ?config(priv_dir, Config),
             GlobalDir = filename:join(Priv, "global"),
-            GlobalConfigDir = filename:join([GlobalDir, ".config", "rebar3"]),
-            GlobalConfig = filename:join([GlobalDir, ".config", "rebar3", "rebar.config"]),
+            GlobalConfigDir = filename:join([GlobalDir, ".config", "rebar"]),
+            GlobalConfig = filename:join([GlobalDir, ".config", "rebar", "rebar.config"]),
 
             meck:new(rebar_dir, [passthrough]),
             meck:expect(rebar_dir, global_config, fun() -> GlobalConfig end),
@@ -93,8 +93,8 @@ init_per_testcase(http_os_proxy_settings, Config) ->
     %% Create private rebar.config
     Priv = ?config(priv_dir, Config),
     GlobalDir = filename:join(Priv, "global"),
-    GlobalConfigDir = filename:join([GlobalDir, ".config", "rebar3"]),
-    GlobalConfig = filename:join([GlobalDir, ".config", "rebar3", "rebar.config"]),
+    GlobalConfigDir = filename:join([GlobalDir, ".config", "rebar"]),
+    GlobalConfig = filename:join([GlobalDir, ".config", "rebar", "rebar.config"]),
 
     meck:new(rebar_dir, [passthrough]),
     meck:expect(rebar_dir, global_config, fun() -> GlobalConfig end),
@@ -116,8 +116,8 @@ init_per_testcase(https_os_proxy_settings, Config) ->
             %% Create private rebar.config
             Priv = ?config(priv_dir, Config),
             GlobalDir = filename:join(Priv, "global"),
-            GlobalConfigDir = filename:join([GlobalDir, ".config", "rebar3"]),
-            GlobalConfig = filename:join([GlobalDir, ".config", "rebar3", "rebar.config"]),
+            GlobalConfigDir = filename:join([GlobalDir, ".config", "rebar"]),
+            GlobalConfig = filename:join([GlobalDir, ".config", "rebar", "rebar.config"]),
 
             meck:new(rebar_dir, [passthrough]),
             meck:expect(rebar_dir, global_config, fun() -> GlobalConfig end),

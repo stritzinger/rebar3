@@ -313,7 +313,7 @@ global_cache_dir(Config) ->
 default_global_cache_dir(Config) ->
     RebarConfig = [{erl_opts, []}],
     {ok, State} = rebar_test_utils:run_and_check(Config, RebarConfig, ["compile"], return),
-    Expected = filename:join([rebar_dir:home_dir(), ".cache", "rebar3"]),
+    Expected = filename:join([rebar_dir:home_dir(), ".cache", "rebar"]),
     ?assertEqual(Expected, rebar_dir:global_cache_dir(rebar_state:opts(State))).
 
 overwrite_default_global_cache_dir(Config) ->
@@ -326,12 +326,12 @@ default_global_config(Config) ->
     RebarConfig = [{erl_opts, []}],
     {ok, State} = rebar_test_utils:run_and_check(Config, RebarConfig, ["compile"], return),
     ConfDir = ?config(priv_dir, Config),
-    Expected = filename:join([ConfDir, ".config", "rebar3", "rebar.config"]),
+    Expected = filename:join([ConfDir, ".config", "rebar", "rebar.config"]),
     ?assertEqual(Expected, rebar_dir:global_config(State)).
 
 overwrite_default_global_config(Config) ->
     RebarConfig = [{erl_opts, []}],
     {ok, State} = rebar_test_utils:run_and_check(Config, RebarConfig, ["compile"], return),
-    Expected = filename:join([os:getenv("REBAR_GLOBAL_CONFIG_DIR"), ".config", "rebar3", "rebar.config"]),
+    Expected = filename:join([os:getenv("REBAR_GLOBAL_CONFIG_DIR"), ".config", "rebar", "rebar.config"]),
     rebar_dir:global_config(State),
     ?assertEqual(Expected, rebar_dir:global_config(State)).
