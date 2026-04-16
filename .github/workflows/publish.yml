@@ -22,7 +22,7 @@ jobs:
     - name: Compile
       run: ./bootstrap
     - name: CT tests
-      run: ./rebar3 ct
+      run: ./rebar ct
 
     - name: Create Release
       id: create_release
@@ -42,8 +42,8 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./rebar3
-        asset_name: rebar3
+        asset_path: ./rebar
+        asset_name: rebar
         asset_content_type: application/octet-stream
 
     - name: Configure AWS credentials
@@ -54,7 +54,7 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: us-east-1
 
-    - name: Copy rebar3 escript to S3
+    - name: Copy rebar escript to S3
       if: "!github.event.release.prerelease"
       run: |
-        aws s3 cp ./rebar3 s3://rebar3
+        aws s3 cp ./rebar s3://rebar3

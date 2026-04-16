@@ -21,7 +21,7 @@ jobs:
       run: ./bootstrap
     - name: Install
       run: |
-        sudo cp ./rebar3 /usr/local/bin/
+        sudo cp ./rebar /usr/local/bin/
 
     - name: Checkout shell tests
       run: git clone https://github.com/tsloughter/rebar3_tests

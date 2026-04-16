@@ -23,12 +23,12 @@ jobs:
     - name: Compile
       run: ./bootstrap
     - name: CT tests
-      run: ./rebar3 ct
+      run: ./rebar ct
     - shell: bash
       name: Dialyzer
       run: |
-        ./rebar3 clean -a
-        ./rebar3 as dialyzer dialyzer
+        ./rebar clean -a
+        ./rebar as dialyzer dialyzer
       if: ${{ matrix.otp_version == env.LATEST_OTP_RELEASE }}
 
   macos:
@@ -56,7 +56,7 @@ jobs:
     - name: Compile
       run: ./bootstrap
     - name: CT tests
-      run: ./rebar3 ct
+      run: ./rebar ct
 
   windows:
     name: Test on Windows
@@ -69,4 +69,4 @@ jobs:
     - name: Compile
       run: .\bootstrap.ps1
     - name: CT tests
-      run: .\rebar3.ps1 ct
+      run: .\rebar.ps1 ct

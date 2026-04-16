@@ -19,7 +19,7 @@ jobs:
     - name: Compile
       run: ./bootstrap
     - name: CT tests
-      run: ./rebar3 ct
+      run: ./rebar ct
 
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v1
@@ -28,6 +28,6 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: us-east-1
 
-    - name: Copy rebar3 escript to S3
+    - name: Copy rebar escript to S3
       run: |
-        aws s3 cp ./rebar3 s3://rebar3-nightly
+        aws s3 cp ./rebar s3://rebar3-nightly
