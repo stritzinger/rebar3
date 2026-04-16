@@ -409,7 +409,7 @@ single_app_succ_typing(Config) ->
     RebarConfig2 = merge_config([{dialyzer, [{plt_apps, all_apps}]}],
         RebarConfig),
     {ok, _} =
-        rebar3:run(rebar_state:new(State, RebarConfig2, AppDir), ["dialyzer", "--succ-typings=false"]),
+        rebar:run(rebar_state:new(State, RebarConfig2, AppDir), ["dialyzer", "--succ-typings=false"]),
     %% verify all project apps are in PLT
     {ok, PltFiles} = plt_files(Plt),
     ?assertEqual([App1, App2, erts], get_apps_from_beam_files(PltFiles)),
@@ -418,18 +418,18 @@ single_app_succ_typing(Config) ->
     Command0 = ["as", "test", "dialyzer"],
     % there are few warnings for generated test (see rebar_test_utils:erl_eunit_suite_file/1)
     {error, {rebar_prv_dialyzer, {dialyzer_warnings, _}}} =
-        rebar3:run(rebar_state:new(State, RebarConfig, AppDir), Command0),
+        rebar:run(rebar_state:new(State, RebarConfig, AppDir), Command0),
 
     %% warnings from App
     Command1 = ["as", "test", "dialyzer", "--app=" ++ Name],
     % there are few warnings for generated test (see rebar_test_utils:erl_eunit_suite_file/1)
     {error, {rebar_prv_dialyzer, {dialyzer_warnings, _}}} =
-        rebar3:run(rebar_state:new(State, RebarConfig, AppDir), Command1),
+        rebar:run(rebar_state:new(State, RebarConfig, AppDir), Command1),
 
     %% no warnings from App2
     Command2 = ["as", "test", "dialyzer", "--app=" ++ Name2],
     {ok, _} =
-        rebar3:run(rebar_state:new(State, RebarConfig, AppDir), Command2).
+        rebar:run(rebar_state:new(State, RebarConfig, AppDir), Command2).
 
 extra_src_dirs(Config) ->
     AppDir = ?config(apps, Config),
@@ -442,7 +442,7 @@ extra_src_dirs(Config) ->
     Command = ["as", "test", "dialyzer"],
     % there are few warnings for generated test (see rebar_test_utils:erl_eunit_suite_file/1)
     {error, {rebar_prv_dialyzer, {dialyzer_warnings, _}}} =
-        rebar3:run(rebar_state:new(State, RebarConfig, AppDir), Command).
+        rebar:run(rebar_state:new(State, RebarConfig, AppDir), Command).
 
 no_existing_incremental_plt(Config) ->
     AppDir = ?config(apps, Config),

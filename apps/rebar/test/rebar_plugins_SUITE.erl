@@ -121,7 +121,7 @@ compile_global_plugins(Config) ->
     {ok, RConf} = file:consult(RConfFile),
 
     %% Runs global plugin install
-    rebar3:init_config(),
+    rebar:init_config(),
 
     %% Build with deps.
     rebar_test_utils:run_and_check(

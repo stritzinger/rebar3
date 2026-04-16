@@ -403,7 +403,7 @@ no_deps_empty_lock(Config) ->
 http_proxy_settings(_Config) ->
     %% Load config
     rebar_utils:set_httpc_options(),
-    rebar3:init_config(),
+    rebar:init_config(),
 
     %% Assert variable is right
     ?assertEqual({ok,{{"localhost", 1234}, []}},
@@ -412,7 +412,7 @@ http_proxy_settings(_Config) ->
 https_proxy_settings(_Config) ->
     %% Load config
     rebar_utils:set_httpc_options(),
-    rebar3:init_config(),
+    rebar:init_config(),
 
     %% Assert variable is right
     ?assertEqual({ok,{{"localhost", 1234}, []}},
@@ -421,7 +421,7 @@ https_proxy_settings(_Config) ->
 http_os_proxy_settings(_Config) ->
     %% Load config
     rebar_utils:set_httpc_options(),
-    rebar3:init_config(),
+    rebar:init_config(),
 
     %% Assert variable is right
     ?assertEqual({ok,{{"localhost", 1234}, []}},
@@ -430,7 +430,7 @@ http_os_proxy_settings(_Config) ->
 https_os_proxy_settings(_Config) ->
     %% Load config
     rebar_utils:set_httpc_options(),
-    rebar3:init_config(),
+    rebar:init_config(),
 
     %% Assert variable is right
     ?assertEqual({ok,{{"localhost", 1234}, []}},

@@ -185,7 +185,7 @@ command_console(Config) ->
     %% validate output as <alias>=..., as this format is considered part of the interface,
     %%  for consumption; order is not important though
     ct:capture_start(),
-    rebar3:run(rebar_state:new(State, RebarConfig, AppDir), ["alias"]),
+    rebar:run(rebar_state:new(State, RebarConfig, AppDir), ["alias"]),
     ct:capture_stop(),
     AllCaptured = ct:capture_get(),
 
@@ -213,16 +213,16 @@ alias_help(Config) ->
     Alias = test_all,
     RebarConfig = [{alias, [{Alias, [ct, eunit]}]}],
     ct:capture_start(),
-    rebar3:run(rebar_state:new(State, RebarConfig, AppDir),
+    rebar:run(rebar_state:new(State, RebarConfig, AppDir),
                ["help", atom_to_list(Alias)]),
     ct:capture_stop(),
     Captured = lists:flatten(ct:capture_get()),
     ?assertNotEqual(nomatch,
                     re:run(Captured,
-                           "Equivalent to running: rebar3 do ct,eunit",
+                           "Equivalent to running: rebar do ct,eunit",
                            [{capture, none}])),
     ?assertNotEqual(nomatch,
                     re:run(Captured,
-                           "Usage:\\s+rebar3 test_all",
+                           "Usage:\\s+rebar test_all",
                            [{capture, none}])),
     ok.

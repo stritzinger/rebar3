@@ -40,7 +40,7 @@ init_per_testcase(plugin_tpl, Config) ->
     Name = rebar_test_utils:create_random_name("plugin_tpl"),
     AppsDir = filename:join([PrivDir, rebar_test_utils:create_random_name(Name)]),
     ec_file:copy(filename:join([DataDir, "plugin_tpl"]), AppsDir, [recursive]),
-    Verbosity = rebar3:log_level(),
+    Verbosity = rebar:log_level(),
     rebar_log:init(command_line, Verbosity),
     GlobalDir = filename:join([DataDir, "cache"]),
     State = rebar_state:new([{base_dir, filename:join([AppsDir, "_build"])}
@@ -183,7 +183,7 @@ plugin_tpl(Config) ->
     {match, _} = re:run(Bin, Name, [multiline,global]).
 
 missing_template_uses_rebar3_progname(Config) ->
-    ?assertEqual({error, "rebar3: required argument missing: template"},
+    ?assertEqual({error, "rebar: required argument missing: template"},
                  case rebar_test_utils:run_and_check(Config, [], ["new"], return) of
                      {error, Msg} -> {error, lists:flatten(Msg)};
                      Other -> Other

@@ -81,15 +81,15 @@ main(Args) ->
 
     setup_env(),
     os:putenv("REBAR_PROFILE", "bootstrap"),
-    {ok, State} = rebar3:run(["compile"]),
+    {ok, State} = rebar:run(["compile"]),
     reset_env(),
     os:putenv("REBAR_PROFILE", ""),
 
     DepsPaths = rebar_state:code_paths(State, all_deps),
     code:add_pathsa(DepsPaths),
 
-    rebar3:run(["clean", "-a"]),
-    rebar3:run(["as", "prod", "escriptize"]),
+    rebar:run(["clean", "-a"]),
+    rebar:run(["as", "prod", "escriptize"]),
 
     %% Done with compile, can turn back on error logger
     error_logger:tty(true).

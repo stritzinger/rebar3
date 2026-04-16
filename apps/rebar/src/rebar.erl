@@ -29,16 +29,16 @@
 %%
 %% %CopyrightEnd%
 %%
-%% @doc Main module for rebar3. Supports two interfaces; one for escripts,
-%% and one for usage as a library (although rebar3 makes a lot of
+%% @doc Main module for rebar. Supports two interfaces; one for escripts,
+%% and one for usage as a library (although rebar makes a lot of
 %% assumptions about its environment, making it a bit tricky to use as
 %% a lib).
 %%
-%% This module's job is mostly to set up the root environment for rebar3
+%% This module's job is mostly to set up the root environment for rebar
 %% and handle global options (mostly all from the ENV) and make them
 %% accessible to the rest of the run.
 %% @end
--module(rebar3).
+-module(rebar).
 
 -export([main/0,
          main/1,
@@ -57,7 +57,7 @@
 %% ====================================================================
 
 %% @doc For running with:
-%% erl +sbtu +A1 -noinput -mode minimal -boot start_clean -s rebar3 main -extra "$@"
+%% erl +sbtu +A1 -noinput -mode minimal -boot start_clean -s rebar main -extra "$@"
 -spec main() -> no_return().
 main() ->
     List = init:get_plain_arguments(),
@@ -92,7 +92,7 @@ run(BaseState, Commands) ->
 %% Internal functions
 %% ====================================================================
 
-%% @private sets up the rebar3 environment based on the command line
+%% @private sets up the rebar environment based on the command line
 %% arguments passed, if they have any relevance; used to translate
 %% from the escript call-site into a common one with the library
 %% usage.
@@ -228,7 +228,7 @@ run_aux(State, RawArgs) ->
 
 
 %% @doc set up base configuration having to do with verbosity, where
-%% to find config files, and so on, and return an internal rebar3 state term.
+%% to find config files, and so on, and return an internal rebar state term.
 -spec init_config() -> rebar_state:t().
 init_config() ->
     rebar_utils:set_httpc_options(),
@@ -260,7 +260,7 @@ init_config() ->
     %% resources out of the escript
     State1 = try
                  ScriptName = filename:absname(escript:script_name()),
-                 %% Running with 'erl -s rebar3 main' still sets a name for some reason
+                 %% Running with 'erl -s rebar main' still sets a name for some reason
                  %% so verify it is a real file
                  case filelib:is_regular(ScriptName) of
                      true ->
@@ -277,7 +277,7 @@ init_config() ->
     %% Initialize vsn cache
     rebar_state:set(State1, vsn_cache, dict:new()).
 
-%% @doc Parse basic rebar3 arguments to find the top-level task
+%% @doc Parse basic rebar arguments to find the top-level task
 %% to be run; this parsing is only partial from the point of view that
 %% runs done with arguments like `as $PROFILE do $TASK' will just
 %% return `as', which is then in charge of doing a more dynamic

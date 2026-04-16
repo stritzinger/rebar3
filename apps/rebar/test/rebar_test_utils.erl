@@ -26,7 +26,7 @@ init_rebar_state(Config, Name) ->
     CheckoutsDir = filename:join([AppsDir, "_checkouts"]),
     ok = ec_file:mkdir_p(AppsDir),
     ok = ec_file:mkdir_p(CheckoutsDir),
-    Verbosity = rebar3:log_level(),
+    Verbosity = rebar:log_level(),
     rebar_log:init(command_line, Verbosity),
     GlobalDir = filename:join([DataDir, "cache"]),
     Repos = proplists:get_value(repos, Config, []),
@@ -68,7 +68,7 @@ run_and_check(Config, RebarConfig, Command, Expect) ->
     AppDir = ?config(apps, Config),
     State = ?config(state, Config),
     try
-        Res = rebar3:run(rebar_state:new(State, RebarConfig, AppDir), Command),
+        Res = rebar:run(rebar_state:new(State, RebarConfig, AppDir), Command),
         case Expect of
             {error, Reason} ->
                 ?assertEqual({error, Reason}, Res);
@@ -93,7 +93,7 @@ run_and_check(Config, Command, Expect) ->
     {ok, Cwd} = file:get_cwd(),
     try
         ok = file:set_cwd(AppDir),
-        Res = rebar3:run(Command),
+        Res = rebar:run(Command),
         case Expect of
             {error, Reason} ->
                 ?assertEqual({error, Reason}, Res);

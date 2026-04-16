@@ -90,7 +90,7 @@ bin_contents(OutputDir, Vsn) ->
     <<"#!/usr/bin/env sh
 ## Rebar3 ", (iolist_to_binary(Vsn))/binary, "
 REBAR3_VSN=${REBAR3_VSN:-", (iolist_to_binary(Vsn))/binary, "}
-erl -pz ", (rebar_utils:to_binary(OutputDir))/binary,"/${REBAR3_VSN}/lib/*/ebin +sbtu +A1 -noshell -boot start_clean -s rebar3 main $REBAR3_ERL_ARGS -extra \"$@\"
+erl -pz ", (rebar_utils:to_binary(OutputDir))/binary,"/${REBAR3_VSN}/lib/*/ebin +sbtu +A1 -noshell -boot start_clean -s rebar main $REBAR3_ERL_ARGS -extra \"$@\"
 ">>.
 
 extract_escript(State, ScriptPath) ->

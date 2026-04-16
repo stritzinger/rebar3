@@ -80,7 +80,7 @@ xref_test(Config) ->
     State = ?config(state, Config),
     Name = ?config(app_name, Config),
     RebarConfig = ?config(rebar_config, Config),
-    Result = rebar3:run(rebar_state:new(State, RebarConfig, AppDir), ["xref"]),
+    Result = rebar:run(rebar_state:new(State, RebarConfig, AppDir), ["xref"]),
     verify_results(xref_test, Name, Result).
 
 xref_queries_test(Config) ->
@@ -90,7 +90,7 @@ xref_queries_test(Config) ->
                    {xref_queries, [{"A", [rebar_issue1, rebar_issue2]},
                                    {"(Fun) rebar_issue1 -> rebar_issue2", []}
                                   ]}],
-    {ok, _} = rebar3:run(rebar_state:new(State, RebarConfig, AppDir), ["xref"]),
+    {ok, _} = rebar:run(rebar_state:new(State, RebarConfig, AppDir), ["xref"]),
     ok.
 
 xref_ignore_test(Config) ->
@@ -98,7 +98,7 @@ xref_ignore_test(Config) ->
     State = ?config(state, Config),
     Name = ?config(app_name, Config),
     RebarConfig = ?config(rebar_config, Config),
-    Result = rebar3:run(rebar_state:new(State, RebarConfig, AppDir), ["xref"]),
+    Result = rebar:run(rebar_state:new(State, RebarConfig, AppDir), ["xref"]),
     verify_results(xref_ignore_test, Name, Result).
 
 xref_dep_hook(Config) ->
@@ -112,7 +112,7 @@ xref_undef_behaviour(Config) ->
     %% delete one of the behaviours, which should create new warnings
     delete_src_file(AppDir, Name, behaviour1),
     %% just ensure this does not crash
-    Result = rebar3:run(rebar_state:new(State, RebarConfig, AppDir), ["xref"]),
+    Result = rebar:run(rebar_state:new(State, RebarConfig, AppDir), ["xref"]),
     verify_results(xref_undef_behaviour, Name, Result).
 
 %% ===================================================================

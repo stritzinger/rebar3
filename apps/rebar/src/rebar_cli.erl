@@ -27,14 +27,14 @@
 -spec global_cli([providers:t()]) -> argparse:command().
 global_cli(Providers) ->
     #{
-        help => ["Rebar3 is a tool for working with Erlang projects.",
-                 "\n\nUsage: rebar3 [-h] [-v] <command>",
+        help => ["Rebar is a tool for working with Erlang projects.",
+                 "\n\nUsage: rebar [-h] [-v] <command>",
                  "\n\n  -h, --help    Print this help.",
                  "\n  -v, --version Show version information.",
                  "\n\nSet the environment variable DEBUG=1 for detailed output.",
                  "\n\nSeveral commands are available:\n\n",
                  commands,
-                 "\n\nRun 'rebar3 help <command>' for details."],
+                 "\n\nRun 'rebar help <command>' for details."],
         arguments => [
             #{name => help, short => $h, long => "-help", type => boolean,
               help => hidden},

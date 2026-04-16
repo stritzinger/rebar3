@@ -87,7 +87,7 @@ resume_notifies_breakpoint_handler(_Config) ->
     end.
 
 start_agent() ->
-    start_agent(rebar3:init_config()).
+    start_agent(rebar:init_config()).
 
 start_agent(State) ->
     case rebar_agent:start_link(State) of

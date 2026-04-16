@@ -87,7 +87,7 @@ escriptize_with_ebin_subdir(Config) ->
     Cwd = file:get_cwd(),
     try
         file:set_cwd(AppDir),
-        {ok, _} = rebar3:run(rebar_state:new(?config(state,Config), [], AppDir),
+        {ok, _} = rebar:run(rebar_state:new(?config(state,Config), [], AppDir),
                              ["escriptize"])
     after
         file:set_cwd(Cwd) % reset always

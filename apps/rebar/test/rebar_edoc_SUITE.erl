@@ -12,7 +12,7 @@ init_per_testcase(multiapp, Config) ->
     Name = rebar_test_utils:create_random_name("multiapp"),
     AppsDir = filename:join([PrivDir, rebar_test_utils:create_random_name(Name)]),
     ec_file:copy(filename:join([DataDir, "foo"]), AppsDir, [recursive]),
-    Verbosity = rebar3:log_level(),
+    Verbosity = rebar:log_level(),
     rebar_log:init(command_line, Verbosity),
     State = rebar_state:new([{base_dir, filename:join([AppsDir, "_build"])}
                             ,{root_dir, AppsDir}]),
@@ -25,7 +25,7 @@ init_per_testcase(multiapp_macros, Config) ->
     AppsDir = filename:join([PrivDir, rebar_test_utils:create_random_name(Name)]),
     ec_file:copy(filename:join([DataDir, "foo"]), AppsDir, [recursive]),
     ok = ec_file:remove(filename:join([AppsDir, "apps", "foo"]), [recursive]),
-    Verbosity = rebar3:log_level(),
+    Verbosity = rebar:log_level(),
     rebar_log:init(command_line, Verbosity),
     State = rebar_state:new([{base_dir, filename:join([AppsDir, "_build"])}
                             ,{root_dir, AppsDir}]),
@@ -37,7 +37,7 @@ init_per_testcase(error_survival, Config) ->
     Name = rebar_test_utils:create_random_name("error_survival"),
     AppsDir = filename:join([PrivDir, rebar_test_utils:create_random_name(Name)]),
     ec_file:copy(filename:join([DataDir, "bad"]), AppsDir, [recursive]),
-    Verbosity = rebar3:log_level(),
+    Verbosity = rebar:log_level(),
     rebar_log:init(command_line, Verbosity),
     State = rebar_state:new([{base_dir, filename:join([AppsDir, "_build"])}
                             ,{root_dir, AppsDir}]),

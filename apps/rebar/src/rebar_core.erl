@@ -198,7 +198,7 @@ parse_command_args(CommandProvider, State) ->
     end.
 
 parse_opts() ->
-    #{progname => "rebar3"}.
+    #{progname => "rebar"}.
 
 normalize_parsed_args(ParsedMap) ->
     Rest = maps:get(rest, ParsedMap, []),

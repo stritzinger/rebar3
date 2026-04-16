@@ -50,7 +50,7 @@ generated_plugin_compiles(Config) ->
                           "-spec cli() -> argparse:command()."]),
 
     ?assertMatch({ok, _}, run_in_dir(PluginDir, fun() ->
-        rebar3:run(["compile"])
+        rebar:run(["compile"])
     end)),
     ?assertMatch({ok, #file_info{}}, file:read_file_info(PluginBeam)).
 
@@ -81,7 +81,7 @@ generate_plugin(PluginBaseDir, PluginName) ->
                                 PluginName, "ebin", PluginName ++ ".beam"]),
     ok = filelib:ensure_path(PluginBaseDir),
     ?assertMatch({ok, _}, run_in_dir(PluginBaseDir, fun() ->
-        rebar3:run(["new", "plugin", PluginName])
+        rebar:run(["new", "plugin", PluginName])
     end)),
     {PluginDir, ProviderFile, PluginBeam}.
 

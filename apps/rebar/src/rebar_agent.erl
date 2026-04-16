@@ -164,7 +164,7 @@ run(Namespace, Command, CmdArgs, RState, Cwd) ->
                 CmdState0 = refresh_state(RState, Cwd),
                 CmdState1 = rebar_state:set(CmdState0, task, atom_to_list(Command)),
                 CmdState = rebar_state:set(CmdState1, caller, api),
-                case rebar3:run(CmdState, Args) of
+                case rebar:run(CmdState, Args) of
                     {ok, TmpState} ->
                         refresh_paths(TmpState),
                         {ok, CmdState};
@@ -300,7 +300,7 @@ parse_refresh_paths([], _RState, Acc) ->
 refresh_state(RState, _Dir) ->
     lists:foldl(
         fun(F, State) -> F(State) end,
-        rebar3:init_config(),
+        rebar:init_config(),
         [fun(S) -> rebar_state:apply_profiles(S, rebar_state:current_profiles(RState)) end]
     ).
 
