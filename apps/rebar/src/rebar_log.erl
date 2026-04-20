@@ -53,12 +53,10 @@
 -define(DIAGNOSTIC_LEVEL, 4).
 -define(DFLT_INTENSITY, high).
 
--define(REBAR_LOGGER, rebar).
--define(REBAR_LOG_FORMATER, rebar_log_formater).
+-define(PREFIX, "===> ").
+-define(RESET, "~!!").
+-define(BOLD, "~!^").
 
--define(MFA, {?MODULE, ?FUNCTION_NAME, ?FUNCTION_ARITY}).
-
--include_lib("kernel/include/logger.hrl").
 %% ===================================================================
 %% Types
 %% ===================================================================
@@ -68,6 +66,10 @@
                  | ?INFO_LEVEL
                  | ?DEBUG_LEVEL
                  | ?DIAGNOSTIC_LEVEL.
+
+-type level_atom() :: error | warn | info | debug | diagnostic.
+-type intensity() ::  low | high | none.
+-type color() :: $r | $R | $b | $B | $g | $G | $m | $M | $c | $C.
 
 %% ===================================================================
 %% Public API
@@ -95,44 +97,25 @@ intensity() ->
     end.
 
 init(Caller, Verbosity) ->
-    OldLevel = level_to_atom(valid_level(Verbosity)),
-    Level = old_level_compat_mapping(OldLevel),
-    Intensity = intensity(),
-    Config = #{
-        formatter => {?REBAR_LOG_FORMATER, #{
-            intensity => Intensity
-        }},
-        level => Level,
-        filter_default => stop
-    },
-    case logger:add_handler(?REBAR_LOGGER, rebar_log_h, Config) of
-        {error, {already_exist, ?REBAR_LOGGER}} ->
-            logger:update_handler_config(?REBAR_LOGGER, Config);
-        ok ->
-            ok
-    end,
-    Filter = {fun logger_filters:domain/2, {stop, sub, [rebar]}},
-    logger:add_handler_filter(default, rebar_filter, Filter),
-    RebarFilter = {fun logger_filters:domain/2, {log, sub, [rebar]}},
-    logger:add_handler_filter(?REBAR_LOGGER, rebar_filter, RebarFilter),
     application:set_env(rebar, log_caller, Caller),
-    set_level(valid_level(Verbosity)).
+    set_level(Verbosity).
 
--spec set_level(level()) -> ok | {error, term()}.
-set_level(Level) ->
-    LevelAtom = old_level_compat_mapping(level_to_atom(valid_level(Level))),
-    logger:update_handler_config(?REBAR_LOGGER, level, LevelAtom),
-    logger:set_module_level(?MODULE, LevelAtom).
+-spec set_level(level_atom() | level()) -> ok | {error, term()}.
+set_level(Level) when is_integer(Level) ->
+    set_level(level_to_atom(valid_level(Level)));
+set_level(Level) when is_atom(Level)->
+    ok = application:set_env(rebar, log_level, Level).
 
 -spec get_level() -> level().
 get_level() ->
-    case logger:get_handler_config(?REBAR_LOGGER) of
-        {ok, #{level := Level}} ->
-            atom_to_level(new_level_compat_mapping(Level));
-        {error, _} ->
-            default_level()
+    case application:get_env(rebar, log_level) of
+        undefined ->
+            ?INFO_LEVEL;
+        {ok, Level} ->
+            atom_to_level(Level)
     end.
 
+-spec log(level_atom(), string(), list()) -> ok.
 log(diagnostic, Str, Args) ->
     %% The diagnostic level is intended for debug info
     %% that is useful for rebar3 developers and implementers who
@@ -145,8 +128,8 @@ log(diagnostic, Str, Args) ->
         _ -> ok
     end;
 log(Level, Str, Args) ->
-    CompatLevel = old_level_compat_mapping(Level),
-    logger:CompatLevel(Str, Args, #{domain => [rebar], mfa => ?MFA}).
+    Formatted = format_log(Level, intensity(), Str, Args),
+    maybe_log(Level, Formatted).
 
 crashdump(Str, Args) ->
     crashdump("rebar3.crashdump", Str, Args).
@@ -166,9 +149,11 @@ diagnostic_level() -> ?DIAGNOSTIC_LEVEL.
 is_verbose(State) ->
     rebar_state:get(State, is_verbose, false).
 
+-spec valid_level(level()) -> level().
 valid_level(Level) ->
     erlang:max(?ERROR_LEVEL, erlang:min(Level, ?DIAGNOSTIC_LEVEL)).
 
+-spec atom_to_level(level_atom()) -> level().
 atom_to_level(Level) ->
     case Level of
         error -> ?ERROR_LEVEL;
@@ -178,13 +163,14 @@ atom_to_level(Level) ->
         diagnostic -> ?DIAGNOSTIC_LEVEL
     end.
 
+-spec level_to_atom(level()) -> level_atom().
 level_to_atom(Level) ->
     case Level of
         ?ERROR_LEVEL -> error;
-        ?WARN_LEVEL  -> warn;
-        ?INFO_LEVEL  -> notice;
+        ?WARN_LEVEL -> warn;
+        ?INFO_LEVEL -> info;
         ?DEBUG_LEVEL -> debug;
-        ?DIAGNOSTIC_LEVEL -> debug % TODO: Handle Diagnostic mode later
+        ?DIAGNOSTIC_LEVEL -> diagnostic
     end.
 
 %% ===================================================================
@@ -209,10 +195,55 @@ take_bytes(N, [H|T]) when is_binary(H); is_list(H) ->
     Res = take_bytes(N, H),
     [Res | take_bytes(N-byte_size(Res), T)].
 
-old_level_compat_mapping(warn) -> warning;
-old_level_compat_mapping(info) -> notice;
-old_level_compat_mapping(Level) -> Level.
+-spec level_to_color(level_atom()) -> color().
+level_to_color(error) ->
+    $R;
+level_to_color(warn) ->
+    $m;
+level_to_color(info) ->
+    $g;
+level_to_color(debug) ->
+    $c;
+level_to_color(diagnostic) ->
+    $c.
 
-new_level_compat_mapping(warning) -> warn;
-new_level_compat_mapping(notice) -> info;
-new_level_compat_mapping(Level) -> Level.
+-spec bold(level_atom()) -> boolean().
+bold(error) -> true;
+bold(_) -> false.
+
+-spec message_format(intensity(), boolean()) -> string().
+message_format(high, false) ->
+    "~ts~ts";
+message_format(high, true) ->
+    "~ts" ++ ?BOLD ++ "~ts";
+message_format(low, false) ->
+    "~ts" ++ ?RESET ++ "~ts";
+message_format(low, true) ->
+    "~ts" ++ ?RESET ++ ?BOLD ++ "~ts".
+
+-spec colorize(intensity(), level_atom(), list()) -> list().
+colorize(none, Level, Text) ->
+    case bold(Level) of
+        false -> Text;
+        true -> lists:flatten(cf:format(?BOLD ++ "~ts", [Text]))
+    end;
+colorize(Intensity, Level, Text) ->
+    Color = case Intensity of
+                none -> "";
+                _ -> "~!" ++ [level_to_color(Level)]
+            end,
+    FmtMsg = message_format(Intensity, bold(Level)),
+    lists:flatten(cf:format(Color ++ FmtMsg, [?PREFIX, Text])).
+
+format_log(Level, Intensity, Str, Args) ->
+    Msg = [io_lib:format(Str, Args), "\n"],
+    colorize(Intensity, Level, Msg).
+
+maybe_log(AtomLevel, LogMsg) ->
+    CurrentLevel = get_level(),
+    case atom_to_level(AtomLevel) of
+        Level when Level =< CurrentLevel ->
+            io:put_chars(LogMsg);
+        _ ->
+            ok
+    end.
