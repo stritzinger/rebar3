@@ -41,7 +41,6 @@
                   public_key,
                   edoc,
                   snmp,
-                  erlware_commons,
                   providers,
                   bbmustache,
                   cth_readable,
