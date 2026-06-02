@@ -31,7 +31,7 @@ init(Type, State) ->
     {ok, Vsn} = application:get_key(rebar, vsn),
     BaseConfig = #{http_adapter => {rebar_httpc_adapter, #{profile => rebar}},
                    http_user_agent_fragment =>
-                       <<"(rebar3/", (list_to_binary(Vsn))/binary, ") (httpc)">>},
+                       <<"(rebar/", (list_to_binary(Vsn))/binary, ") (httpc)">>},
     Repos = rebar_hex_repos:from_state(BaseConfig, State),
     Resource = rebar_resource_v2:new(Type, ?MODULE, #{repos => Repos,
                                                       base_config => BaseConfig}),

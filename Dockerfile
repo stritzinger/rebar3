@@ -6,18 +6,18 @@ FROM erlang:20.3.8.1-alpine as builder
 #   "The LABEL instruction adds metadata to an image."
 LABEL stage=builder
 
-# Install git for fetching non-hex dependencies. Also allows rebar3
+# Install git for fetching non-hex dependencies. Also allows rebar
 # to find it's own git version.
 # Add any other Alpine libraries needed to compile the project here.
 # See https://wiki.alpinelinux.org/wiki/Local_APK_cache for details
 # on the local cache and need for the symlink
 RUN ln -s /var/cache/apk /etc/apk/cache && \
     apk update && \
-    apk add --update openssh-client git 
+    apk add --update openssh-client git
 
 # WORKDIR is located in the image
 #   https://docs.docker.com/engine/reference/builder/#workdir
-WORKDIR /root/rebar3
+WORKDIR /root/rebar
 
 # copy the entire src over and build
 COPY . .
@@ -28,16 +28,15 @@ RUN ./bootstrap
 # generated previously (deps, build, etc)
 FROM erlang:20.3.8.1-alpine as runner
 
-# copy the generated `rebar3` binary over here
-COPY --from=builder /root/rebar3/_build/prod/bin/rebar3 .
+# copy the generated `rebar` binary over here
+COPY --from=builder /root/rebar/_build/prod/bin/rebar .
 
 # and install it
-RUN HOME=/opt ./rebar3 local install \
-    && rm -f /usr/local/bin/rebar3 \
-    && ln /opt/.cache/rebar3/bin/rebar3 /usr/local/bin/rebar3 \
-    && rm -rf rebar3
+RUN HOME=/opt ./rebar local install \
+    && rm -f /usr/local/bin/rebar \
+    && ln /opt/.cache/rebar/bin/rebar /usr/local/bin/rebar \
+    && rm -rf rebar
 
 # simply print out the version for visibility
-ENTRYPOINT ["/usr/local/bin/rebar3"]
+ENTRYPOINT ["/usr/local/bin/rebar"]
 CMD ["--version"]
-

@@ -46,7 +46,7 @@ main(Args) ->
     %% Clear directories for builds since bootstrapping may require
     %% a changed structure from an older one
     rm_rf("_build/bootstrap"),
-    %% When recompiling rebar3 itself, the path swaps and cleaning
+    %% When recompiling rebar itself, the path swaps and cleaning
     %% removes the modules in _build/bootstrap, but the VM still
     %% manages to discover those in _build/prod from previous builds and
     %% cause weird failures when compilers get modified between releases.
@@ -61,14 +61,14 @@ main(Args) ->
     os:putenv("REBAR_PROFILE", "bootstrap"),
     compile_vendored(),
 
-    %% Fetch and build deps required to build rebar3
+    %% Fetch and build deps required to build rebar
     BaseDeps = [{cf, []}
                ,{erlware_commons, ["ec_dictionary.erl", "ec_vsn.erl"]}],
     Deps = get_deps(),
     [fetch_and_compile(Dep, Deps) || Dep <- BaseDeps],
     bootstrap_app(providers, []),
 
-    %% Build rebar3 modules with compile:file
+    %% Build rebar modules with compile:file
     bootstrap_app(rebar, ["rebar_resource_v2.erl", "rebar_resource.erl"]),
 
     %% Build rebar.app from rebar.app.src.script
@@ -122,7 +122,7 @@ fetch_and_compile({Name, ErlFirstFiles}, Deps) ->
 
 get_rebar_config() ->
     {ok, [[Home]]} = init:get_argument(home),
-    ConfDir = filename:join(Home, ".config/rebar3"),
+    ConfDir = filename:join(Home, ".config/rebar"),
     case file:consult(filename:join(ConfDir, "rebar.config")) of
         {ok, Config} ->
             Config;

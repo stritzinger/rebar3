@@ -6,13 +6,13 @@ if [[ -z "$1" ]]; then
   exit 1
 fi
 
-REBAR3_TOP=$(pwd)/apps/rebar
-export REBAR3_TOP
+REBAR_TOP=$(pwd)/apps/rebar
+export REBAR_TOP
 pushd "$1"
 touch proto/* # force re-generation of protobuf elements
 TARGET_ERLANG_VERSION=25
 export TARGET_ERLANG_VERSION
-rebar3 as dev compile
+rebar as dev compile
 ./vendor.sh src r3_
-find src -regex '.*r3_.*' -exec mv -f {} "$REBAR3_TOP/src/vendored" \;
+find src -regex '.*r3_.*' -exec mv -f {} "$REBAR_TOP/src/vendored" \;
 popd

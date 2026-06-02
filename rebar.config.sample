@@ -47,7 +47,7 @@
 
 %% == Application Discovery ==
 
-%% Extensions for discovering application resource files. Rebar3 discovers
+%% Extensions for discovering application resource files. Rebar discovers
 %% applications by searching for these files. When building the application
 %% information, rebar will use the first discovered files in the list.
 %% This configuration is intended to let profiles compose with special app
@@ -85,7 +85,7 @@
 %% name as an atom, eg. mochiweb, a name and a version (from the .app file), or
 %% an application name, a version and the SCM details on how to fetch it (SCM
 %% type, location and revision).
-%% Rebar3 currently supports git and hg
+%% Rebar currently supports git and hg
 {deps, [
     rebar,            % latest version of package
     {rebar, "1.0.0"}, % version 1.0.0 of a package
@@ -130,21 +130,21 @@
     {plt_apps, top_level_deps}, % top_level_deps | all_deps
     {plt_extra_apps, []},
     {plt_location, local}, % local | "/my/file/name"
-    {plt_prefix, "rebar3"},
+    {plt_prefix, "rebar"},
     {base_plt_apps, [stdlib, kernel, crypto]},
     {base_plt_location, global}, % global | "/my/file/name"
-    {base_plt_prefix, "rebar3"},
+    {base_plt_prefix, "rebar"},
     incremental
 ]}.
 
 
 %% == Directories ==
 
-%% directory for artifacts produced by rebar3
+%% directory for artifacts produced by rebar
 {base_dir, "_build"}.
 %% directory in '<base_dir>/<profile>/' where deps go
 {deps_dir, "lib"}.
-%% where rebar3 operates from; defaults to the current working directory
+%% where rebar operates from; defaults to the current working directory
 {root_dir, "."}.
 %% where checkout dependencies are to be located
 {checkouts_dir, "_checkouts"}.
@@ -159,7 +159,7 @@
 %% Paths to miscellaneous Erlang files to compile for an app
 %% without including them in its modules list
 {extra_src_dirs, []}.
-%% Path where custom rebar3 templates could be found
+%% Path where custom rebar templates could be found
 {template_dir, []}.
 
 %% == EDoc ==
@@ -188,7 +188,7 @@
 %% == EUnit ==
 
 %% eunit:test(Tests)
-{eunit_tests, [{application, rebar3}]}.
+{eunit_tests, [{application, rebar}]}.
 %% Options for eunit:test(Tests, Opts)
 {eunit_opts, [verbose]}.
 %% Additional compile options for eunit. erl_opts is also used
@@ -210,7 +210,7 @@
 
 %% == Pre/Post Shell Hooks ==
 
-%% Running shell commands before or after a given rebar3 command
+%% Running shell commands before or after a given rebar command
 
 {pre_hooks, [{clean, "./prepare_package_files.sh"},
              {"linux", compile, "c_src/build_linux.sh"},
@@ -224,7 +224,7 @@
 
 %% == Provider Hooks ==
 
-%% Run a rebar3 command before or after another one.
+%% Run a rebar command before or after another one.
 %% Only clean, ct, compile, eunit, release, and tar can be hooked around
 
 %% runs 'clean' before 'compile'
@@ -243,7 +243,7 @@
 
 %% == Shell ==
 
-%% apps to auto-boot with `rebar3 shell'; defaults to apps
+%% apps to auto-boot with `rebar shell'; defaults to apps
 %% specified in a `relx' tuple, if any.
 {shell, [{apps, [app1, app2]}, {script_file, "shell.escript"}]}.
 
@@ -271,7 +271,7 @@
    " - (\"mod\":\".*foo\"/\"4\"))",[]}]}.
 
 %% You might want to exclude certains functions or modules from your
-%% rebar3 xref analysis.
+%% rebar xref analysis.
 %% You can do so with the following option, that takes as list items
 %% one or more of a combination of:
 %% * module(),
@@ -282,12 +282,12 @@
 %% == alias ==
 
 %% When you want a certain combination of operations to be done
-%% as if you were using a rebar3 command. In the example below:
-%% > rebar3 check
-%%   (equivalent to rebar3 do xref, dialyzer)
+%% as if you were using a rebar command. In the example below:
+%% > rebar check
+%%   (equivalent to rebar do xref, dialyzer)
 %% or
-%% > rebar3 test
-%%   (equivalent to rebar3 do eunit, ct --suite=rebar_alias_SUITE, cover)
+%% > rebar test
+%%   (equivalent to rebar do eunit, ct --suite=rebar_alias_SUITE, cover)
 
 {alias, [{check, [xref, dialyzer]},
          {test, [eunit, {ct, "--suite=rebar_alias_SUITE"}, cover]}]}.
