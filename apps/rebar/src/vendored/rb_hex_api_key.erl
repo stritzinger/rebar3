@@ -2,7 +2,7 @@
 
 %% @doc
 %% Hex HTTP API - Keys.
--module(r3_hex_api_key).
+-module(rb_hex_api_key).
 -export([
     list/1,
     get/2,
@@ -21,7 +21,7 @@
 %% Examples:
 %%
 %% ```
-%% > r3_hex_api_key:list(r3_hex_core:default_config()).
+%% > rb_hex_api_key:list(rb_hex_core:default_config()).
 %% {ok, {200, ..., [#{
 %%     <<"authing_key">> => true,
 %%     <<"inserted_at">> => <<"2019-02-27T11:15:32Z">>,
@@ -37,10 +37,10 @@
 %%     }]}}
 %% '''
 %% @end
--spec list(r3_hex_core:config()) -> r3_hex_api:response().
+-spec list(rb_hex_core:config()) -> rb_hex_api:response().
 list(Config) when is_map(Config) ->
-    Path = r3_hex_api:build_organization_path(Config, ["keys"]),
-    r3_hex_api:get(Config, Path).
+    Path = rb_hex_api:build_organization_path(Config, ["keys"]),
+    rb_hex_api:get(Config, Path).
 
 %% @doc
 %% Gets an API or repository key by name.
@@ -48,7 +48,7 @@ list(Config) when is_map(Config) ->
 %% Examples:
 %%
 %% ```
-%% > r3_hex_api_key:get(r3_hex_core:default_config(), <<"test">>).
+%% > rb_hex_api_key:get(rb_hex_core:default_config(), <<"test">>).
 %% {ok, {200, ..., #{
 %%     <<"authing_key">> => true,
 %%     <<"inserted_at">> => <<"2019-02-27T11:15:32Z">>,
@@ -64,10 +64,10 @@ list(Config) when is_map(Config) ->
 %%     }}}
 %% '''
 %% @end
--spec get(r3_hex_core:config(), binary()) -> r3_hex_api:response().
+-spec get(rb_hex_core:config(), binary()) -> rb_hex_api:response().
 get(Config, Name) when is_map(Config) and is_binary(Name) ->
-    Path = r3_hex_api:build_organization_path(Config, ["keys", Name]),
-    r3_hex_api:get(Config, Path).
+    Path = rb_hex_api:build_organization_path(Config, ["keys", Name]),
+    rb_hex_api:get(Config, Path).
 
 %% @doc
 %% Adds a new API or repository key.
@@ -81,7 +81,7 @@ get(Config, Name) when is_map(Config) and is_binary(Name) ->
 %% Examples:
 %%
 %% ```
-%% > r3_hex_api_key:add(r3_hex_core:default_config(), <<"test">>, [...]).
+%% > rb_hex_api_key:add(rb_hex_core:default_config(), <<"test">>, [...]).
 %% {ok, {200, ..., #{
 %%     <<"authing_key">> => true,
 %%     <<"inserted_at">> => <<"2019-02-27T11:15:32Z">>,
@@ -97,11 +97,11 @@ get(Config, Name) when is_map(Config) and is_binary(Name) ->
 %%     }}}
 %% '''
 %% @end
--spec add(r3_hex_core:config(), binary(), [permission()]) -> r3_hex_api:response().
+-spec add(rb_hex_core:config(), binary(), [permission()]) -> rb_hex_api:response().
 add(Config, Name, Permissions) when is_map(Config) and is_binary(Name) and is_list(Permissions) ->
-    Path = r3_hex_api:build_organization_path(Config, ["keys"]),
+    Path = rb_hex_api:build_organization_path(Config, ["keys"]),
     Params = #{<<"name">> => Name, <<"permissions">> => Permissions},
-    r3_hex_api:post(Config, Path, Params).
+    rb_hex_api:post(Config, Path, Params).
 
 %% @doc
 %% Deletes an API or repository key.
@@ -109,7 +109,7 @@ add(Config, Name, Permissions) when is_map(Config) and is_binary(Name) and is_li
 %% Examples:
 %%
 %% ```
-%% > r3_hex_api_key:delete(r3_hex_core:default_config(), <<"test">>).
+%% > rb_hex_api_key:delete(rb_hex_core:default_config(), <<"test">>).
 %% {ok, {200, ..., #{
 %%     <<"authing_key">> => true,
 %%     <<"inserted_at">> => <<"2019-02-27T11:15:32Z">>,
@@ -125,10 +125,10 @@ add(Config, Name, Permissions) when is_map(Config) and is_binary(Name) and is_li
 %%     }}}
 %% '''
 %% @end
--spec delete(r3_hex_core:config(), binary()) -> r3_hex_api:response().
+-spec delete(rb_hex_core:config(), binary()) -> rb_hex_api:response().
 delete(Config, Name) when is_map(Config) and is_binary(Name) ->
-    Path = r3_hex_api:build_organization_path(Config, ["keys", Name]),
-    r3_hex_api:delete(Config, Path).
+    Path = rb_hex_api:build_organization_path(Config, ["keys", Name]),
+    rb_hex_api:delete(Config, Path).
 
 %% @doc
 %% Deletes all API and repository keys associated with the account.
@@ -136,7 +136,7 @@ delete(Config, Name) when is_map(Config) and is_binary(Name) ->
 %% Examples:
 %%
 %% ```
-%% > r3_hex_api_key:delete_all(r3_hex_core:default_config()).
+%% > rb_hex_api_key:delete_all(rb_hex_core:default_config()).
 %% {ok, {200, ..., [#{
 %%     <<"authing_key">> => true,
 %%     <<"inserted_at">> => <<"2019-02-27T11:15:32Z">>,
@@ -152,7 +152,7 @@ delete(Config, Name) when is_map(Config) and is_binary(Name) ->
 %%     }]}}
 %% '''
 %% @end
--spec delete_all(r3_hex_core:config()) -> r3_hex_api:response().
+-spec delete_all(rb_hex_core:config()) -> rb_hex_api:response().
 delete_all(Config) when is_map(Config) ->
-    Path = r3_hex_api:build_organization_path(Config, ["keys"]),
-    r3_hex_api:delete(Config, Path).
+    Path = rb_hex_api:build_organization_path(Config, ["keys"]),
+    rb_hex_api:delete(Config, Path).

@@ -59,7 +59,7 @@ cli() ->
           short => $a,
           long => "-aliases",
           type => string,
-          help => "Comma separated list of OS level aliases on which rebar completion will be triggered (e.g. \"r3\")."},
+          help => "Comma separated list of OS level aliases on which rebar completion will be triggered (e.g. \"rb\")."},
         #{name => file,
           short => $f,
           long => "-file",

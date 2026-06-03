@@ -52,9 +52,9 @@ Examples:
 
 Comma-separated values are still accepted for backwards compatibility.
 
-### Experimental `r3` module shell API
+### Experimental `rb` module shell API
 
-The `r3` module is the shell-facing convenience wrapper around `rebar_agent`
+The `rb` module is the shell-facing convenience wrapper around `rebar_agent`
 that is available from `rebar shell`.
 
 #### Change
@@ -63,19 +63,19 @@ Passing command arguments as one shell-style string is no longer supported.
 
 Unsupported examples:
 
-- `r3:do(clean, "-p test")`
-- `r3:async_do(clean, "-p test")`
+- `rb:do(clean, "-p test")`
+- `rb:async_do(clean, "-p test")`
 
 Use argv-style lists instead:
 
-- `r3:do(clean, ["-p", "test"])`
-- `r3:async_do(clean, ["-p", "test"])`
-- `r3:do(default, clean, ["-p", "test"])`
-- `r3:async_do(default, clean, ["-p", "test"])`
+- `rb:do(clean, ["-p", "test"])`
+- `rb:async_do(clean, ["-p", "test"])`
+- `rb:do(default, clean, ["-p", "test"])`
+- `rb:async_do(default, clean, ["-p", "test"])`
 
 Still supported as before:
 
-- `r3:do(Command)`
-- `r3:do(Namespace, Command)`
-- the corresponding `r3:async_do(...)` forms
-- shortcuts such as `r3:version()` and `r3:help(["version"])`
+- `rb:do(Command)`
+- `rb:do(Namespace, Command)`
+- the corresponding `rb:async_do(...)` forms
+- shortcuts such as `rb:version()` and `rb:help(["version"])`

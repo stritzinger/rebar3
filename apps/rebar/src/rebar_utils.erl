@@ -758,7 +758,7 @@ escript_foldl(Fun, Acc, File) ->
             Error
     end.
 
-%% TODO: this is just for rebar3_hex and maybe other plugins
+%% TODO: this is just for rebarb_hex and maybe other plugins
 %% but eventually it should be dropped
 vcs_vsn(OriginalVsn, Dir, Resources) when is_list(Dir) ,
                                           is_list(Resources) ->

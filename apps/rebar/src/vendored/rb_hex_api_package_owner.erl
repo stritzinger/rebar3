@@ -2,7 +2,7 @@
 
 %% @doc
 %% Hex HTTP API - Package Owners.
--module(r3_hex_api_package_owner).
+-module(rb_hex_api_package_owner).
 -export([
     add/5,
     delete/3,
@@ -16,7 +16,7 @@
 %% Examples:
 %%
 %% ```
-%% > r3_hex_api_package_owner:list(r3_hex_core:default_config(), <<"package">>).
+%% > rb_hex_api_package_owner:list(rb_hex_core:default_config(), <<"package">>).
 %% {ok, {200, ..., [#{
 %%      <<"email">> => <<"user@example.com">>,
 %%      <<"full_name">> => <<"John Doe">>,
@@ -29,10 +29,10 @@
 %%      }]}}
 %% '''
 %% @end
--spec list(r3_hex_core:config(), binary()) -> r3_hex_api:response().
+-spec list(rb_hex_core:config(), binary()) -> rb_hex_api:response().
 list(Config, PackageName) when is_binary(PackageName) ->
-    Path = r3_hex_api:build_repository_path(Config, ["packages", PackageName, "owners"]),
-    r3_hex_api:get(Config, Path).
+    Path = rb_hex_api:build_repository_path(Config, ["packages", PackageName, "owners"]),
+    rb_hex_api:get(Config, Path).
 
 %% @doc
 %% Gets a packages owner.
@@ -40,7 +40,7 @@ list(Config, PackageName) when is_binary(PackageName) ->
 %% Examples:
 %%
 %% ```
-%% > r3_hex_api_package_owner:get(r3_hex_core:default_config(), <<"package">>, <<"user">>).
+%% > rb_hex_api_package_owner:get(rb_hex_core:default_config(), <<"package">>, <<"user">>).
 %% {ok, {200, ..., #{
 %%      <<"email">> => <<"user@example.com">>,
 %%      <<"full_name">> => <<"John Doe">>,
@@ -53,14 +53,14 @@ list(Config, PackageName) when is_binary(PackageName) ->
 %%      }}}
 %% '''
 %% @end
--spec get(r3_hex_core:config(), binary(), binary()) -> r3_hex_api:response().
+-spec get(rb_hex_core:config(), binary(), binary()) -> rb_hex_api:response().
 get(Config, PackageName, UsernameOrEmail) when
     is_map(Config) and is_binary(PackageName) and is_binary(UsernameOrEmail)
 ->
-    Path = r3_hex_api:build_repository_path(Config, [
+    Path = rb_hex_api:build_repository_path(Config, [
         "packages", PackageName, "owners", UsernameOrEmail
     ]),
-    r3_hex_api:get(Config, Path).
+    rb_hex_api:get(Config, Path).
 
 %% @doc
 %% Adds a packages owner.
@@ -68,7 +68,7 @@ get(Config, PackageName, UsernameOrEmail) when
 %% Examples:
 %%
 %% ```
-%% > r3_hex_api_package_owner:add(r3_hex_core:default_config(), <<"package">>, <<"user">>, <<"full">>, false).
+%% > rb_hex_api_package_owner:add(rb_hex_core:default_config(), <<"package">>, <<"user">>, <<"full">>, false).
 %% {ok, {200, ..., #{
 %%      <<"email">> => <<"user@example.com">>,
 %%      <<"full_name">> => <<"John Doe">>,
@@ -81,15 +81,15 @@ get(Config, PackageName, UsernameOrEmail) when
 %%      }}}
 %% '''
 %% @end
--spec add(r3_hex_core:config(), binary(), binary(), binary(), boolean()) -> r3_hex_api:response().
+-spec add(rb_hex_core:config(), binary(), binary(), binary(), boolean()) -> rb_hex_api:response().
 add(Config, PackageName, UsernameOrEmail, Level, Transfer) when
     is_binary(PackageName) and is_binary(UsernameOrEmail) and is_map(Config) and is_binary(Level) and
         is_boolean(Transfer)
 ->
-    Path = r3_hex_api:build_repository_path(Config, [
+    Path = rb_hex_api:build_repository_path(Config, [
         "packages", PackageName, "owners", UsernameOrEmail
     ]),
-    r3_hex_api:put(Config, Path, #{<<"level">> => Level, <<"transfer">> => Transfer}).
+    rb_hex_api:put(Config, Path, #{<<"level">> => Level, <<"transfer">> => Transfer}).
 
 %% @doc
 %% Deletes a packages owner.
@@ -97,15 +97,15 @@ add(Config, PackageName, UsernameOrEmail, Level, Transfer) when
 %% Examples:
 %%
 %% ```
-%% > r3_hex_api_package_owner:delete(r3_hex_core:default_config(), <<"package">>, <<"user">>).
+%% > rb_hex_api_package_owner:delete(rb_hex_core:default_config(), <<"package">>, <<"user">>).
 %% {ok, {204, ..., nil}}
 %% '''
 %% @end
--spec delete(r3_hex_core:config(), binary(), binary()) -> r3_hex_api:response().
+-spec delete(rb_hex_core:config(), binary(), binary()) -> rb_hex_api:response().
 delete(Config, PackageName, UsernameOrEmail) when
     is_map(Config) and is_binary(PackageName) and is_binary(UsernameOrEmail)
 ->
-    Path = r3_hex_api:build_repository_path(Config, [
+    Path = rb_hex_api:build_repository_path(Config, [
         "packages", PackageName, "owners", UsernameOrEmail
     ]),
-    r3_hex_api:delete(Config, Path).
+    rb_hex_api:delete(Config, Path).

@@ -2,12 +2,12 @@
 
 %% @doc
 %% HTTP contract.
--module(r3_hex_http).
+-module(rb_hex_http).
 -export([request/5]).
 -ifdef(TEST).
 -export([user_agent/1]).
 -endif.
--include_lib("r3_hex_core.hrl").
+-include_lib("rb_hex_core.hrl").
 
 -type method() :: get | post | put | patch | delete.
 -type status() :: non_neg_integer().
@@ -23,18 +23,18 @@
     {ok, {status(), headers(), binary()}}
     | {error, term()}.
 
--spec request(r3_hex_core:config(), method(), URI :: binary(), headers(), body()) ->
+-spec request(rb_hex_core:config(), method(), URI :: binary(), headers(), body()) ->
     {ok, {status(), headers(), binary()}} | {error, term()}.
 request(Config, Method, URI, Headers, Body) when is_binary(URI) and is_map(Headers) ->
     {Adapter, AdapterConfig} =
-        case maps:get(http_adapter, Config, {r3_hex_http_httpc, #{}}) of
+        case maps:get(http_adapter, Config, {rb_hex_http_httpc, #{}}) of
             {Adapter0, AdapterConfig0} ->
                 {Adapter0, AdapterConfig0};
             %% TODO: remove in v0.9
             Adapter0 when is_atom(Adapter0) ->
                 AdapterConfig0 = maps:get(http_adapter_config, Config, #{}),
                 io:format(
-                    "[r3_hex_http] setting #{http_adapter => Module, http_adapter_config => Map} "
+                    "[rb_hex_http] setting #{http_adapter => Module, http_adapter_config => Map} "
                     "is deprecated in favour of #{http_adapter => {Module, Map}}~n"
                 ),
                 {Adapter0, AdapterConfig0}

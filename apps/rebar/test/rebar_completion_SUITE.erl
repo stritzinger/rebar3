@@ -89,7 +89,7 @@ test_completion_gen(Config) ->
 
 check_bash(Config) ->
     ComplFile = ?config(compl_file, Config),
-    Aliases = ["rebar", "r3"],
+    Aliases = ["rebar", "rb"],
     Opts = #{shell => bash,
              file => ComplFile,
              aliases => Aliases},
@@ -106,7 +106,7 @@ check_bash(Config) ->
 
 check_zsh(Config) ->
     ComplFile = ?config(compl_file, Config),
-    Aliases = ["rebar", "r3"],
+    Aliases = ["rebar", "rb"],
     Opts = #{shell => zsh,
              file => ComplFile,
              aliases => Aliases},

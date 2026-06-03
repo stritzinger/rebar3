@@ -27,7 +27,7 @@
 %% %CopyrightEnd%
 %%
 
--module(r3_hex_filename).
+-module(rb_hex_filename).
 -export([safe_relative_path/1]).
 
 safe_relative_path(Path) ->

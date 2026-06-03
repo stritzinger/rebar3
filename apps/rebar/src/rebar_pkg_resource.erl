@@ -1,5 +1,27 @@
 %% -*- erlang-indent-level: 4;indent-tabs-mode: nil -*-
 %% ex: ts=4 sw=4 et
+%% %CopyrightBegin%
+%%
+%% SPDX-License-Identifier: Apache-2.0
+%%
+%% SPDX-FileCopyrightText: Copyright 2015-2026 Rebar3 and its contributors
+%%
+%% SPDX-FileCopyrightText: Copyright 2026 Dipl. Phys. Peer Stritzinger GmbH
+%%
+%% Licensed under the Apache License, Version 2.0 (the "License");
+%% you may not use this file except in compliance with the License.
+%% You may obtain a copy of the License at
+%%
+%%     http://www.apache.org/licenses/LICENSE-2.0
+%%
+%% Unless required by applicable law or agreed to in writing, software
+%% distributed under the License is distributed on an "AS IS" BASIS,
+%% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+%% See the License for the specific language governing permissions and
+%% limitations under the License.
+%%
+%% %CopyrightEnd%
+
 -module(rebar_pkg_resource).
 
 -behaviour(rebar_resource_v2).
@@ -142,7 +164,7 @@ format_error({bad_registry_checksum, Name, Vsn, Expected, Found}) ->
              -> {ok, cached} | {ok, binary(), binary()} | error.
 request(Config, Name, Version, ETag) ->
     Config1 = Config#{http_etag => ETag},
-    try r3_hex_repo:get_tarball(Config1, Name, Version) of
+    try rb_hex_repo:get_tarball(Config1, Name, Version) of
         {ok, {200, #{<<"etag">> := ETag1}, Tarball}} ->
             {ok, Tarball, ETag1};
         {ok, {304, _Headers, _}} ->
@@ -247,7 +269,7 @@ serve_from_cache(TmpDir, CachePath, Pkg) ->
 serve_from_memory(TmpDir, Binary, {pkg, _Name, _Vsn, OldHash, Hash, _RepoConfig}) ->
     RegistryChecksum = list_to_integer(binary_to_list(Hash), 16),
     OldRegistryChecksum =  maybe_old_registry_checksum(OldHash),
-    case r3_hex_tarball:unpack(Binary, TmpDir) of
+    case rb_hex_tarball:unpack(Binary, TmpDir) of
         {ok, #{outer_checksum := <<Checksum:256/big-unsigned>>} = Res} when RegistryChecksum =/= Checksum ->
             #{inner_checksum := <<OldChecksum:256/big-unsigned>>} = Res,
             %% Not triggerable in tests, but code feels logically wrong without it since inner checksums are not hard

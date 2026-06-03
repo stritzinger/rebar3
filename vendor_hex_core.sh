@@ -36,6 +36,6 @@ touch proto/* # force re-generation of protobuf elements
 TARGET_ERLANG_VERSION=25
 export TARGET_ERLANG_VERSION
 rebar as dev compile
-./vendor.sh src r3_
-find src -regex '.*r3_.*' -exec mv -f {} "$REBAR_TOP/src/vendored" \;
+./vendor.sh src rb_
+find src -regex '.*rb_.*' -exec mv -f {} "$REBAR_TOP/src/vendored" \;
 popd

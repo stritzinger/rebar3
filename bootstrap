@@ -167,7 +167,7 @@ maybe_set_ipfamily(_, _Family) ->
     ok.
 
 compile_vendored() ->
-  compile_xrl_file("apps/rebar/src/vendored/r3_safe_erl_term.xrl"),
+  compile_xrl_file("apps/rebar/src/vendored/rb_safe_erl_term.xrl"),
   Sources = filelib:wildcard(filename:join(["apps/rebar/src/vendored", "*.erl"])),
   OutDir =  filename:absname("_build/bootstrap/lib/rebar/ebin"),
   code:add_patha(OutDir),

@@ -2,7 +2,7 @@
 
 %% @doc
 %% Hex HTTP API
--module(r3_hex_api).
+-module(rb_hex_api).
 
 -export([
     delete/2,
@@ -18,7 +18,7 @@
 
 -export_type([response/0]).
 
--type response() :: {ok, {r3_hex_http:status(), r3_hex_http:headers(), body() | nil}} | {error, term()}.
+-type response() :: {ok, {rb_hex_http:status(), rb_hex_http:headers(), body() | nil}} | {error, term()}.
 -type body() :: [body()] | #{binary() => body() | binary()}.
 
 %% @private
@@ -100,13 +100,13 @@ request(Config, Method, Path, Body) when is_binary(Path) and is_map(Config) ->
     ReqHeaders = maps:merge(maps:get(http_headers, Config, #{}), DefaultHeaders),
     ReqHeaders2 = put_new(<<"accept">>, ?ERL_CONTENT_TYPE, ReqHeaders),
 
-    case r3_hex_http:request(Config, Method, build_url(Path, Config), ReqHeaders2, Body) of
+    case rb_hex_http:request(Config, Method, build_url(Path, Config), ReqHeaders2, Body) of
         {ok, {Status, RespHeaders, RespBody}} ->
             ContentType = maps:get(<<"content-type">>, RespHeaders, <<"">>),
             Response =
                 case binary:match(ContentType, ?ERL_CONTENT_TYPE) of
                     {_, _} ->
-                        case r3_hex_safe_binary_to_term:safe_binary_to_term(RespBody) of
+                        case hex_safe_binary_to_term:safe_binary_to_term(RespBody) of
                             {ok, Term} ->
                                 {ok, {Status, RespHeaders, Term}};
                             {error, Reason} ->
@@ -134,7 +134,7 @@ encode_body(Body) ->
 
 %% TODO: not needed after exdoc is fixed
 %% @private
-%% TODO: copy-pasted from r3_hex_repo
+%% TODO: copy-pasted from rb_hex_repo
 make_headers(Config) ->
     maps:fold(fun set_header/3, #{}, Config).
 

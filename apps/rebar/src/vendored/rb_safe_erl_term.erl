@@ -1,4 +1,4 @@
--file("/Users/ferd/local/bin/erls/28.3.1/lib/parsetools-2.7/include/leexinc.hrl", 0).
+-file("/Users/barbarachassoul/local/bin/erls/28.3.1/lib/parsetools-2.7/include/leexinc.hrl", 0).
 %%
 %% %CopyrightBegin%
 %%
@@ -39,13 +39,13 @@
 %% property of the creator of the scanner and is not covered by that
 %% Copyright.
 
--module(r3_safe_erl_term).
+-module(rb_safe_erl_term).
 
 -export([string/1,string/2,token/2,token/3,tokens/2,tokens/3]).
 -export([format_error/1]).
 
 %% User code. This is placed here to allow extra attributes.
--file("/Users/ferd/code/self/rebar3/apps/rebar/src/vendored/r3_safe_erl_term.xrl", 26).
+-file("/Users/barbarachassoul/code/self/rebar3/apps/rebar/src/vendored/rb_safe_erl_term.xrl", 26).
 
 -export([terms/1]).
 
@@ -100,7 +100,7 @@ escape_char($s) -> $\s;       %\s = SPC
 escape_char($d) -> $\d;       %\d = DEL
 escape_char(C) -> C.
 
--file("/Users/ferd/local/bin/erls/28.3.1/lib/parsetools-2.7/include/leexinc.hrl", 47).
+-file("/Users/barbarachassoul/local/bin/erls/28.3.1/lib/parsetools-2.7/include/leexinc.hrl", 47).
 
 format_error({illegal,S}) -> ["illegal characters ",io_lib:write_string(S)];
 format_error({user,S}) -> S.
@@ -457,7 +457,7 @@ tab_size() -> 8.
 %% return signal either an unrecognised character or end of current
 %% input.
 
--file("/Users/ferd/code/self/rebar3/apps/rebar/src/vendored/r3_safe_erl_term.erl", 425).
+-file("/Users/barbarachassoul/code/self/rebar3/apps/rebar/src/vendored/rb_safe_erl_term.erl", 425).
 yystate() -> 12.
 
 yystate(19, [92|Ics], Line, Col, Tlen, Action, Alen) ->
@@ -712,47 +712,47 @@ yyaction(8, _, _, _, _) ->
 yyaction(_, _, _, _, _) -> error.
 
 -compile({inline,yyaction_0/2}).
--file("/Users/ferd/code/self/rebar3/apps/rebar/src/vendored/r3_safe_erl_term.xrl", 14).
+-file("/Users/barbarachassoul/code/self/rebar3/apps/rebar/src/vendored/rb_safe_erl_term.xrl", 14).
 yyaction_0(TokenChars, TokenLine) ->
      tokenize_atom (TokenChars, TokenLine) .
 
 -compile({inline,yyaction_1/3}).
--file("/Users/ferd/code/self/rebar3/apps/rebar/src/vendored/r3_safe_erl_term.xrl", 15).
+-file("/Users/barbarachassoul/code/self/rebar3/apps/rebar/src/vendored/rb_safe_erl_term.xrl", 15).
 yyaction_1(TokenChars, TokenLen, TokenLine) ->
      tokenize_atom (escape (unquote (TokenChars, TokenLen)), TokenLine) .
 
 -compile({inline,yyaction_2/3}).
--file("/Users/ferd/code/self/rebar3/apps/rebar/src/vendored/r3_safe_erl_term.xrl", 16).
+-file("/Users/barbarachassoul/code/self/rebar3/apps/rebar/src/vendored/rb_safe_erl_term.xrl", 16).
 yyaction_2(TokenChars, TokenLen, TokenLine) ->
      { token, { string, TokenLine, escape (unquote (TokenChars, TokenLen)) } } .
 
 -compile({inline,yyaction_3/2}).
--file("/Users/ferd/code/self/rebar3/apps/rebar/src/vendored/r3_safe_erl_term.xrl", 17).
+-file("/Users/barbarachassoul/code/self/rebar3/apps/rebar/src/vendored/rb_safe_erl_term.xrl", 17).
 yyaction_3(TokenChars, TokenLine) ->
      { token, { integer, TokenLine, list_to_integer (TokenChars) } } .
 
 -compile({inline,yyaction_4/2}).
--file("/Users/ferd/code/self/rebar3/apps/rebar/src/vendored/r3_safe_erl_term.xrl", 18).
+-file("/Users/barbarachassoul/code/self/rebar3/apps/rebar/src/vendored/rb_safe_erl_term.xrl", 18).
 yyaction_4(TokenChars, TokenLine) ->
      { token, { list_to_atom (TokenChars), TokenLine } } .
 
 -compile({inline,yyaction_5/2}).
--file("/Users/ferd/code/self/rebar3/apps/rebar/src/vendored/r3_safe_erl_term.xrl", 19).
+-file("/Users/barbarachassoul/code/self/rebar3/apps/rebar/src/vendored/rb_safe_erl_term.xrl", 19).
 yyaction_5(TokenChars, TokenLine) ->
      { token, { list_to_atom (TokenChars), TokenLine } } .
 
 -compile({inline,yyaction_6/1}).
--file("/Users/ferd/code/self/rebar3/apps/rebar/src/vendored/r3_safe_erl_term.xrl", 20).
+-file("/Users/barbarachassoul/code/self/rebar3/apps/rebar/src/vendored/rb_safe_erl_term.xrl", 20).
 yyaction_6(TokenLine) ->
      { token, { dot, TokenLine } } .
 
 -compile({inline,yyaction_7/1}).
--file("/Users/ferd/code/self/rebar3/apps/rebar/src/vendored/r3_safe_erl_term.xrl", 21).
+-file("/Users/barbarachassoul/code/self/rebar3/apps/rebar/src/vendored/rb_safe_erl_term.xrl", 21).
 yyaction_7(TokenLine) ->
      { token, { '/', TokenLine } } .
 
 -compile({inline,yyaction_8/0}).
--file("/Users/ferd/code/self/rebar3/apps/rebar/src/vendored/r3_safe_erl_term.xrl", 22).
+-file("/Users/barbarachassoul/code/self/rebar3/apps/rebar/src/vendored/rb_safe_erl_term.xrl", 22).
 yyaction_8() ->
      skip_token .
--file("/Users/ferd/local/bin/erls/28.3.1/lib/parsetools-2.7/include/leexinc.hrl", 377).
+-file("/Users/barbarachassoul/local/bin/erls/28.3.1/lib/parsetools-2.7/include/leexinc.hrl", 377).

@@ -2,7 +2,7 @@
 
 %% @doc
 %% Hex HTTP API - Users.
--module(r3_hex_api_user).
+-module(rb_hex_api_user).
 -export([
     create/4,
     get/2,
@@ -16,7 +16,7 @@
 %% Examples:
 %%
 %% ```
-%% > r3_hex_api_user:me(r3_hex_core:default_config()).
+%% > rb_hex_api_user:me(rb_hex_core:default_config()).
 %% {ok, {200, ..., #{
 %%      <<"email">> => <<"user@example.com">>,
 %%      <<"full_name">> => <<"John Doe">>,
@@ -29,9 +29,9 @@
 %%      }}}
 %% '''
 %% @end
--spec me(r3_hex_core:config()) -> r3_hex_api:response().
+-spec me(rb_hex_core:config()) -> rb_hex_api:response().
 me(Config) when is_map(Config) ->
-    r3_hex_api:get(Config, ["users", "me"]).
+    rb_hex_api:get(Config, ["users", "me"]).
 
 %% @doc
 %% Creates a new user account.
@@ -39,7 +39,7 @@ me(Config) when is_map(Config) ->
 %% Examples:
 %%
 %% ```
-%% > r3_hex_api_user:create(r3_hex_core:default_config(), <<"user">>, <<"hunter42">>, <<"user@example.com">>).
+%% > rb_hex_api_user:create(rb_hex_core:default_config(), <<"user">>, <<"hunter42">>, <<"user@example.com">>).
 %% {ok, {201, ..., #{
 %%      <<"email">> => <<"user@example.com">>,
 %%      <<"full_name">> => <<"John Doe">>,
@@ -52,7 +52,7 @@ me(Config) when is_map(Config) ->
 %%      }}}
 %% '''
 %% @end
--spec create(r3_hex_core:config(), binary(), binary(), binary()) -> r3_hex_api:response().
+-spec create(rb_hex_core:config(), binary(), binary(), binary()) -> rb_hex_api:response().
 create(Config, Username, Password, Email) when
     is_map(Config) and is_binary(Username) and is_binary(Password) and is_binary(Email)
 ->
@@ -61,7 +61,7 @@ create(Config, Username, Password, Email) when
         <<"password">> => Password,
         <<"email">> => Email
     },
-    r3_hex_api:post(Config, ["users"], Params).
+    rb_hex_api:post(Config, ["users"], Params).
 
 %% @doc
 %% Resets the user's password.
@@ -69,13 +69,13 @@ create(Config, Username, Password, Email) when
 %% Examples:
 %%
 %% ```
-%% > r3_hex_api_user:reset_password(r3_hex_core:default_config(), <<"user">>).
+%% > rb_hex_api_user:reset_password(rb_hex_core:default_config(), <<"user">>).
 %% {ok, {204, ..., nil}}
 %% '''
 %% @end
--spec reset_password(r3_hex_core:config(), binary()) -> r3_hex_api:response().
+-spec reset_password(rb_hex_core:config(), binary()) -> rb_hex_api:response().
 reset_password(Config, Username) when is_map(Config) and is_binary(Username) ->
-    r3_hex_api:post(Config, ["users", Username, "reset"], #{}).
+    rb_hex_api:post(Config, ["users", Username, "reset"], #{}).
 
 %% @doc
 %% Gets a user.
@@ -83,7 +83,7 @@ reset_password(Config, Username) when is_map(Config) and is_binary(Username) ->
 %% Examples:
 %%
 %% ```
-%% > r3_hex_api_user:get(r3_hex_core:default_config()).
+%% > rb_hex_api_user:get(rb_hex_core:default_config()).
 %% {ok, {200, ..., #{
 %%      <<"email">> => <<"user@example.com">>,
 %%      <<"full_name">> => <<"John Doe">>,
@@ -96,6 +96,6 @@ reset_password(Config, Username) when is_map(Config) and is_binary(Username) ->
 %%      }}}
 %% '''
 %% @end
--spec get(r3_hex_core:config(), binary()) -> r3_hex_api:response().
+-spec get(rb_hex_core:config(), binary()) -> rb_hex_api:response().
 get(Config, Username) when is_map(Config) and is_binary(Username) ->
-    r3_hex_api:get(Config, ["users", Username]).
+    rb_hex_api:get(Config, ["users", Username]).

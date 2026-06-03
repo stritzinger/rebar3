@@ -22,7 +22,7 @@
 
 %%% @doc external alias for `rebar_agent' for more convenient
 %%% calls from a shell.
--module(r3).
+-module(rb).
 -export([do/1, do/2, do/3, async_do/1, async_do/2, async_do/3, break/0, resume/0]).
 -export(['$handle_undefined_function'/2]).
 -include("rebar.hrl").
@@ -62,7 +62,7 @@ break() ->
                     Self = self(),
                     Ref = make_ref(),
                     spawn_link(fun() ->
-                            register(r3_breakpoint_handler, self()),
+                            register(rb_breakpoint_handler, self()),
                             receive
                                 resume ->
                                     Self ! Ref
@@ -80,7 +80,7 @@ break() ->
     end.
 
 resume() ->
-    r3_breakpoint_handler ! resume,
+    rb_breakpoint_handler ! resume,
     ok.
 
 %% @private defer to rebar_agent

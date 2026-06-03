@@ -9,7 +9,7 @@
 %%
 %% Inspired by Plug.Crypto's non_executable_binary_to_term:
 %% https://github.com/elixir-plug/plug_crypto/blob/c326c3c743b18cf5f4b12735d06dd90c72dcd779/lib/plug/crypto.ex
--module(r3_hex_safe_binary_to_term).
+-module(rb_hex_safe_binary_to_term).
 
 -export([safe_binary_to_term/1]).
 

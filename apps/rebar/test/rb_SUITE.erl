@@ -18,7 +18,7 @@
 %%
 %% %CopyrightEnd%
 
--module(r3_SUITE).
+-module(rb_SUITE).
 
 -export([all/0, init_per_testcase/2, end_per_testcase/2]).
 -export([do_forms_run/1,
@@ -48,37 +48,37 @@ end_per_testcase(_, Config) ->
         _Pid ->
             catch gen_server:stop(rebar_agent)
     end,
-    catch unregister(r3_breakpoint_handler),
+    catch unregister(rb_breakpoint_handler),
     Config.
 
 do_forms_run(_Config) ->
     start_agent(),
-    ?assertEqual(ok, r3:do(version)),
-    ?assertEqual(ok, r3:do(default, ["version"])),
-    ?assertEqual(ok, r3:do(default, ["clean", "-a"])),
-    ?assertEqual(ok, r3:do(default, help, ["version"])).
+    ?assertEqual(ok, rb:do(version)),
+    ?assertEqual(ok, rb:do(default, ["version"])),
+    ?assertEqual(ok, rb:do(default, ["clean", "-a"])),
+    ?assertEqual(ok, rb:do(default, help, ["version"])).
 
 async_do_forms_run(_Config) ->
     start_agent(),
-    ?assertEqual(ok, r3:async_do(version)),
-    ?assertEqual(ok, r3:async_do(default, ["version"])),
-    ?assertEqual(ok, r3:async_do(default, ["clean", "-a"])),
-    ?assertEqual(ok, r3:async_do(default, help, ["version"])),
+    ?assertEqual(ok, rb:async_do(version)),
+    ?assertEqual(ok, rb:async_do(default, ["version"])),
+    ?assertEqual(ok, rb:async_do(default, ["clean", "-a"])),
+    ?assertEqual(ok, rb:async_do(default, help, ["version"])),
     timer:sleep(500),
-    ?assertEqual(ok, r3:do(version)).
+    ?assertEqual(ok, rb:do(version)).
 
 undefined_function_forms_run(_Config) ->
     start_agent(),
-    ?assertEqual(ok, r3:version()),
-    ?assertEqual(ok, r3:help(["version"])).
+    ?assertEqual(ok, rb:version()),
+    ?assertEqual(ok, rb:help(["version"])).
 
 break_without_async_returns_ok(_Config) ->
     start_agent(),
-    ?assertEqual(ok, r3:break()).
+    ?assertEqual(ok, rb:break()).
 
 resume_notifies_breakpoint_handler(_Config) ->
-    register(r3_breakpoint_handler, self()),
-    ?assertEqual(ok, r3:resume()),
+    register(rb_breakpoint_handler, self()),
+    ?assertEqual(ok, rb:resume()),
     receive
         resume ->
             ok

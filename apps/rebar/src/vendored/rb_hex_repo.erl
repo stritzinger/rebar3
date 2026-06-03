@@ -2,7 +2,7 @@
 
 %% @doc
 %% Repo API.
--module(r3_hex_repo).
+-module(rb_hex_repo).
 -export([
     get_names/1,
     get_versions/1,
@@ -23,7 +23,7 @@
 %% Examples:
 %%
 %% ```
-%% > r3_hex_repo:get_names(r3_hex_core:default_config()).
+%% > rb_hex_repo:get_names(rb_hex_core:default_config()).
 %% {ok,{200, ...,
 %%      #{packages => [
 %%            #{name => <<"package1">>},
@@ -33,7 +33,7 @@
 %% @end
 get_names(Config) when is_map(Config) ->
     Decoder = fun(Data) ->
-        r3_hex_registry:decode_names(Data, verify_repo(Config))
+        rb_hex_registry:decode_names(Data, verify_repo(Config))
     end,
     get_protobuf(Config, <<"names">>, Decoder).
 
@@ -43,7 +43,7 @@ get_names(Config) when is_map(Config) ->
 %% Examples:
 %%
 %% ```
-%% > r3_hex_repo:get_versions(Config).
+%% > rb_hex_repo:get_versions(Config).
 %% {ok, {200, ...,
 %%       #{packages => [
 %%             #{name => <<"package1">>, retired => [],
@@ -55,7 +55,7 @@ get_names(Config) when is_map(Config) ->
 %% @end
 get_versions(Config) when is_map(Config) ->
     Decoder = fun(Data) ->
-        r3_hex_registry:decode_versions(Data, verify_repo(Config))
+        rb_hex_registry:decode_versions(Data, verify_repo(Config))
     end,
     get_protobuf(Config, <<"versions">>, Decoder).
 
@@ -65,7 +65,7 @@ get_versions(Config) when is_map(Config) ->
 %% Examples:
 %%
 %% ```
-%% > r3_hex_repo:get_package(r3_hex_core:default_config(), <<"package1">>).
+%% > rb_hex_repo:get_package(rb_hex_core:default_config(), <<"package1">>).
 %% {ok, {200, ...,
 %%       #{name => <<"package1">>,
 %%         releases => [
@@ -80,8 +80,8 @@ get_package(Config, Name) when is_binary(Name) and is_map(Config) ->
     Verify = maps:get(repo_verify_origin, Config, true),
     Decoder = fun(Data) ->
         case Verify of
-            true -> r3_hex_registry:decode_package(Data, repo_name(Config), Name);
-            false -> r3_hex_registry:decode_package(Data, no_verify, no_verify)
+            true -> rb_hex_registry:decode_package(Data, repo_name(Config), Name);
+            false -> rb_hex_registry:decode_package(Data, no_verify, no_verify)
         end
     end,
     get_protobuf(Config, <<"packages/", Name/binary>>, Decoder).
@@ -92,8 +92,8 @@ get_package(Config, Name) when is_binary(Name) and is_map(Config) ->
 %% Examples:
 %%
 %% ```
-%% > {ok, {200, _, Tarball}} = r3_hex_repo:get_tarball(r3_hex_core:default_config(), <<"package1">>, <<"1.0.0">>),
-%% > {ok, #{metadata := Metadata}} = r3_hex_tarball:unpack(Tarball, memory).
+%% > {ok, {200, _, Tarball}} = rb_hex_repo:get_tarball(rb_hex_core:default_config(), <<"package1">>, <<"1.0.0">>),
+%% > {ok, #{metadata := Metadata}} = rb_hex_tarball:unpack(Tarball, memory).
 %% '''
 %% @end
 get_tarball(Config, Name, Version) ->
@@ -112,8 +112,8 @@ get_tarball(Config, Name, Version) ->
 %% Examples:
 %%
 %% ```
-%% > {ok, {200, _, Docs}} = r3_hex_repo:get_docs(r3_hex_core:default_config(), <<"package1">>, <<"1.0.0">>),
-%% > r3_hex_tarball:unpack_docs(Docs, memory)
+%% > {ok, {200, _, Docs}} = rb_hex_repo:get_docs(rb_hex_core:default_config(), <<"package1">>, <<"1.0.0">>),
+%% > rb_hex_tarball:unpack_docs(Docs, memory)
 %% {ok, [{"index.html", <<"<!doctype>">>}, ...]}
 %% '''
 get_docs(Config, Name, Version) ->
@@ -132,7 +132,7 @@ get_docs(Config, Name, Version) ->
 %% Examples:
 %%
 %% ```
-%% > r3_hex_repo:get_public_key(r3_hex_core:default_config())
+%% > rb_hex_repo:get_public_key(rb_hex_core:default_config())
 %% {ok, {200, _, PublicKey}}
 %% '''
 get_public_key(Config) ->
@@ -152,7 +152,7 @@ get_public_key(Config) ->
 %% Examples:
 %%
 %% ```
-%% > r3_hex_repo:get_hex_installs(r3_hex_core:default_config()).
+%% > rb_hex_repo:get_hex_installs(rb_hex_core:default_config()).
 %% {ok, {200, ..., <<"1.0.0,abc123,1.13.0\n1.1.0,def456,1.14.0\n...">>}}
 %% '''
 %% @end
@@ -173,7 +173,7 @@ get_hex_installs(Config) ->
 
 %% @private
 get(Config, URI, Headers) ->
-    r3_hex_http:request(Config, get, URI, Headers, undefined).
+    rb_hex_http:request(Config, get, URI, Headers, undefined).
 
 %% @private
 get_protobuf(Config, Path, Decoder) ->
@@ -199,14 +199,14 @@ decode(Signed, PublicKey, Decoder, Config) ->
 
     case Verify of
         true ->
-            case r3_hex_registry:decode_and_verify_signed(Signed, PublicKey) of
+            case rb_hex_registry:decode_and_verify_signed(Signed, PublicKey) of
                 {ok, Payload} ->
                     Decoder(Payload);
                 Other ->
                     Other
             end;
         false ->
-            #{payload := Payload} = r3_hex_registry:decode_signed(Signed),
+            #{payload := Payload} = rb_hex_registry:decode_signed(Signed),
             Decoder(Payload)
     end.
 

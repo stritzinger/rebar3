@@ -32,8 +32,8 @@
 %% * `api_url' - URL to the HTTP API (default: `https://hex.pm/api').
 %%
 %% * `http_adapter' - A tuple of a callback module and its configuration used
-%%   for HTTP requests (default: `{r3_hex_http_httpc, #{profile => default}}'). See
-%%   {@link r3_hex_http} and {@link r3_hex_http_httpc} for more information.
+%%   for HTTP requests (default: `{rb_hex_http_httpc, #{profile => default}}'). See
+%%   {@link rb_hex_http} and {@link rb_hex_http_httpc} for more information.
 %%
 %% * `http_etag' - Sets the `if-none-match' HTTP header with the given value to do a
 %%   conditional HTTP request.
@@ -74,7 +74,7 @@
 %% * `docs_tarball_max_uncompressed_size' - Maximum size of uncompressed docs tarball, defaults to
 %%   `134_217_728' (128 MiB). Set to `infinity' to not enforce the limit.
 
--module(r3_hex_core).
+-module(rb_hex_core).
 -export([default_config/0]).
 
 -export_type([config/0]).
@@ -124,7 +124,7 @@ default_config() ->
         api_organization => undefined,
         api_repository => undefined,
         api_url => <<"https://hex.pm/api">>,
-        http_adapter => {r3_hex_http_httpc, #{profile => default}},
+        http_adapter => {rb_hex_http_httpc, #{profile => default}},
         http_etag => undefined,
         http_headers => #{},
         http_user_agent_fragment => <<"(httpc)">>,

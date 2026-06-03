@@ -3,11 +3,11 @@
 %% @private
 %% Copied from https://github.com/erlang/otp/blob/OTP-20.0.1/lib/stdlib/src/erl_tar.erl
 %% with modifications:
-%% - Change module name to `r3_hex_erl_tar`
+%% - Change module name to `rb_hex_erl_tar`
 %% - Set tar mtimes to 0 and remove dependency on :os.system_time/1
 %% - Preserve modes when building tarball
 %% - Do not crash if failing to write tar
-%% - Allow setting file_info opts on :r3_hex_erl_tar.add
+%% - Allow setting file_info opts on :rb_hex_erl_tar.add
 %% - Add safe_relative_path_links/2 to check directory traversal vulnerability when extracting files,
 %%   it differs from OTP's current fix (2020-02-04) in that it checks regular files instead of
 %%   symlink targets. This allows creating symlinks with relative path targets such as `../tmp/log`
@@ -42,7 +42,7 @@
 %%   http://www.freebsd.org/cgi/man.cgi?query=tar&sektion=5
 %%   http://www.gnu.org/software/tar/manual/html_node/Standard.html
 %%   http://pubs.opengroup.org/onlinepubs/9699919799/utilities/pax.html
--module(r3_hex_erl_tar).
+-module(rb_hex_erl_tar).
 
 -export([init/3,
          create/2, create/3,
@@ -53,7 +53,7 @@
          format_error/1]).
 
 -include_lib("kernel/include/file.hrl").
--include_lib("r3_hex_erl_tar.hrl").
+-include_lib("rb_hex_erl_tar.hrl").
 
 %% Converts the short error reason to a descriptive string.
 -spec format_error(term()) -> string().
@@ -1681,7 +1681,7 @@ safe_relative_path_links([], _Cwd, _PrevLinks, Acc) ->
 safe_relative_path_links([Segment | Segments], Cwd, PrevLinks, Acc) ->
     AccSegment = join(Acc, Segment),
 
-    case r3_hex_filename:safe_relative_path(AccSegment) of
+    case rb_hex_filename:safe_relative_path(AccSegment) of
         unsafe ->
             unsafe;
 

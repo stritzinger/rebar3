@@ -117,7 +117,7 @@ repos(HexConfig) ->
             merge_repos(RepoList ++ [HexDefaultConfig])
     end.
 
-%% merge repos must add a field repo_name to work with r3_hex_core 0.5.0
+%% merge repos must add a field repo_name to work with rb_hex_core 0.5.0
 -spec merge_repos([repo()]) -> [repo()].
 merge_repos(Repos) ->
     lists:foldl(fun(R = #{name := Name}, ReposAcc) ->
@@ -169,7 +169,7 @@ update_repo_list(R, []) ->
     [R].
 
 default_repo() ->
-    HexDefaultConfig = r3_hex_core:default_config(),
+    HexDefaultConfig = rb_hex_core:default_config(),
     HexDefaultConfig#{name => ?PUBLIC_HEX_REPO, repo_verify_origin => repo_verify_origin()}.
 
 repo_verify_origin() ->

@@ -2,7 +2,7 @@
 
 %% @doc
 %% Hex HTTP API - Releases.
--module(r3_hex_api_release).
+-module(rb_hex_api_release).
 -export([
     delete/3,
     get/3,
@@ -23,7 +23,7 @@
 %% Examples:
 %%
 %% ```
-%% > r3_hex_api_release:get(r3_hex_core:default_config(), <<"package">>, <<"1.0.0">>).
+%% > rb_hex_api_release:get(rb_hex_core:default_config(), <<"package">>, <<"1.0.0">>).
 %% {ok, {200, ..., #{
 %%      <<"checksum">> => <<"540d210d81f56f17f64309a4896430e727972499b37bd59342dc08d61dff74d8">>,
 %%      <<"docs_html_url">> => <<"https://hexdocs.pm/package/1.0.0/">>,
@@ -42,10 +42,10 @@
 %%      }}}
 %% '''
 %% @end
--spec get(r3_hex_core:config(), binary(), binary()) -> r3_hex_api:response().
+-spec get(rb_hex_core:config(), binary(), binary()) -> rb_hex_api:response().
 get(Config, Name, Version) when is_map(Config) and is_binary(Name) and is_binary(Version) ->
-    Path = r3_hex_api:build_repository_path(Config, ["packages", Name, "releases", Version]),
-    r3_hex_api:get(Config, Path).
+    Path = rb_hex_api:build_repository_path(Config, ["packages", Name, "releases", Version]),
+    rb_hex_api:get(Config, Path).
 
 %% @doc
 %% Publishes a new package release.
@@ -53,7 +53,7 @@ get(Config, Name, Version) when is_map(Config) and is_binary(Name) and is_binary
 %% Examples:
 %%
 %% ```
-%% > r3_hex_api_release:publish(r3_hex_core:default_config(), Tarball).
+%% > rb_hex_api_release:publish(rb_hex_core:default_config(), Tarball).
 %% {ok, {200, ..., #{
 %%      <<"checksum">> => <<"540d210d81f56f17f64309a4896430e727972499b37bd59342dc08d61dff74d8">>,
 %%      <<"docs_html_url">> => <<"https://hexdocs.pm/package/1.0.0/">>,
@@ -72,7 +72,7 @@ get(Config, Name, Version) when is_map(Config) and is_binary(Name) and is_binary
 %%      }}}
 %% '''
 %% @end
--spec publish(r3_hex_core:config(), binary()) -> r3_hex_api:response().
+-spec publish(rb_hex_core:config(), binary()) -> rb_hex_api:response().
 publish(Config, Tarball) -> publish(Config, Tarball, []).
 
 %% @doc
@@ -84,7 +84,7 @@ publish(Config, Tarball) -> publish(Config, Tarball, []).
 %% Examples:
 %%
 %% ```
-%% > r3_hex_api_release:publish(r3_hex_core:default_config(), Tarball, [{replace, true}]).
+%% > rb_hex_api_release:publish(rb_hex_core:default_config(), Tarball, [{replace, true}]).
 %% {ok, {201, ..., #{
 %%      <<"checksum">> => <<"540d210d81f56f17f64309a4896430e727972499b37bd59342dc08d61dff74d8">>,
 %%      <<"docs_html_url">> => <<"https://hexdocs.pm/package/1.0.0/">>,
@@ -103,18 +103,18 @@ publish(Config, Tarball) -> publish(Config, Tarball, []).
 %%      }}}
 %% '''
 %% @end
--spec publish(r3_hex_core:config(), binary(), publish_params()) -> r3_hex_api:response().
+-spec publish(rb_hex_core:config(), binary(), publish_params()) -> rb_hex_api:response().
 publish(Config, Tarball, Params) when
     is_map(Config) andalso is_binary(Tarball) andalso is_list(Params)
 ->
-    case r3_hex_tarball:unpack(Tarball, memory) of
+    case rb_hex_tarball:unpack(Tarball, memory) of
         {ok, #{metadata := Metadata}} ->
             PackageName = maps:get(<<"name">>, Metadata),
-            QueryString = r3_hex_api:encode_query_string([
+            QueryString = rb_hex_api:encode_query_string([
                 {replace, proplists:get_value(replace, Params, false)}
             ]),
-            Path = r3_hex_api:join_path_segments(
-                r3_hex_api:build_repository_path(Config, ["packages", PackageName, "releases"])
+            Path = rb_hex_api:join_path_segments(
+                rb_hex_api:build_repository_path(Config, ["packages", PackageName, "releases"])
             ),
             PathWithQuery = <<Path/binary, "?", QueryString/binary>>,
             TarballContentType = "application/octet-stream",
@@ -123,7 +123,7 @@ publish(Config, Tarball, Params) when
             ),
             Config3 = maybe_put_expect_header(Config2),
             Body = {TarballContentType, Tarball},
-            r3_hex_api:post(Config3, PathWithQuery, Body);
+            rb_hex_api:post(Config3, PathWithQuery, Body);
         {error, Reason} ->
             {error, {tarball, Reason}}
     end.
@@ -134,14 +134,14 @@ publish(Config, Tarball, Params) when
 %% Examples:
 %%
 %% ```
-%% > r3_hex_api_release:delete(r3_hex_core:default_config(), <<"package">>, <<"1.0.0">>).
+%% > rb_hex_api_release:delete(rb_hex_core:default_config(), <<"package">>, <<"1.0.0">>).
 %% {ok, {204, ..., nil}}
 %% '''
 %% @end
--spec delete(r3_hex_core:config(), binary(), binary()) -> r3_hex_api:response().
+-spec delete(rb_hex_core:config(), binary(), binary()) -> rb_hex_api:response().
 delete(Config, Name, Version) when is_map(Config) and is_binary(Name) and is_binary(Version) ->
-    Path = r3_hex_api:build_repository_path(Config, ["packages", Name, "releases", Version]),
-    r3_hex_api:delete(Config, Path).
+    Path = rb_hex_api:build_repository_path(Config, ["packages", Name, "releases", Version]),
+    rb_hex_api:delete(Config, Path).
 
 %% @doc
 %% Retires a package release.
@@ -149,16 +149,16 @@ delete(Config, Name, Version) when is_map(Config) and is_binary(Name) and is_bin
 %% Examples:
 %%
 %% ```
-%% > r3_hex_api_release:retire(r3_hex_core:default_config(), <<"package">>, <<"1.0.0">>, Params).
+%% > rb_hex_api_release:retire(rb_hex_core:default_config(), <<"package">>, <<"1.0.0">>, Params).
 %% {ok, {204, ..., nil}}
 %% '''
 %% @end
--spec retire(r3_hex_core:config(), binary(), binary(), retirement_params()) -> r3_hex_api:response().
+-spec retire(rb_hex_core:config(), binary(), binary(), retirement_params()) -> rb_hex_api:response().
 retire(Config, Name, Version, Params) when
     is_map(Config) and is_binary(Name) and is_binary(Version)
 ->
-    Path = r3_hex_api:build_repository_path(Config, ["packages", Name, "releases", Version, "retire"]),
-    r3_hex_api:post(Config, Path, Params).
+    Path = rb_hex_api:build_repository_path(Config, ["packages", Name, "releases", Version, "retire"]),
+    rb_hex_api:post(Config, Path, Params).
 
 %% @doc
 %% Unretires a package release.
@@ -166,14 +166,14 @@ retire(Config, Name, Version, Params) when
 %% Examples:
 %%
 %% ```
-%% > r3_hex_api_release:unretire(r3_hex_core:default_config(), <<"package">>, <<"1.0.0">>).
+%% > rb_hex_api_release:unretire(rb_hex_core:default_config(), <<"package">>, <<"1.0.0">>).
 %% {ok, {204, ..., nil}}
 %% '''
 %% @end
--spec unretire(r3_hex_core:config(), binary(), binary()) -> r3_hex_api:response().
+-spec unretire(rb_hex_core:config(), binary(), binary()) -> rb_hex_api:response().
 unretire(Config, Name, Version) when is_map(Config) and is_binary(Name) and is_binary(Version) ->
-    Path = r3_hex_api:build_repository_path(Config, ["packages", Name, "releases", Version, "retire"]),
-    r3_hex_api:delete(Config, Path).
+    Path = rb_hex_api:build_repository_path(Config, ["packages", Name, "releases", Version, "retire"]),
+    rb_hex_api:delete(Config, Path).
 
 %%====================================================================
 %% Internal functions

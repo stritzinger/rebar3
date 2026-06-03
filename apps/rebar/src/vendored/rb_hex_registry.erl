@@ -2,7 +2,7 @@
 
 %% @doc
 %% Functions for encoding and decoding Hex registries.
--module(r3_hex_registry).
+-module(rb_hex_registry).
 -export([
     encode_names/1,
     decode_names/2,
@@ -47,13 +47,13 @@ unpack_names(Payload, Repository, PublicKey) ->
 
 %% @private
 encode_names(Names) ->
-    r3_hex_pb_names:encode_msg(Names, 'Names').
+    rb_hex_pb_names:encode_msg(Names, 'Names').
 
 %% @private
 decode_names(Payload, no_verify) ->
-    {ok, r3_hex_pb_names:decode_msg(Payload, 'Names')};
+    {ok, rb_hex_pb_names:decode_msg(Payload, 'Names')};
 decode_names(Payload, Repository) ->
-    case r3_hex_pb_names:decode_msg(Payload, 'Names') of
+    case rb_hex_pb_names:decode_msg(Payload, 'Names') of
         #{repository := Repository, packages := _Packages} = Result ->
             {ok, Result};
         _ ->
@@ -76,13 +76,13 @@ unpack_versions(Payload, Repository, PublicKey) ->
 
 %% @private
 encode_versions(Versions) ->
-    r3_hex_pb_versions:encode_msg(Versions, 'Versions').
+    rb_hex_pb_versions:encode_msg(Versions, 'Versions').
 
 %% @private
 decode_versions(Payload, no_verify) ->
-    {ok, r3_hex_pb_versions:decode_msg(Payload, 'Versions')};
+    {ok, rb_hex_pb_versions:decode_msg(Payload, 'Versions')};
 decode_versions(Payload, Repository) ->
-    case r3_hex_pb_versions:decode_msg(Payload, 'Versions') of
+    case rb_hex_pb_versions:decode_msg(Payload, 'Versions') of
         #{repository := Repository, packages := _Packages} = Result ->
             {ok, Result};
         _ ->
@@ -105,13 +105,13 @@ unpack_package(Payload, Repository, Name, PublicKey) ->
 
 %% @private
 encode_package(Package) ->
-    r3_hex_pb_package:encode_msg(Package, 'Package').
+    rb_hex_pb_package:encode_msg(Package, 'Package').
 
 %% @private
 decode_package(Payload, no_verify, no_verify) ->
-    {ok, r3_hex_pb_package:decode_msg(Payload, 'Package')};
+    {ok, rb_hex_pb_package:decode_msg(Payload, 'Package')};
 decode_package(Payload, Repository, Package) ->
-    case r3_hex_pb_package:decode_msg(Payload, 'Package') of
+    case rb_hex_pb_package:decode_msg(Payload, 'Package') of
         #{repository := Repository, name := Package, releases := _Releases} = Result ->
             {ok, Result};
         _ ->
@@ -121,11 +121,11 @@ decode_package(Payload, Repository, Package) ->
 %% @private
 sign_protobuf(Payload, PrivateKey) ->
     Signature = sign(Payload, PrivateKey),
-    r3_hex_pb_signed:encode_msg(#{payload => Payload, signature => Signature}, 'Signed').
+    rb_hex_pb_signed:encode_msg(#{payload => Payload, signature => Signature}, 'Signed').
 
 %% @private
 decode_signed(Signed) ->
-    r3_hex_pb_signed:decode_msg(Signed, 'Signed').
+    rb_hex_pb_signed:decode_msg(Signed, 'Signed').
 
 %% @private
 -spec decode_and_verify_signed(binary(), public_key()) -> {ok, binary()} | {error, term()}.

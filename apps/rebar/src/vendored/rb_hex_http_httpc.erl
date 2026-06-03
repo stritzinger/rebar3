@@ -1,7 +1,7 @@
 %% Vendored from hex_core v0.12.2, do not edit manually
 
 %% @doc
-%% httpc-based implementation of {@link r3_hex_http} contract.
+%% httpc-based implementation of {@link rb_hex_http} contract.
 %%
 %% Configuration keys:
 %%
@@ -12,8 +12,8 @@
 %% * `http_options' - a list of HTTP options, defaults to `[]'. See
 %%   {@link httpc:request/5} for a list of available HTTP options.
 
--module(r3_hex_http_httpc).
--behaviour(r3_hex_http).
+-module(rb_hex_http_httpc).
+-behaviour(rb_hex_http).
 -export([request/5]).
 
 %%====================================================================
@@ -50,9 +50,9 @@ request(Method, URI, ReqHeaders, Body, AdapterConfig) when is_binary(URI) ->
                 catch
                     _:_ ->
                         io:format(
-                            "[r3_hex_http_httpc] using default ssl options which are insecure.~n"
+                            "[rb_hex_http_httpc] using default ssl options which are insecure.~n"
                             "Configure your adapter with: "
-                            "{r3_hex_http_httpc, #{http_options => [{ssl, SslOpts}]}}~n"
+                            "{rb_hex_http_httpc, #{http_options => [{ssl, SslOpts}]}}~n"
                             "or upgrade Erlang/OTP to OTP-25 or later.~n"
                         ),
                         HTTPOptions0

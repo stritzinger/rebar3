@@ -2,7 +2,7 @@
 
 %% @doc
 %% Functions for creating and unpacking Hex tarballs.
--module(r3_hex_tarball).
+-module(rb_hex_tarball).
 -export([
     create/2, create/3,
     create_docs/1, create_docs/2,
@@ -17,8 +17,8 @@
 -define(VERSION, <<"3">>).
 -define(BUILD_TOOL_FILES, [
     {<<"mix.exs">>, <<"mix">>},
-    {<<"rebar.config">>, <<"rebar">>},
-    {<<"rebar">>, <<"rebar">>},
+    {<<"rebar.config">>, <<"rebar3">>},
+    {<<"rebar">>, <<"rebar3">>},
     {<<"Makefile">>, <<"make">>},
     {<<"Makefile.win">>, <<"make">>}
 ]).
@@ -46,13 +46,13 @@
 %% ```
 %% > Metadata = #{<<"name">> => <<"foo">>, <<"version">> => <<"1.0.0">>},
 %% > Files = [{"src/foo.erl", <<"-module(foo).">>}],
-%% > r3_hex_tarball:create(Metadata, Files).
+%% > rb_hex_tarball:create(Metadata, Files).
 %% {ok, #{tarball => <<86,69,...>>,
 %%        outer_checksum => <<40,32,...>>,
 %%        inner_checksum => <<178,12,...>>}}
 %% '''
 %% @end
--spec create(metadata(), files(), r3_hex_core:config()) ->
+-spec create(metadata(), files(), rb_hex_core:config()) ->
     {ok, #{
         tarball => tarball(),
         outer_checksum => checksum(),
@@ -107,7 +107,7 @@ create(Metadata, Files, Config) ->
     }}
     | {error, term()}.
 create(Metadata, Files) ->
-    create(Metadata, Files, r3_hex_core:default_config()).
+    create(Metadata, Files, rb_hex_core:default_config()).
 
 %% @doc
 %% Creates a docs tarball.
@@ -116,11 +116,11 @@ create(Metadata, Files) ->
 %%
 %% ```
 %% > Files = [{"doc/index.html", <<"Docs">>}],
-%% > r3_hex_tarball:create_docs(Files).
+%% > rb_hex_tarball:create_docs(Files).
 %% {ok, <<86,69,...>>}
 %% '''
 %% @end
--spec create_docs(files(), r3_hex_core:config()) -> {ok, tarball()} | {error, term()}.
+-spec create_docs(files(), rb_hex_core:config()) -> {ok, tarball()} | {error, term()}.
 create_docs(Files, Config) ->
     #{
         docs_tarball_max_size := TarballMaxSize,
@@ -145,28 +145,28 @@ create_docs(Files, Config) ->
 
 -spec create_docs(files()) -> {ok, tarball()} | {error, term()}.
 create_docs(Files) ->
-    create_docs(Files, r3_hex_core:default_config()).
+    create_docs(Files, rb_hex_core:default_config()).
 
 %% @doc
 %% Unpacks a package tarball.
 %%
 %% Remember to verify the outer tarball checksum against the registry checksum
-%% returned from `r3_hex_repo:get_package(Config, Package)'.
+%% returned from `rb_hex_repo:get_package(Config, Package)'.
 %%
 %% Examples:
 %%
 %% ```
-%% > r3_hex_tarball:unpack(Tarball, memory).
+%% > rb_hex_tarball:unpack(Tarball, memory).
 %% {ok,#{outer_checksum => <<...>>,
 %%       contents => [{"src/foo.erl",<<"-module(foo).">>}],
 %%       metadata => #{<<"name">> => <<"foo">>, ...}}}
 %%
-%% > r3_hex_tarball:unpack(Tarball, "path/to/unpack").
+%% > rb_hex_tarball:unpack(Tarball, "path/to/unpack").
 %% {ok,#{outer_checksum => <<...>>,
 %%       metadata => #{<<"name">> => <<"foo">>, ...}}}
 %% '''
 -spec unpack
-    (tarball(), memory, r3_hex_core:config()) ->
+    (tarball(), memory, rb_hex_core:config()) ->
         {ok, #{
             outer_checksum => checksum(),
             inner_checksum => checksum(),
@@ -174,7 +174,7 @@ create_docs(Files) ->
             contents => contents()
         }}
         | {error, term()};
-    (tarball(), filename(), r3_hex_core:config()) ->
+    (tarball(), filename(), rb_hex_core:config()) ->
         {ok, #{
             outer_checksum => checksum(),
             inner_checksum => checksum(),
@@ -184,7 +184,7 @@ create_docs(Files) ->
 unpack(Tarball, Output, Config) ->
     case valid_size(Tarball, maps:get(tarball_max_size, Config)) of
         true ->
-            case r3_hex_erl_tar:extract({binary, Tarball}, [memory]) of
+            case rb_hex_erl_tar:extract({binary, Tarball}, [memory]) of
                 {ok, []} ->
                     {error, {tarball, empty}};
                 {ok, FileList} ->
@@ -218,7 +218,7 @@ unpack(Tarball, Output, Config) ->
         }}
         | {error, term()}.
 unpack(Tarball, Output) ->
-    unpack(Tarball, Output, r3_hex_core:default_config()).
+    unpack(Tarball, Output, rb_hex_core:default_config()).
 
 %% @doc
 %% Unpacks a documentation tarball.
@@ -226,15 +226,15 @@ unpack(Tarball, Output) ->
 %% Examples:
 %%
 %% ```
-%% > r3_hex_tarball:unpack_docs(Tarball, memory).
+%% > rb_hex_tarball:unpack_docs(Tarball, memory).
 %% {ok, [{"index.html", <<"<!doctype>">>}, ...]}
 %%
-%% > r3_hex_tarball:unpack_docs(Tarball, "path/to/unpack").
+%% > rb_hex_tarball:unpack_docs(Tarball, "path/to/unpack").
 %% ok
 %% '''
 -spec unpack_docs
-    (tarball(), memory, r3_hex_core:config()) -> {ok, contents()} | {error, term()};
-    (tarball(), filename(), r3_hex_core:config()) -> ok | {error, term()}.
+    (tarball(), memory, rb_hex_core:config()) -> {ok, contents()} | {error, term()};
+    (tarball(), filename(), rb_hex_core:config()) -> ok | {error, term()}.
 unpack_docs(Tarball, Output, Config) ->
     case valid_size(Tarball, maps:get(docs_tarball_max_size, Config)) of
         true ->
@@ -247,7 +247,7 @@ unpack_docs(Tarball, Output, Config) ->
     (tarball(), memory) -> {ok, contents()} | {error, term()};
     (tarball(), filename()) -> ok | {error, term()}.
 unpack_docs(Tarball, Output) ->
-    unpack_docs(Tarball, Output, r3_hex_core:default_config()).
+    unpack_docs(Tarball, Output, rb_hex_core:default_config()).
 
 %% @doc
 %% Returns base16-encoded representation of checksum.
@@ -271,15 +271,15 @@ format_error({tarball, {bad_version, Vsn}}) ->
 format_error({tarball, invalid_checksum}) ->
     "invalid tarball checksum";
 format_error({tarball, Reason}) ->
-    "tarball error, " ++ r3_hex_erl_tar:format_error(Reason);
+    "tarball error, " ++ rb_hex_erl_tar:format_error(Reason);
 format_error({inner_tarball, Reason}) ->
-    "inner tarball error, " ++ r3_hex_erl_tar:format_error(Reason);
+    "inner tarball error, " ++ rb_hex_erl_tar:format_error(Reason);
 format_error({metadata, invalid_terms}) ->
     "error reading package metadata: invalid terms";
 format_error({metadata, not_key_value}) ->
     "error reading package metadata: not in key-value format";
 format_error({metadata, Reason}) ->
-    "error reading package metadata" ++ r3_safe_erl_term:format_error(Reason);
+    "error reading package metadata" ++ rb_safe_erl_term:format_error(Reason);
 format_error({checksum_mismatch, ExpectedChecksum, ActualChecksum}) ->
     io_lib:format(
         "tarball checksum mismatch~n~n" ++
@@ -428,10 +428,10 @@ decode_metadata(#{files := #{"metadata.config" := Binary}} = State) when is_bina
 do_decode_metadata(Binary) when is_binary(Binary) ->
     {ok, String} = characters_to_list(Binary),
 
-    case r3_safe_erl_term:string(String) of
+    case rb_safe_erl_term:string(String) of
         {ok, Tokens, _Line} ->
             try
-                Terms = r3_safe_erl_term:terms(Tokens),
+                Terms = rb_safe_erl_term:terms(Tokens),
                 maps:from_list(Terms)
             catch
                 error:function_clause ->
@@ -439,7 +439,7 @@ do_decode_metadata(Binary) when is_binary(Binary) ->
                 error:badarg ->
                     {error, {metadata, not_key_value}}
             end;
-        {error, {_Line, r3_safe_erl_term, Reason}, _Line2} ->
+        {error, {_Line, rb_safe_erl_term, Reason}, _Line2} ->
             {error, {metadata, Reason}}
     end.
 
@@ -503,10 +503,10 @@ guess_build_tools(Metadata) ->
 
 %% @private
 unpack_tarball(ContentsBinary, memory) ->
-    r3_hex_erl_tar:extract({binary, ContentsBinary}, [memory, compressed]);
+    rb_hex_erl_tar:extract({binary, ContentsBinary}, [memory, compressed]);
 unpack_tarball(ContentsBinary, Output) ->
     filelib:ensure_dir(filename:join(Output, "*")),
-    case r3_hex_erl_tar:extract({binary, ContentsBinary}, [{cwd, Output}, compressed]) of
+    case rb_hex_erl_tar:extract({binary, ContentsBinary}, [{cwd, Output}, compressed]) of
         ok ->
             [
                 try_updating_mtime(filename:join(Output, Path))
@@ -527,12 +527,12 @@ try_updating_mtime(Path) ->
 %% @private
 create_memory_tarball(Files) ->
     Path = tmp_path(),
-    {ok, Tar} = r3_hex_erl_tar:open(Path, [write]),
+    {ok, Tar} = rb_hex_erl_tar:open(Path, [write]),
 
     try
         add_files(Tar, Files)
     after
-        ok = r3_hex_erl_tar:close(Tar)
+        ok = rb_hex_erl_tar:close(Tar)
     end,
     {ok, Tarball} = file:read_file(Path),
     ok = file:delete(Path),
@@ -548,7 +548,7 @@ add_files(Tar, Files) when is_list(Files) ->
 
 %% @private
 add_file(Tar, {Filename, Contents}) when is_list(Filename) and is_binary(Contents) ->
-    ok = r3_hex_erl_tar:add(Tar, Contents, Filename, tar_opts());
+    ok = rb_hex_erl_tar:add(Tar, Contents, Filename, tar_opts());
 add_file(Tar, Filename) when is_list(Filename) ->
     add_file(Tar, {Filename, Filename});
 add_file(Tar, {Filename, AbsFilename}) when is_list(Filename), is_list(AbsFilename) ->
@@ -556,18 +556,18 @@ add_file(Tar, {Filename, AbsFilename}) when is_list(Filename), is_list(AbsFilena
 
     case FileInfo#file_info.type of
         symlink ->
-            ok = r3_hex_erl_tar:add(Tar, {Filename, AbsFilename}, tar_opts());
+            ok = rb_hex_erl_tar:add(Tar, {Filename, AbsFilename}, tar_opts());
         directory ->
             case file:list_dir(AbsFilename) of
                 {ok, []} ->
-                    r3_hex_erl_tar:add(Tar, {Filename, AbsFilename}, tar_opts());
+                    rb_hex_erl_tar:add(Tar, {Filename, AbsFilename}, tar_opts());
                 {ok, _} ->
                     ok
             end;
         _ ->
             Mode = FileInfo#file_info.mode,
             {ok, Contents} = file:read_file(AbsFilename),
-            ok = r3_hex_erl_tar:add(Tar, Contents, Filename, Mode, tar_opts())
+            ok = rb_hex_erl_tar:add(Tar, Contents, Filename, Mode, tar_opts())
     end.
 
 %% @private

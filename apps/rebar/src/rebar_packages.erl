@@ -1,3 +1,25 @@
+%% %CopyrightBegin%
+%%
+%% SPDX-License-Identifier: Apache-2.0
+%%
+%% SPDX-FileCopyrightText: Copyright 2015-2026 Rebar3 and its contributors
+%%
+%% SPDX-FileCopyrightText: Copyright 2026 Dipl. Phys. Peer Stritzinger GmbH
+%%
+%% Licensed under the Apache License, Version 2.0 (the "License");
+%% you may not use this file except in compliance with the License.
+%% You may obtain a copy of the License at
+%%
+%%     http://www.apache.org/licenses/LICENSE-2.0
+%%
+%% Unless required by applicable law or agreed to in writing, software
+%% distributed under the License is distributed on an "AS IS" BASIS,
+%% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+%% See the License for the specific language governing permissions and
+%% limitations under the License.
+%%
+%% %CopyrightEnd%
+
 -module(rebar_packages).
 
 -export([get/2
@@ -31,7 +53,7 @@ format_error({missing_package, Pkg}) ->
 
 -spec get(rebar_hex_repos:repo(), binary()) -> {ok, map()} | {error, term()}.
 get(Config, Name) ->
-    try r3_hex_api_package:get(Config, Name) of
+    try rb_hex_api_package:get(Config, Name) of
         {ok, {200, _Headers, PkgInfo}} ->
             {ok, PkgInfo};
         {ok, {404, _, _}} ->
@@ -227,7 +249,7 @@ update_package(Name, RepoConfig=#{name := Repo}, State) ->
     ?MODULE:verify_table(State),
     ?DEBUG("Getting definition for package ~ts from repo ~ts",
            [Name, rebar_hex_repos:format_repo(RepoConfig)]),
-    try r3_hex_repo:get_package(get_package_repo_config(RepoConfig), Name) of
+    try rb_hex_repo:get_package(get_package_repo_config(RepoConfig), Name) of
         {ok, {200, _Headers, Package}} ->
             #{releases := Releases} = Package,
             _ = insert_releases(Name, Releases, Repo, ?PACKAGE_TABLE),
@@ -243,7 +265,7 @@ update_package(Name, RepoConfig=#{name := Repo}, State) ->
             fail;
         Error ->
             ?DEBUG("Hex get_package request failed: ~p", [Error]),
-            %% TODO: add better log message. r3_hex_core should export a format_error
+            %% TODO: add better log message. rb_hex_core should export a format_error
             ?WARN("Failed to update package ~ts from repo ~ts", [Name, Repo]),
             fail
     catch
@@ -357,7 +379,7 @@ resolve_version_(Dep, Constraint, Repo, HexRegistry, State) ->
             AllowPreRelease = rebar_semver:is_prerelease_or_build(Constraint),
             AllVersions = get_package_versions(Dep, AllowPreRelease, Repo, HexRegistry, State),
             resolve_version_loop(Match, AllVersions, none);
-    
+        
         Error ->
             Error
     end.

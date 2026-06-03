@@ -1,6 +1,11 @@
 _checkouts
 .rebar
 rebar
+!apps/rebar/
+!apps/rebar/src/
+!apps/rebar/src/r3.erl
+!apps/rebar/test/
+!apps/rebar/test/r3_SUITE.erl
 rebar.cmd
 rebar.ps1
 _build

@@ -1102,7 +1102,7 @@ recompile_when_dag_opts_change(Config) ->
     G = rebar_compiler_dag:init(DepsDir, rebar_compiler_erl, "project_apps", []),
     %% change the config in the DAG...
     [digraph:add_vertex(G, Beam, {artifact, [{d, some_define}]}) || Beam <- Beams],
-    digraph:add_vertex(G, '$r3_dirty_bit', true), % trigger a save
+    digraph:add_vertex(G, '$rb_dirty_bit', true), % trigger a save
     %% the rebar_compiler_erl module is annotated with a compiler version
     %% to help rebuild deps
     {ok, CompileVsn} = application:get_key(compiler, vsn),
