@@ -35,6 +35,8 @@
 
 -export([find/2,
          find/3,
+         search/2,
+         search/3,
          is_app_src/1,
          app_src_to_app/3,
          validate_application_info/1,
@@ -56,18 +58,40 @@
 
 %% @doc finds the proper app info record for a given app name in a list of
 %% such records.
--spec find(binary(), [rebar_app_info:t()]) -> {value, rebar_app_info:t()} | false.
+%% @deprecated please use {@link search/2} instead.
+-spec find(binary(), [rebar_app_info:t()]) -> {ok, rebar_app_info:t()} | error.
 find(Name, Apps) ->
-    lists:search(fun(App) -> rebar_app_info:name(App) =:= Name end, Apps).
+    lists:search(fun(App) -> rebar_app_info:name(App) =:= Name end, Apps),
+    case search(Name, Apps) of
+        {value, Value} -> {ok, Value};
+        false -> error
+    end.
 
 %% @doc finds the proper app info record for a given app name at a given version
 %% in a list of such records.
--spec find(binary(), binary(), [rebar_app_info:t()]) -> {value, rebar_app_info:t()} | false.
+%% @deprecated please use {@link search/3} instead.
+-spec find(binary(), binary(), [rebar_app_info:t()]) -> {ok, rebar_app_info:t()} | error.
 find(Name, Vsn, Apps) ->
+    case search(Name, Vsn, Apps) of
+        {value, Value} -> {ok, Value};
+        false -> error
+    end.
+
+
+%% @doc searchs the proper app info record for a given app name in a list of
+%% such records.
+-spec search(binary(), [rebar_app_info:t()]) -> {value, rebar_app_info:t()} | false.
+search(Name, Apps) ->
+    lists:search(fun(App) -> rebar_app_info:name(App) =:= Name end, Apps).
+
+%% @doc searchs the proper app info record for a given app name at a given version
+%% in a list of such records.
+-spec search(binary(), binary(), [rebar_app_info:t()]) -> {value, rebar_app_info:t()} | false.
+search(Name, Vsn, Apps) ->
     lists:search(fun(App) ->
-                          rebar_app_info:name(App) =:= Name
-                              andalso rebar_app_info:original_vsn(App) =:= Vsn
-                  end, Apps).
+                         rebar_app_info:name(App) =:= Name
+                         andalso rebar_app_info:original_vsn(App) =:= Vsn
+                 end, Apps).
 
 %% @doc checks if a given file is .app.src file
 is_app_src(Filename) ->

@@ -255,7 +255,7 @@ get_runtime_apps([App|Rest0], AppsAcc0, AppsList) ->
         lists:foldl(
             fun(AppName, {Rest, Acc}) ->
                 %% We only care about those apps we ccould find in the state.
-                case rebar_app_utils:find(AppName, AppsList) of
+                case rebar_app_utils:search(AppName, AppsList) of
                     {value, AppInfo} -> {[AppInfo|Rest], sets:add_element(AppInfo, Acc)};
                     false -> {Rest, Acc}
                 end

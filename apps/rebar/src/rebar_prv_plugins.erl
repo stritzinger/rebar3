@@ -107,7 +107,7 @@ display_plugins(Apps, Plugins) ->
                           Name = if is_atom(Plugin) -> atom_to_binary(Plugin, unicode);
                                     is_tuple(Plugin) -> rebar_utils:to_binary(element(1, Plugin))
                                  end,
-                          case rebar_app_utils:find(Name, Apps) of
+                          case rebar_app_utils:search(Name, Apps) of
                               {value, App} ->
                                   ?CONSOLE("~ts (~s)", [Name, rebar_app_info:original_vsn(App)]);
                               false ->

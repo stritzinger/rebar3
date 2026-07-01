@@ -198,7 +198,7 @@ handle_args(State) ->
 update_pkg_deps([], _, _) ->
     ok;
 update_pkg_deps([{Name, _, _} | Rest], AppInfos, State) ->
-    case rebar_app_utils:find(Name, AppInfos) of
+    case rebar_app_utils:search(Name, AppInfos) of
         {value, AppInfo} ->
             Source = rebar_app_info:source(AppInfo),
             case element(1, Source) of

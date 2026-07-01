@@ -84,7 +84,7 @@ do(State) ->
             end;
         Name ->
             AllApps = rebar_state:all_deps(State)++rebar_state:project_apps(State),
-            case rebar_app_utils:find(rebar_utils:to_binary(Name), AllApps) of
+            case rebar_app_utils:search(rebar_utils:to_binary(Name), AllApps) of
                 {value, AppInfo} ->
                     AppInfo;
                 _ ->
@@ -189,7 +189,7 @@ get_apps_beams(Apps, AllApps) ->
 get_apps_beams([], _, Acc) ->
     Acc;
 get_apps_beams([App | Rest], AllApps, Acc) ->
-    case rebar_app_utils:find(rebar_utils:to_binary(App), AllApps) of
+    case rebar_app_utils:search(rebar_utils:to_binary(App), AllApps) of
         {value, App1} ->
             OutDir = filename:absname(rebar_app_info:ebin_dir(App1)),
             Beams = get_app_beams(App, OutDir),
@@ -227,7 +227,7 @@ get_extra(State) ->
 % path with with the app name included (e.g., `relx/priv/*`).
 resolve_incl_priv({AppName, PrivWildcard}, AllApps) when is_atom(AppName) ->
     {value, AppInfo} =
-        rebar_app_utils:find(rebar_utils:to_binary(AppName), AllApps),
+        rebar_app_utils:search(rebar_utils:to_binary(AppName), AllApps),
     AppOutDir = rebar_app_info:out_dir(AppInfo),
     Wildcard = filename:join([atom_to_list(AppName), "priv", PrivWildcard]),
     {Wildcard, filename:dirname(AppOutDir)}.
@@ -294,7 +294,7 @@ find_deps(AppNames, AllApps, State) ->
 find_deps_of_deps([], _, _, Acc) -> Acc;
 find_deps_of_deps([Name|Names], Apps, State, Acc) ->
     ?DIAGNOSTIC("processing ~p", [Name]),
-    App = case rebar_app_utils:find(Name, Apps) of
+    App = case rebar_app_utils:search(Name, Apps) of
         {value, Found} ->
             Found;
         false ->

@@ -117,7 +117,7 @@ subgraph(Graph, Vertices) ->
 %% for them.
 -spec names_to_apps([binary()], [rebar_app_info:t()]) -> [rebar_app_info:t()].
 names_to_apps(Names, Apps) ->
-    [element(2, App) || App <- [rebar_app_utils:find(Name, Apps) || Name <- Names], App =/= false].
+    [element(2, App) || App <- [rebar_app_utils:search(Name, Apps) || Name <- Names], App =/= false].
 
 %% @private The union of all entries in the applications list for an app and
 %% the deps listed in its rebar.config is all deps that may be needed
