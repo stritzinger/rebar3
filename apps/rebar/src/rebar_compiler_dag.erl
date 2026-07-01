@@ -1,3 +1,26 @@
+%% %CopyrightBegin%
+%%
+%% SPDX-License-Identifier: Apache-2.0
+%%
+%% SPDX-FileCopyrightText: Copyright 2015-2026 Rebar3 and its contributors
+%%
+%% SPDX-FileCopyrightText: Copyright 2026 Dipl. Phys. Peer Stritzinger GmbH
+%%
+%% Licensed under the Apache License, Version 2.0 (the "License");
+%% you may not use this file except in compliance with the License.
+%% You may obtain a copy of the License at
+%%
+%%     http://www.apache.org/licenses/LICENSE-2.0
+%%
+%% Unless required by applicable law or agreed to in writing, software
+%% distributed under the License is distributed on an "AS IS" BASIS,
+%% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+%% See the License for the specific language governing permissions and
+%% limitations under the License.
+%%
+%% %CopyrightEnd%
+%%
+
 %%% Module handling the directed graph required for the analysis
 %%% of all top-level applications by the various compiler plugins.
 -module(rebar_compiler_dag).
@@ -533,12 +556,12 @@ target(OutDir, Source, SrcExt, Ext) ->
 %% than ideal because listing vertices may expect filenames and
 %% instead there's going to be one trick atom through it.
 mark_dirty(G) ->
-    digraph:add_vertex(G, '$r3_dirty_bit', true),
+    digraph:add_vertex(G, '$rb_dirty_bit', true),
     ok.
 
 %% Check whether the digraph has been modified and is considered dirty.
 is_dirty(G) ->
-    case digraph:vertex(G, '$r3_dirty_bit') of
+    case digraph:vertex(G, '$rb_dirty_bit') of
         {_, Bool} -> Bool;
         false -> false
     end.
@@ -546,7 +569,7 @@ is_dirty(G) ->
 %% Remove the dirty status. Because the saving of a digraph on disk saves all
 %% vertices, clear the flag before serializing it.
 clear_dirty(G) ->
-    digraph:del_vertex(G, '$r3_dirty_bit').
+    digraph:del_vertex(G, '$rb_dirty_bit').
 
 %% Resolve all the dependencies of a header file transitively. Use a cache to
 %% memoize the resolution.
@@ -565,7 +588,7 @@ resolve_header_dependencies(Name, IsHeaderFile, Cache, G) ->
 
 resolve_full_header_file(Name, IsHeaderFile, Cache, G) ->
     lists:foldl(fun(Dep, {Found, C}) -> 
-                    {Deps, C1} = resolve_header_dependencies(Dep, IsHeaderFile, C, G), 
+                    {Deps, C1} = resolve_header_dependencies(Dep, IsHeaderFile, C, G),
                     {Deps++Found, C1}
                 end,
                 {[], Cache},

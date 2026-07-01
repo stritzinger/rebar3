@@ -1,10 +1,12 @@
 %% -*- erlang-indent-level: 4;indent-tabs-mode: nil -*-
 %% ex: ts=4 sw=4 et
-%% -------------------------------------------------------------------
+%% %CopyrightBegin%
 %%
-%% rebar: Erlang Build Tools
+%% SPDX-License-Identifier: MIT
 %%
-%% Copyright (c) 2009 Dave Smith (dizzyd@dizzyd.com)
+%% SPDX-FileCopyrightText: Copyright 2009 Dave Smith (dizzyd@dizzyd.com)
+%%
+%% SPDX-FileCopyrightText: Copyright 2026 Dipl. Phys. Peer Stritzinger GmbH
 %%
 %% Permission is hereby granted, free of charge, to any person obtaining a copy
 %% of this software and associated documentation files (the "Software"), to deal
@@ -23,7 +25,8 @@
 %% LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 %% OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 %% THE SOFTWARE.
-%% -------------------------------------------------------------------
+%%
+%% %CopyrightEnd%
 -module(rebar_config).
 
 -export([consult_root/0
@@ -63,7 +66,7 @@ consult_app_file(File) ->
     consult_file_(File).
 
 %% @doc reads the lock file for the project, and re-formats its
-%% content to match the internals for rebar3.
+%% content to match the internals for rebar.
 -spec consult_lock_file(file:filename()) -> [any()]. % TODO: refine lock()
 consult_lock_file(File) ->
     Terms = consult_file_(File),
@@ -73,7 +76,7 @@ consult_lock_file(File) ->
         [Locks] when is_list(Locks) -> % beta/1.0.0 lock file
             read_attrs(beta, Locks, []);
         [{Vsn, Locks}|Attrs] when is_list(Locks) -> % versioned lock file
-            %% Because this is the first version of rebar3 to introduce a lock
+            %% Because this is the first version of rebar to introduce a lock
             %% file, all versioned lock files with a different version have
             %% to be newer.
             case Vsn of
@@ -105,10 +108,10 @@ warn_vsn_once() ->
     case Warn of
         false -> ok;
         true ->
-            ?WARN("Rebar3 detected a lock file from a newer version. "
+            ?WARN("Rebar detected a lock file from a newer version. "
                   "It will be loaded in compatibility mode, but important "
                   "information may be missing or lost. It is recommended to "
-                  "upgrade Rebar3.", [])
+                  "upgrade Rebar.", [])
     end.
 
 %% Only call `write_lock_file/2' if the locks have changed.
@@ -130,7 +133,7 @@ maybe_write_lock_file(LockFile, Locks, Locks) ->
     end.
 
 %% @doc Converts the internal format for locks into the multi-version
-%% compatible one used within rebar3 lock files.
+%% compatible one used within rebar lock files.
 %% @end
 %% TODO: refine type for lock()
 -spec write_lock_file(file:filename(), [any()]) -> ok | {error, term()}.
@@ -404,7 +407,7 @@ check_newly_added_(Dep, LockedDeps) when is_atom(Dep) ->
                     {true, Name};
                 _ ->
                     ?WARN("Newly added dep ~ts is locked at a lower level. "
-                          "If you really want to unlock it, use 'rebar3 upgrade ~ts'",
+                          "If you really want to unlock it, use 'rebar upgrade ~ts'",
                           [Name, Name]),
                     false
             end

@@ -5,9 +5,11 @@
 %%
 %% SPDX-License-Identifier: MIT
 %%
-%% Copyright (c) 2009 Dave Smith (dizzyd@dizzyd.com)
-%% Copyright (c) 2015-2026 Rebar3 and its contributors
-%% Copyright (c) 2026 Dipl. Phys. Peer Stritzinger GmbH
+%% SPDX-FileCopyrightText: Copyright 2009 Dave Smith (dizzyd@dizzyd.com)
+%%
+%% SPDX-FileCopyrightText: Copyright 2015-2026 Rebar3 and its contributors
+%%
+%% SPDX-FileCopyrightText: Copyright 2026 Dipl. Phys. Peer Stritzinger GmbH
 %%
 %% Permission is hereby granted, free of charge, to any person obtaining a copy
 %% of this software and associated documentation files (the "Software"), to deal
@@ -215,7 +217,7 @@ get_extra(State) ->
                                       resolve_incl_priv(Entry, AllApps)
                               end, InclPriv),
     % `escript_incl_extra` is kept for historical reasons as its internal use in
-    % rebar3 has been replaced with `escript_incl_priv`.
+    % rebar has been replaced with `escript_incl_priv`.
     InclExtraPaths = rebar_state:get(State, escript_incl_extra, []),
     lists:foldl(fun({Wildcard, Dir}, Files) ->
                         load_files(Wildcard, Dir) ++ Files

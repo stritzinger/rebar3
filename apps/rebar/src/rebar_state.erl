@@ -1,3 +1,25 @@
+%% %CopyrightBegin%
+%%
+%% SPDX-License-Identifier: Apache-2.0
+%%
+%% SPDX-FileCopyrightText: Copyright 2015-2026 Rebar3 and its contributors
+%%
+%% SPDX-FileCopyrightText: Copyright 2026 Dipl. Phys. Peer Stritzinger GmbH
+%%
+%% Licensed under the Apache License, Version 2.0 (the "License");
+%% you may not use this file except in compliance with the License.
+%% You may obtain a copy of the License at
+%%
+%%     http://www.apache.org/licenses/LICENSE-2.0
+%%
+%% Unless required by applicable law or agreed to in writing, software
+%% distributed under the License is distributed on an "AS IS" BASIS,
+%% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+%% See the License for the specific language governing permissions and
+%% limitations under the License.
+%%
+%% %CopyrightEnd%
+
 -module(rebar_state).
 
 -export([new/0, new/1, new/2, new/3,
@@ -263,8 +285,8 @@ apply_profiles(State, [default]) ->
 apply_profiles(State=#state_t{default = Defaults, current_profiles=CurrentProfiles}, Profiles) ->
     ProvidedProfiles = lists:prefix([default|Profiles], CurrentProfiles),
     AppliedProfiles = case Profiles of
-                          %% Head of list global profile is special, only for use by rebar3
-                          %% It does not clash if a user does `rebar3 as global...` but when
+                          %% Head of list global profile is special, only for use by rebar
+                          %% It does not clash if a user does `rebar as global...` but when
                           %% it is the head we must make sure not to prepend `default`
                           [global | _] ->
                               Profiles;
@@ -519,7 +541,7 @@ create_logic_providers(ProviderModules, State0) ->
         ?WITH_STACKTRACE(C,T,S)
             ?DEBUG("~p: ~p ~p", [C, T, S]),
             ?CRASHDUMP("~p: ~p~n~p~n~n~p", [C, T, S, State0]),
-            throw({error, "Failed creating providers. Run with DIAGNOSTIC=1 for stacktrace or consult rebar3.crashdump."})
+            throw({error, "Failed creating providers. Run with DIAGNOSTIC=1 for stacktrace or consult rebar.crashdump."})
     end.
 
 to_list(#state_t{} = State) ->

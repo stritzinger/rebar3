@@ -62,7 +62,7 @@ cli() ->
           type => string,
           required => true,
           help => "Template name. "
-                  "See available templates with: `rebar3 new help`"},
+                  "See available templates with: `rebar new help`"},
         #{name => vars,
           type => string,
           nargs => list,
@@ -79,7 +79,7 @@ do(State) ->
     Opts = lists:append(proplists:get_value(vars, Args, [])),
     case {TemplateName, Opts} of
         {"help", []} ->
-            ?CONSOLE("Call `rebar3 new help <template>` for a detailed description~n", []),
+            ?CONSOLE("Call `rebar new help <template>` for a detailed description~n", []),
             show_short_templates(list_templates(State)),
             {ok, State};
         {"help", [HelpTemplate]} ->

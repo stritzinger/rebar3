@@ -5,9 +5,11 @@
 %%
 %% SPDX-License-Identifier: MIT
 %%
-%% Copyright (c) 2009-2010 Dave Smith (dizzyd@dizzyd.com)
-%% Copyright (c) 2015-2026 Rebar3 and its contributors
-%% Copyright (c) 2026 Dipl. Phys. Peer Stritzinger GmbH
+%% SPDX-FileCopyrightText: Copyright 2009-2010 Dave Smith (dizzyd@dizzyd.com)
+%%
+%% SPDX-FileCopyrightText: Copyright 2015-2026 Rebar3 and its contributors
+%%
+%% SPDX-FileCopyrightText: Copyright 2026 Dipl. Phys. Peer Stritzinger GmbH
 %%
 %% Permission is hereby granted, free of charge, to any person obtaining a copy
 %% of this software and associated documentation files (the "Software"), to deal
@@ -756,7 +758,7 @@ escript_foldl(Fun, Acc, File) ->
             Error
     end.
 
-%% TODO: this is just for rebar3_hex and maybe other plugins
+%% TODO: this is just for rebarb_hex and maybe other plugins
 %% but eventually it should be dropped
 vcs_vsn(OriginalVsn, Dir, Resources) when is_list(Dir) ,
                                           is_list(Resources) ->
@@ -850,7 +852,7 @@ update_code(Paths, Opts) ->
                                   ok;
                               {ok, Modules} ->
                                   %% replace_path causes problems when running
-                                  %% tests in projects like erlware_commons that rebar3
+                                  %% tests in projects like erlware_commons that rebar
                                   %% also includes
                                   %code:replace_path(App, Path),
                                   code:del_path(App),
@@ -886,7 +888,7 @@ remove_from_code_path(Paths) ->
                           code:del_path(Path)
                   end, lists:usort(Paths)).
 
-%% @doc Revert to only having the beams necessary for running rebar3 and
+%% @doc Revert to only having the beams necessary for running rebar and
 %% plugins in the path
 -spec cleanup_code_path([string()]) -> true | {error, term()}.
 cleanup_code_path(OrigPath) ->

@@ -1,3 +1,25 @@
+%% %CopyrightBegin%
+%%
+%% SPDX-License-Identifier: Apache-2.0
+%%
+%% SPDX-FileCopyrightText: Copyright 2015-2026 Rebar3 and its contributors
+%%
+%% SPDX-FileCopyrightText: Copyright 2026 Dipl. Phys. Peer Stritzinger GmbH
+%%
+%% Licensed under the Apache License, Version 2.0 (the "License");
+%% you may not use this file except in compliance with the License.
+%% You may obtain a copy of the License at
+%%
+%%     http://www.apache.org/licenses/LICENSE-2.0
+%%
+%% Unless required by applicable law or agreed to in writing, software
+%% distributed under the License is distributed on an "AS IS" BASIS,
+%% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+%% See the License for the specific language governing permissions and
+%% limitations under the License.
+%%
+%% %CopyrightEnd%
+
 %% @doc Completion file generator for zsh
 %% @end
 -module(rebar_completion_zsh).
@@ -12,21 +34,21 @@ generate(Commands, #{shell:=zsh, aliases:=As}=CmplOpts) ->
         io_lib:nl(),
         main(Commands, CmplOpts),
         io_lib:nl(),
-        compdefs(["rebar3" | As])].
+        compdefs(["rebar" | As])].
 
 compdefs(As) ->
-    [["compdef _rebar3 ", A, io_lib:nl()] || A <- As].
+    [["compdef _rebar ", A, io_lib:nl()] || A <- As].
 
 main(Commands, CmplOpts) ->
     H = #{short=>$s,
             long=>"help",
-            help=>"rebar3 help",
+            help=>"rebar help",
             type=>boolean},
     V = #{short=>$v,
             long=>"version",
-            help=>"Version of rebar3",
+            help=>"Version of rebar",
             type=>boolean},
-    Rebar = #{name=>"rebar3",
+    Rebar = #{name=>"rebar",
             cmds=>Commands,
             args=>[H,V],
             help=>"Erlang build tool"},

@@ -70,7 +70,7 @@ do(State) ->
             command_help(HelpPath, State);
         _ ->
             {error, "Too many arguments given. " ++
-                 "Usage: rebar3 help [<namespace>] <task>"}
+                 "Usage: rebar help [<namespace>] <task>"}
     end.
 
 -spec format_error(any()) -> iolist().
@@ -84,14 +84,14 @@ help(State) ->
     io:format("~ts",
               [argparse:help(
                   rebar_cli:global_cli(rebar_state:providers(State)),
-                  #{progname => "rebar3"})]).
+                  #{progname => "rebar"})]).
 
 command_help(Path, State) ->
     Providers = rebar_state:providers(State),
     Cli = rebar_cli:global_cli(Providers),
     case command_exists(Path, Cli) of
         true ->
-            HelpText = argparse:help(Cli, #{progname => "rebar3", command => Path}),
+            HelpText = argparse:help(Cli, #{progname => "rebar", command => Path}),
             io:format("~ts", [HelpText]),
             {ok, State};
         false ->

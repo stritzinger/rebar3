@@ -57,7 +57,7 @@ init(State) ->
 
 -spec cli() -> argparse:command().
 cli() ->
-    #{help => "Download latest rebar3 escript and extract.",
+    #{help => "Download latest rebar escript and extract.",
       arguments => []}. 
 
 -spec do(rebar_state:t()) -> {ok, rebar_state:t()} | {error, string()}.
@@ -74,14 +74,14 @@ do(State) ->
                           get_md5(ScriptPath)
                   end,
 
-            case maybe_fetch_rebar3(Md5) of
-                {saved, TmpRebar3} ->
+            case maybe_fetch_rebar(Md5) of
+                {saved, TmpRebar} ->
                     {Vsn, Archive} =
                         try
-                            {ok, Escript} = escript:extract(TmpRebar3, []),
-                            {comment, "Rebar3 " ++ Rebar3Vsn} = lists:keyfind(comment, 1, Escript),
+                            {ok, Escript} = escript:extract(TmpRebar, []),
+                            {comment, "Rebar " ++ RebarVsn} = lists:keyfind(comment, 1, Escript),
                             {archive, FullArchive} = lists:keyfind(archive, 1, Escript),
-                            {Rebar3Vsn, FullArchive}
+                            {RebarVsn, FullArchive}
                         catch
                             C:T:S ->
                                 ?DIAGNOSTIC("local upgrade version extraction exception: ~p:~p:~p", [C, T, S]),
@@ -97,24 +97,24 @@ do(State) ->
 
 -spec format_error(any()) -> iolist().
 format_error(failed_vsn_lookup) ->
-    "Failed to extract the version from the downloaded rebar3 escript.\n     Try downloading https://s3.amazonaws.com/rebar3/rebar3 manually and running `chmod +x rebar3 && ./rebar3 local install`";
+    "Failed to extract the version from the downloaded rebar escript.\n     Try downloading https://s3.amazonaws.com/rebar3/rebar3 manually and running `chmod +x rebar && ./rebar local install`";
 format_error(bad_checksum) ->
-    "Not updating rebar3, the checksum of download did not match the one provided by s3.";
+    "Not updating rebar, the checksum of download did not match the one provided by s3.";
 format_error(Reason) ->
     io_lib:format("~p", [Reason]).
 
 %% Internal
 
-get_md5(Rebar3Path) ->
-    {ok, Rebar3File} = file:read_file(Rebar3Path),
-    Digest = crypto:hash(md5, Rebar3File),
+get_md5(RebarPath) ->
+    {ok, RebarFile} = file:read_file(RebarPath),
+    Digest = crypto:hash(md5, RebarFile),
     DigestHex = lists:flatten([io_lib:format("~2.16.0B", [X]) || X <- binary_to_list(Digest)]),
     rebar_string:lowercase(DigestHex).
 
-maybe_fetch_rebar3(Rebar3Md5) ->
+maybe_fetch_rebar(RebarMd5) ->
     TmpDir = ec_file:insecure_mkdtemp(),
-    TmpFile = filename:join(TmpDir, "rebar3"),
-    case request("https://s3.amazonaws.com/rebar3/rebar3", Rebar3Md5) of
+    TmpFile = filename:join(TmpDir, "rebar"),
+    case request("https://s3.amazonaws.com/rebar3/rebar3", RebarMd5) of
         {ok, Binary, ETag} ->
             file:write_file(TmpFile, Binary),
             case etag(TmpFile) of
@@ -124,7 +124,7 @@ maybe_fetch_rebar3(Rebar3Md5) ->
                     ?PRV_ERROR(bad_checksum)
             end;
         error ->
-            ?ERROR("Unable to fetch latest rebar3 escript. Please try again later.", []);
+            ?ERROR("Unable to fetch latest rebar escript. Please try again later.", []);
         _ ->
             ?CONSOLE("No upgrade available", []),
             up_to_date

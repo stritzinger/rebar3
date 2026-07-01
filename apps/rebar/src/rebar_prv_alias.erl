@@ -133,7 +133,7 @@ alias_cli(Cmds) ->
 
 -dialyzer({no_unused, desc/1}). % required since we suppress warnings for init_alias/3
 desc(Cmds) ->
-    "Equivalent to running: rebar3 do "
+    "Equivalent to running: rebar do "
         ++ cmds_string(Cmds).
 
 cmds_string(Cmds) ->

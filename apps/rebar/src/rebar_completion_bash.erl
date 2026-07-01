@@ -1,3 +1,25 @@
+%% %CopyrightBegin%
+%%
+%% SPDX-License-Identifier: Apache-2.0
+%%
+%% SPDX-FileCopyrightText: Copyright 2015-2026 Rebar3 and its contributors
+%%
+%% SPDX-FileCopyrightText: Copyright 2026 Dipl. Phys. Peer Stritzinger GmbH
+%%
+%% Licensed under the Apache License, Version 2.0 (the "License");
+%% you may not use this file except in compliance with the License.
+%% You may obtain a copy of the License at
+%%
+%%     http://www.apache.org/licenses/LICENSE-2.0
+%%
+%% Unless required by applicable law or agreed to in writing, software
+%% distributed under the License is distributed on an "AS IS" BASIS,
+%% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+%% See the License for the specific language governing permissions and
+%% limitations under the License.
+%%
+%% %CopyrightEnd%
+
 %% @doc Completion file generator for bash
 %% @end
 -module(rebar_completion_bash).
@@ -52,27 +74,27 @@ do_match_prev_if_body([P | Rest],Cnt) ->
 main(Commands, #{shell:=bash, aliases:=Aliases}) ->
     MaxDepth=cmd_depth(Commands,1,0),
     CmdNames = [Name || #{name:=Name} <- Commands],
-    Triggers = ["rebar3" | Aliases],
+    Triggers = ["rebar" | Aliases],
     TriggerConds = [["${prev1} == \"",T,"\""] || T <- Triggers],
     Trigger = lists:join(" || ", TriggerConds),
     IfTriggerThen = ["if [[ ",Trigger," ]] ; then\n"],
 
-    ["_rebar3_ref_idx() {\n",
+    ["_rebar_ref_idx() {\n",
     "   startc=$1\n",
     "   # is at least one of the two previous words a flag?\n",
     "    prev=${COMP_CWORD}-${startc}+",?str(MaxDepth-1),"\n",
     "    if [[ ${COMP_WORDS[${prev}]} == -* || ${COMP_WORDS[${prev}-1]} == -*  ]] ; then\n",
     "        startc=$((startc+1))\n",
-    "        _rebar3_ref_idx $startc\n",
+    "        _rebar_ref_idx $startc\n",
     "    fi\n",
     "    return $startc\n",
     "}\n",
     "\n",
-    "_rebar3(){\n",
+    "_rebar(){\n",
     "   local cur sopts lopts cmdsnvars refidx \n",
     "   local ",lists:join(" ", ["prev"++?str(I) || I <- lists:seq(1, MaxDepth)]),"\n",
     "   COMPREPLY=()\n",
-    "   _rebar3_ref_idx ",?str(MaxDepth),"\n",
+    "   _rebar_ref_idx ",?str(MaxDepth),"\n",
     "   refidx=$?\n",
     "   cur=\"${COMP_WORDS[COMP_CWORD]}\"\n",
     prev_definitions(MaxDepth,1),
@@ -120,5 +142,5 @@ cmd_depth([_ | Rest],Depth,Max) ->
     cmd_depth(Rest,Depth,max(Depth,Max)).
 
 complete(#{shell:=bash, aliases:=Aliases}) ->
-    Triggers = ["rebar3" | Aliases],
-    [["complete -o filenames -F _rebar3 ", Trigger, "\n"] || Trigger <- Triggers].
+    Triggers = ["rebar" | Aliases],
+    [["complete -o filenames -F _rebar ", Trigger, "\n"] || Trigger <- Triggers].

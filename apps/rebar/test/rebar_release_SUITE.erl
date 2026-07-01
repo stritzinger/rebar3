@@ -1,3 +1,25 @@
+%% %CopyrightBegin%
+%%
+%% SPDX-License-Identifier: Apache-2.0
+%%
+%% SPDX-FileCopyrightText: Copyright 2015-2026 Rebar3 and its contributors
+%%
+%% SPDX-FileCopyrightText: Copyright 2026 Dipl. Phys. Peer Stritzinger GmbH
+%%
+%% Licensed under the Apache License, Version 2.0 (the "License");
+%% you may not use this file except in compliance with the License.
+%% You may obtain a copy of the License at
+%%
+%%     http://www.apache.org/licenses/LICENSE-2.0
+%%
+%% Unless required by applicable law or agreed to in writing, software
+%% distributed under the License is distributed on an "AS IS" BASIS,
+%% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+%% See the License for the specific language governing permissions and
+%% limitations under the License.
+%%
+%% %CopyrightEnd%
+
 -module(rebar_release_SUITE).
 -compile(export_all).
 -include_lib("common_test/include/ct.hrl").
@@ -246,7 +268,7 @@ profile_overlays(Config) ->
     {ok, RebarConfig} =
     file:consult(rebar_test_utils:create_config(AppDir,
         %% Paths are relative, but to cwd in relx, not the project root as
-        %% seen by rebar3 (in non-test cases, they're the same).
+        %% seen by rebar (in non-test cases, they're the same).
         %% Work around by being explicit.
         [{relx, [{release, {list_to_atom(Name), Vsn},
                  [list_to_atom(Name)]},
@@ -341,7 +363,7 @@ overlay_vars(Config) ->
                   {var_tuple, {{{var_tuple}}}},
                   {var_list, {{{var_list}}}},
                   {var_bin, {{{var_bin}}}},
-                  {var_profile_string, {{profile_string}}}]], % this comes from `rebar3'
+                  {var_profile_string, {{profile_string}}}]], % this comes from `rebar'
     rebar_test_utils:create_config(AppDir,
                                    filename:join([AppDir, "config", "app.config"]),
                                    AppConfig),

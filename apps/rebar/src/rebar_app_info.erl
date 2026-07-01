@@ -1,3 +1,25 @@
+%% %CopyrightBegin%
+%%
+%% SPDX-License-Identifier: Apache-2.0
+%%
+%% SPDX-FileCopyrightText: Copyright 2015-2026 Rebar3 and its contributors
+%%
+%% SPDX-FileCopyrightText: Copyright 2026 Dipl. Phys. Peer Stritzinger GmbH
+%%
+%% Licensed under the Apache License, Version 2.0 (the "License");
+%% you may not use this file except in compliance with the License.
+%% You may obtain a copy of the License at
+%%
+%%     http://www.apache.org/licenses/LICENSE-2.0
+%%
+%% Unless required by applicable law or agreed to in writing, software
+%% distributed under the License is distributed on an "AS IS" BASIS,
+%% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+%% See the License for the specific language governing permissions and
+%% limitations under the License.
+%%
+%% %CopyrightEnd%
+
 -module(rebar_app_info).
 
 -export([new/0,
@@ -83,7 +105,7 @@
 -export_type([t/0,
               project_type/0]).
 
--type project_type() :: rebar3 | mix | undefined.
+-type project_type() :: rebar | mix | undefined.
 -type app_vsn() :: binary() | string() | {git, short} | {git, long}.
 
 -record(app_info_t, {name               :: binary() | undefined,
@@ -637,7 +659,7 @@ valid(#app_info_t{valid=Valid}) ->
     Valid.
 
 %% @doc sets whether the app is valid (built) or not. If left unset,
-%% rebar3 will do the detection of the status itself.
+%% rebar will do the detection of the status itself.
 %% Explicitly setting the value to `undefined' can force a re-evaluation.
 -spec valid(t(), boolean() | undefined) -> t().
 valid(AppInfo=#app_info_t{}, Valid) ->
@@ -705,8 +727,8 @@ apply_profiles(AppInfo, [default]) ->
     AppInfo;
 apply_profiles(AppInfo=#app_info_t{default = Defaults, profiles=CurrentProfiles}, Profiles) ->
     AppliedProfiles = case Profiles of
-                          %% Head of list global profile is special, only for use by rebar3
-                          %% It does not clash if a user does `rebar3 as global...` but when
+                          %% Head of list global profile is special, only for use by rebar
+                          %% It does not clash if a user does `rebar as global...` but when
                           %% it is the head we must make sure not to prepend `default`
                           [global | _] ->
                               Profiles;

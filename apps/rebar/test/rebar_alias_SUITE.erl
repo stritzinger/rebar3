@@ -1,3 +1,25 @@
+%% %CopyrightBegin%
+%%
+%% SPDX-License-Identifier: Apache-2.0
+%%
+%% SPDX-FileCopyrightText: Copyright 2015-2026 Rebar3 and its contributors
+%%
+%% SPDX-FileCopyrightText: Copyright 2026 Dipl. Phys. Peer Stritzinger GmbH
+%%
+%% Licensed under the Apache License, Version 2.0 (the "License");
+%% you may not use this file except in compliance with the License.
+%% You may obtain a copy of the License at
+%%
+%%     http://www.apache.org/licenses/LICENSE-2.0
+%%
+%% Unless required by applicable law or agreed to in writing, software
+%% distributed under the License is distributed on an "AS IS" BASIS,
+%% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+%% See the License for the specific language governing permissions and
+%% limitations under the License.
+%%
+%% %CopyrightEnd%
+
 -module(rebar_alias_SUITE).
 -compile([export_all]).
 
@@ -138,7 +160,7 @@ release(Config) ->
     ok.
 
 check_namespaces() ->
-    [{doc, "Test calling commands with namespaces from rebar3"}].
+    [{doc, "Test calling commands with namespaces from rebar"}].
 check_namespaces(Config) ->
     AppDir = ?config(apps, Config),
     Name = rebar_test_utils:create_random_name("alias_args_"),
@@ -150,7 +172,7 @@ check_namespaces(Config) ->
     ok.
 
 create_lib() ->
-    [{doc, "Test calling commands with namespaces from rebar3"}].
+    [{doc, "Test calling commands with namespaces from rebar"}].
 create_lib(Config) ->
     AppDir = ?config(apps, Config),
     Name = rebar_test_utils:create_random_name("create_lib_"),
@@ -165,7 +187,7 @@ create_lib(Config) ->
     ok.
 
 command_console() ->
-    [{doc, "Test console output as per `rebar3 alias`"}].
+    [{doc, "Test console output as per `rebar alias`"}].
 command_console(Config) ->
     State = ?config(state, Config),
     RebarConfig
@@ -185,7 +207,7 @@ command_console(Config) ->
     %% validate output as <alias>=..., as this format is considered part of the interface,
     %%  for consumption; order is not important though
     ct:capture_start(),
-    rebar3:run(rebar_state:new(State, RebarConfig, AppDir), ["alias"]),
+    rebar:run(rebar_state:new(State, RebarConfig, AppDir), ["alias"]),
     ct:capture_stop(),
     AllCaptured = ct:capture_get(),
 
@@ -213,16 +235,16 @@ alias_help(Config) ->
     Alias = test_all,
     RebarConfig = [{alias, [{Alias, [ct, eunit]}]}],
     ct:capture_start(),
-    rebar3:run(rebar_state:new(State, RebarConfig, AppDir),
+    rebar:run(rebar_state:new(State, RebarConfig, AppDir),
                ["help", atom_to_list(Alias)]),
     ct:capture_stop(),
     Captured = lists:flatten(ct:capture_get()),
     ?assertNotEqual(nomatch,
                     re:run(Captured,
-                           "Equivalent to running: rebar3 do ct,eunit",
+                           "Equivalent to running: rebar do ct,eunit",
                            [{capture, none}])),
     ?assertNotEqual(nomatch,
                     re:run(Captured,
-                           "Usage:\\s+rebar3 test_all",
+                           "Usage:\\s+rebar test_all",
                            [{capture, none}])),
     ok.

@@ -1,3 +1,25 @@
+%% %CopyrightBegin%
+%%
+%% SPDX-License-Identifier: Apache-2.0
+%%
+%% SPDX-FileCopyrightText: Copyright 2015-2026 Rebar3 and its contributors
+%%
+%% SPDX-FileCopyrightText: Copyright 2026 Dipl. Phys. Peer Stritzinger GmbH
+%%
+%% Licensed under the Apache License, Version 2.0 (the "License");
+%% you may not use this file except in compliance with the License.
+%% You may obtain a copy of the License at
+%%
+%%     http://www.apache.org/licenses/LICENSE-2.0
+%%
+%% Unless required by applicable law or agreed to in writing, software
+%% distributed under the License is distributed on an "AS IS" BASIS,
+%% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+%% See the License for the specific language governing permissions and
+%% limitations under the License.
+%%
+%% %CopyrightEnd%
+
 %% -*- erlang-indent-level: 4;indent-tabs-mode: nil -*-
 %% ex: ts=4 sw=4 et
 -module(rebar_xref_SUITE).
@@ -80,7 +102,7 @@ xref_test(Config) ->
     State = ?config(state, Config),
     Name = ?config(app_name, Config),
     RebarConfig = ?config(rebar_config, Config),
-    Result = rebar3:run(rebar_state:new(State, RebarConfig, AppDir), ["xref"]),
+    Result = rebar:run(rebar_state:new(State, RebarConfig, AppDir), ["xref"]),
     verify_results(xref_test, Name, Result).
 
 xref_queries_test(Config) ->
@@ -90,7 +112,7 @@ xref_queries_test(Config) ->
                    {xref_queries, [{"A", [rebar_issue1, rebar_issue2]},
                                    {"(Fun) rebar_issue1 -> rebar_issue2", []}
                                   ]}],
-    {ok, _} = rebar3:run(rebar_state:new(State, RebarConfig, AppDir), ["xref"]),
+    {ok, _} = rebar:run(rebar_state:new(State, RebarConfig, AppDir), ["xref"]),
     ok.
 
 xref_ignore_test(Config) ->
@@ -98,7 +120,7 @@ xref_ignore_test(Config) ->
     State = ?config(state, Config),
     Name = ?config(app_name, Config),
     RebarConfig = ?config(rebar_config, Config),
-    Result = rebar3:run(rebar_state:new(State, RebarConfig, AppDir), ["xref"]),
+    Result = rebar:run(rebar_state:new(State, RebarConfig, AppDir), ["xref"]),
     verify_results(xref_ignore_test, Name, Result).
 
 xref_dep_hook(Config) ->
@@ -112,7 +134,7 @@ xref_undef_behaviour(Config) ->
     %% delete one of the behaviours, which should create new warnings
     delete_src_file(AppDir, Name, behaviour1),
     %% just ensure this does not crash
-    Result = rebar3:run(rebar_state:new(State, RebarConfig, AppDir), ["xref"]),
+    Result = rebar:run(rebar_state:new(State, RebarConfig, AppDir), ["xref"]),
     verify_results(xref_undef_behaviour, Name, Result).
 
 %% ===================================================================

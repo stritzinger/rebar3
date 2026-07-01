@@ -46,7 +46,7 @@ main(Args) ->
     %% Clear directories for builds since bootstrapping may require
     %% a changed structure from an older one
     rm_rf("_build/bootstrap"),
-    %% When recompiling rebar3 itself, the path swaps and cleaning
+    %% When recompiling rebar itself, the path swaps and cleaning
     %% removes the modules in _build/bootstrap, but the VM still
     %% manages to discover those in _build/prod from previous builds and
     %% cause weird failures when compilers get modified between releases.
@@ -61,14 +61,14 @@ main(Args) ->
     os:putenv("REBAR_PROFILE", "bootstrap"),
     compile_vendored(),
 
-    %% Fetch and build deps required to build rebar3
+    %% Fetch and build deps required to build rebar
     BaseDeps = [{cf, []}
                ,{erlware_commons, ["ec_dictionary.erl", "ec_vsn.erl"]}],
     Deps = get_deps(),
     [fetch_and_compile(Dep, Deps) || Dep <- BaseDeps],
     bootstrap_app(providers, []),
 
-    %% Build rebar3 modules with compile:file
+    %% Build rebar modules with compile:file
     bootstrap_app(rebar, ["rebar_resource_v2.erl", "rebar_resource.erl"]),
 
     %% Build rebar.app from rebar.app.src.script
@@ -81,15 +81,15 @@ main(Args) ->
 
     setup_env(),
     os:putenv("REBAR_PROFILE", "bootstrap"),
-    {ok, State} = rebar3:run(["compile"]),
+    {ok, State} = rebar:run(["compile"]),
     reset_env(),
     os:putenv("REBAR_PROFILE", ""),
 
     DepsPaths = rebar_state:code_paths(State, all_deps),
     code:add_pathsa(DepsPaths),
 
-    rebar3:run(["clean", "-a"]),
-    rebar3:run(["as", "prod", "escriptize"]),
+    rebar:run(["clean", "-a"]),
+    rebar:run(["as", "prod", "escriptize"]),
 
     %% Done with compile, can turn back on error logger
     error_logger:tty(true).
@@ -122,7 +122,7 @@ fetch_and_compile({Name, ErlFirstFiles}, Deps) ->
 
 get_rebar_config() ->
     {ok, [[Home]]} = init:get_argument(home),
-    ConfDir = filename:join(Home, ".config/rebar3"),
+    ConfDir = filename:join(Home, ".config/rebar"),
     case file:consult(filename:join(ConfDir, "rebar.config")) of
         {ok, Config} ->
             Config;
@@ -167,7 +167,7 @@ maybe_set_ipfamily(_, _Family) ->
     ok.
 
 compile_vendored() ->
-  compile_xrl_file("apps/rebar/src/vendored/r3_safe_erl_term.xrl"),
+  compile_xrl_file("apps/rebar/src/vendored/rb_safe_erl_term.xrl"),
   Sources = filelib:wildcard(filename:join(["apps/rebar/src/vendored", "*.erl"])),
   OutDir =  filename:absname("_build/bootstrap/lib/rebar/ebin"),
   code:add_patha(OutDir),

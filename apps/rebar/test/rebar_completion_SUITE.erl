@@ -1,3 +1,25 @@
+%% %CopyrightBegin%
+%%
+%% SPDX-License-Identifier: Apache-2.0
+%%
+%% SPDX-FileCopyrightText: Copyright 2015-2026 Rebar3 and its contributors
+%%
+%% SPDX-FileCopyrightText: Copyright 2026 Dipl. Phys. Peer Stritzinger GmbH
+%%
+%% Licensed under the Apache License, Version 2.0 (the "License");
+%% you may not use this file except in compliance with the License.
+%% You may obtain a copy of the License at
+%%
+%%     http://www.apache.org/licenses/LICENSE-2.0
+%%
+%% Unless required by applicable law or agreed to in writing, software
+%% distributed under the License is distributed on an "AS IS" BASIS,
+%% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+%% See the License for the specific language governing permissions and
+%% limitations under the License.
+%%
+%% %CopyrightEnd%
+
 -module(rebar_completion_SUITE).
 
 -compile([export_all, nowarn_export_all]).
@@ -67,36 +89,36 @@ test_completion_gen(Config) ->
 
 check_bash(Config) ->
     ComplFile = ?config(compl_file, Config),
-    Aliases = ["rebar", "r3"],
+    Aliases = ["rebar", "rb"],
     Opts = #{shell => bash,
              file => ComplFile,
              aliases => Aliases},
     completion_gen(Config, Opts),
     {ok, Completion} = file:read_file(ComplFile),
     %% function definition
-    {match, _} = re:run(Completion, "_rebar3\\(\\)\\{"),
+    {match, _} = re:run(Completion, "_rebar\\(\\)\\{"),
     %% aliases
-    CompleteCmd = "complete -o filenames -F _rebar3 ",
+    CompleteCmd = "complete -o filenames -F _rebar ",
     lists:foreach(fun(Alias) ->
                     ?assertMatch({Alias, {match, _}}, {Alias, re:run(Completion, CompleteCmd++Alias++"\n")})
                   end,
-                  ["rebar3" | Aliases]).
+                  ["rebar" | Aliases]).
 
 check_zsh(Config) ->
     ComplFile = ?config(compl_file, Config),
-    Aliases = ["rebar", "r3"],
+    Aliases = ["rebar", "rb"],
     Opts = #{shell => zsh,
              file => ComplFile,
              aliases => Aliases},
     completion_gen(Config, Opts),
     {ok, Completion} = file:read_file(ComplFile),
     %% function definition
-    {match, _} = re:run(Completion, "function _rebar3 {"),
-    CompleteCmd = "compdef _rebar3 ",
+    {match, _} = re:run(Completion, "function _rebar {"),
+    CompleteCmd = "compdef _rebar ",
     lists:foreach(fun(Alias) ->
                     ?assertMatch({Alias, {match, _}}, {Alias, re:run(Completion, CompleteCmd++Alias++"\n")})
                   end,
-                  ["rebar3" | Aliases]).
+                  ["rebar" | Aliases]).
 
 check_bash_file_completion(Config) ->
     ComplFile = ?config(compl_file, Config),
@@ -127,4 +149,4 @@ completion_gen(Config, CmplOpts) ->
     {ok, _} = Res.
 
 compl_file(Config) ->
-    filename:absname(filename:join(?config(priv_dir,Config), "_rebar3")).
+    filename:absname(filename:join(?config(priv_dir,Config), "_rebar")).

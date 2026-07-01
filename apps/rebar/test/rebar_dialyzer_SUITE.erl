@@ -1,3 +1,25 @@
+%% %CopyrightBegin%
+%%
+%% SPDX-License-Identifier: Apache-2.0
+%%
+%% SPDX-FileCopyrightText: Copyright 2015-2026 Rebar3 and its contributors
+%%
+%% SPDX-FileCopyrightText: Copyright 2026 Dipl. Phys. Peer Stritzinger GmbH
+%%
+%% Licensed under the Apache License, Version 2.0 (the "License");
+%% you may not use this file except in compliance with the License.
+%% You may obtain a copy of the License at
+%%
+%%     http://www.apache.org/licenses/LICENSE-2.0
+%%
+%% Unless required by applicable law or agreed to in writing, software
+%% distributed under the License is distributed on an "AS IS" BASIS,
+%% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+%% See the License for the specific language governing permissions and
+%% limitations under the License.
+%%
+%% %CopyrightEnd%
+
 -module(rebar_dialyzer_SUITE).
 
 -export([suite/0,
@@ -409,7 +431,7 @@ single_app_succ_typing(Config) ->
     RebarConfig2 = merge_config([{dialyzer, [{plt_apps, all_apps}]}],
         RebarConfig),
     {ok, _} =
-        rebar3:run(rebar_state:new(State, RebarConfig2, AppDir), ["dialyzer", "--succ-typings=false"]),
+        rebar:run(rebar_state:new(State, RebarConfig2, AppDir), ["dialyzer", "--succ-typings=false"]),
     %% verify all project apps are in PLT
     {ok, PltFiles} = plt_files(Plt),
     ?assertEqual([App1, App2, erts], get_apps_from_beam_files(PltFiles)),
@@ -418,18 +440,18 @@ single_app_succ_typing(Config) ->
     Command0 = ["as", "test", "dialyzer"],
     % there are few warnings for generated test (see rebar_test_utils:erl_eunit_suite_file/1)
     {error, {rebar_prv_dialyzer, {dialyzer_warnings, _}}} =
-        rebar3:run(rebar_state:new(State, RebarConfig, AppDir), Command0),
+        rebar:run(rebar_state:new(State, RebarConfig, AppDir), Command0),
 
     %% warnings from App
     Command1 = ["as", "test", "dialyzer", "--app=" ++ Name],
     % there are few warnings for generated test (see rebar_test_utils:erl_eunit_suite_file/1)
     {error, {rebar_prv_dialyzer, {dialyzer_warnings, _}}} =
-        rebar3:run(rebar_state:new(State, RebarConfig, AppDir), Command1),
+        rebar:run(rebar_state:new(State, RebarConfig, AppDir), Command1),
 
     %% no warnings from App2
     Command2 = ["as", "test", "dialyzer", "--app=" ++ Name2],
     {ok, _} =
-        rebar3:run(rebar_state:new(State, RebarConfig, AppDir), Command2).
+        rebar:run(rebar_state:new(State, RebarConfig, AppDir), Command2).
 
 extra_src_dirs(Config) ->
     AppDir = ?config(apps, Config),
@@ -442,7 +464,7 @@ extra_src_dirs(Config) ->
     Command = ["as", "test", "dialyzer"],
     % there are few warnings for generated test (see rebar_test_utils:erl_eunit_suite_file/1)
     {error, {rebar_prv_dialyzer, {dialyzer_warnings, _}}} =
-        rebar3:run(rebar_state:new(State, RebarConfig, AppDir), Command).
+        rebar:run(rebar_state:new(State, RebarConfig, AppDir), Command).
 
 no_existing_incremental_plt(Config) ->
     AppDir = ?config(apps, Config),

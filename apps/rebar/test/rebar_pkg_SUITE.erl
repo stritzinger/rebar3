@@ -1,3 +1,25 @@
+%% %CopyrightBegin%
+%%
+%% SPDX-License-Identifier: Apache-2.0
+%%
+%% SPDX-FileCopyrightText: Copyright 2015-2026 Rebar3 and its contributors
+%%
+%% SPDX-FileCopyrightText: Copyright 2026 Dipl. Phys. Peer Stritzinger GmbH
+%%
+%% Licensed under the Apache License, Version 2.0 (the "License");
+%% you may not use this file except in compliance with the License.
+%% You may obtain a copy of the License at
+%%
+%%     http://www.apache.org/licenses/LICENSE-2.0
+%%
+%% Unless required by applicable law or agreed to in writing, software
+%% distributed under the License is distributed on an "AS IS" BASIS,
+%% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+%% See the License for the specific language governing permissions and
+%% limitations under the License.
+%%
+%% %CopyrightEnd%
+
 %% Test suite for the rebar pkg index caching and decompression
 %% mechanisms.
 -module(rebar_pkg_SUITE).
@@ -98,7 +120,7 @@ init_per_testcase(bad_disconnect=Name, Config0) ->
                {pkg, Pkg}
               | Config0],
     Config = mock_config(Name, Config1),
-    meck:expect(r3_hex_repo, get_tarball, fun(_, _, _) ->
+    meck:expect(rb_hex_repo, get_tarball, fun(_, _, _) ->
                                                {error, econnrefused}
                                        end),
     Config;
@@ -118,7 +140,7 @@ good_uncached(Config) ->
     State = ?config(state, Config),
     ?assertEqual(ok,
                  rebar_pkg_resource:download(Tmp, {pkg, Pkg, Vsn, ?good_checksum, ?good_checksum, #{}}, State, #{}, true)),
-    ?assert(meck:called(r3_hex_repo, get_tarball,
+    ?assert(meck:called(rb_hex_repo, get_tarball,
                         [meck:is(fun(#{http_etag := T}) -> T =:= undefined end), '_', '_'])),
     Cache = ?config(cache_dir, Config),
     ?assert(filelib:is_regular(filename:join(Cache, <<Pkg/binary, "-", Vsn/binary, ".tar">>))).
@@ -135,7 +157,7 @@ good_cached(Config) ->
     {ok, Content} = file:read_file(CachedFile),
     ?assertEqual(ok,
                  rebar_pkg_resource:download(Tmp, {pkg, Pkg, Vsn, ?good_checksum, ?good_checksum, #{}}, State, #{}, true)),
-    ?assert(meck:called(r3_hex_repo, get_tarball,
+    ?assert(meck:called(rb_hex_repo, get_tarball,
                         [meck:is(fun(#{http_etag := T}) -> T =:= ?good_etag end), '_', '_'])),
     {ok, Content} = file:read_file(CachedFile).
 
@@ -277,13 +299,13 @@ mock_config(Name, Config) ->
     TmpDir = filename:join([Priv, "tmp", atom_to_list(Name)]),
     Tid = ets:new(registry_table, [public]),
     AllDeps = [
-        {{<<"badindexchk">>,<<"1.0.0">>}, [[], ?bad_checksum, ?bad_checksum, [<<"rebar3">>]]},
-        {{<<"goodpkg">>,<<"1.0.0">>}, [[], ?good_checksum, ?good_checksum, [<<"rebar3">>]]},
-        {{<<"goodpkg">>,<<"1.0.1">>}, [[], ?good_checksum, ?good_checksum, [<<"rebar3">>]]},
-        {{<<"goodpkg">>,<<"1.1.1">>}, [[], ?good_checksum, ?good_checksum, [<<"rebar3">>]]},
-        {{<<"goodpkg">>,<<"2.0.0">>}, [[], ?good_checksum, ?good_checksum, [<<"rebar3">>]]},
-        {{<<"goodpkg">>,<<"3.0.0-rc.0">>}, [[], ?good_checksum, ?good_checksum, [<<"rebar3">>]]},
-        {{<<"badpkg">>,<<"1.0.0">>}, [[], ?badpkg_checksum, ?badpkg_checksum, [<<"rebar3">>]]}
+        {{<<"badindexchk">>,<<"1.0.0">>}, [[], ?bad_checksum, ?bad_checksum, [<<"rebar">>]]},
+        {{<<"goodpkg">>,<<"1.0.0">>}, [[], ?good_checksum, ?good_checksum, [<<"rebar">>]]},
+        {{<<"goodpkg">>,<<"1.0.1">>}, [[], ?good_checksum, ?good_checksum, [<<"rebar">>]]},
+        {{<<"goodpkg">>,<<"1.1.1">>}, [[], ?good_checksum, ?good_checksum, [<<"rebar">>]]},
+        {{<<"goodpkg">>,<<"2.0.0">>}, [[], ?good_checksum, ?good_checksum, [<<"rebar">>]]},
+        {{<<"goodpkg">>,<<"3.0.0-rc.0">>}, [[], ?good_checksum, ?good_checksum, [<<"rebar">>]]},
+        {{<<"badpkg">>,<<"1.0.0">>}, [[], ?badpkg_checksum, ?badpkg_checksum, [<<"rebar">>]]}
     ],
     ets:insert_new(Tid, AllDeps),
     CacheDir = filename:join([CacheRoot, "hex", "com", "test", "packages"]),
@@ -307,8 +329,8 @@ mock_config(Name, Config) ->
                   end, AllDeps),
 
 
-    meck:new(r3_hex_repo, [passthrough]),
-    meck:expect(r3_hex_repo, get_package,
+    meck:new(rb_hex_repo, [passthrough]),
+    meck:expect(rb_hex_repo, get_package,
                 fun(_Config, PkgName) ->
                         Matches = ets:match_object(Tid, {{PkgName,'_'}, '_'}),
                         Releases =
@@ -330,7 +352,7 @@ mock_config(Name, Config) ->
                 end),
     meck:expect(rebar_state, resources,
                 fun(_State) ->
-                        DefaultConfig = r3_hex_core:default_config(),
+                        DefaultConfig = rb_hex_core:default_config(),
                         [rebar_resource_v2:new(pkg, rebar_pkg_resource,
                                                #{repos => [DefaultConfig#{name => <<"hexpm">>}],
                                                  base_config => #{}})]
@@ -352,7 +374,7 @@ mock_config(Name, Config) ->
     PkgFile = <<Pkg/binary, "-", Vsn/binary, ".tar">>,
     {ok, PkgContents} = file:read_file(filename:join(?config(data_dir, Config), PkgFile)),
 
-    meck:expect(r3_hex_repo, get_tarball, fun(_, _, _) when GoodCache ->
+    meck:expect(rb_hex_repo, get_tarball, fun(_, _, _) when GoodCache ->
                                                {ok, {304, #{<<"etag">> => ?good_etag}, <<>>}};
                                           (_, _, _) ->
                                                {ok, {200, #{<<"etag">> => ?good_etag}, PkgContents}}

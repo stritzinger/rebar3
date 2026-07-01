@@ -5,9 +5,11 @@
 %%
 %% SPDX-License-Identifier: MIT
 %%
-%% Copyright (c) 2011 Trifork
-%% Copyright (c) 2015-2026 Rebar3 and its contributors
-%% Copyright (c) 2026 Dipl. Phys. Peer Stritzinger GmbH
+%% SPDX-FileCopyrightText: Copyright 2011 Trifork
+%%
+%% SPDX-FileCopyrightText: Copyright 2015-2026 Rebar3 and its contributors
+%%
+%% SPDX-FileCopyrightText: Copyright 2026 Dipl. Phys. Peer Stritzinger GmbH
 %%
 %% Permission is hereby granted, free of charge, to any person obtaining a copy
 %% of this software and associated documentation files (the "Software"), to deal
@@ -118,7 +120,7 @@ format_error({eval_parse, Exp, Msg}) ->
     io_lib:format("Failed to parse -eval expression: \"~ts\". Error message: ~ts", [Exp, Msg]);
 format_error({eval_exprs, Exp, {C, E, S}}) ->
     ?DEBUG("--eval failure details: ~p:~p~nStacktrace: ~p", [C, E, S]),
-    io_lib:format("Failed to evaluate expression: \"~ts\". Error: ~p:~p. Run with DIAGNOSTIC=1 to stacktrace or consult rebar3.crashdump", [Exp, C, E]);
+    io_lib:format("Failed to evaluate expression: \"~ts\". Error: ~p:~p. Run with DIAGNOSTIC=1 to stacktrace or consult rebar.crashdump", [Exp, C, E]);
 format_error(Reason) ->
     io_lib:format("~p", [Reason]).
 
@@ -474,7 +476,7 @@ reread_config(AppsToStart, State) ->
             ok;
         ConfigList ->
             %% This allows people who use applications that are also
-            %% depended on by rebar3 or its plugins to change their
+            %% depended on by rebar or its plugins to change their
             %% configuration at runtime based on the configuration files.
             %%
             %% To do this, we stop apps that are already started before
@@ -483,11 +485,11 @@ reread_config(AppsToStart, State) ->
             %% We make an exception for apps that:
             %%  - are not already running
             %%  - would not be restarted (and hence would break some
-            %%    compatibility with rebar3)
+            %%    compatibility with rebar)
             %%  - are not in the config files and would see no config
             %%    changes
             %%  - are not in a blacklist, where changing their config
-            %%    would be risky to the shell or the rebar3 agent
+            %%    would be risky to the shell or the rebar agent
             %%    functionality (i.e. changing inets may break proxy
             %%    settings, stopping `kernel' would break everything)
             Running = [App || {App, _, _} <- application:which_applications()],

@@ -1,3 +1,25 @@
+%% %CopyrightBegin%
+%%
+%% SPDX-License-Identifier: Apache-2.0
+%%
+%% SPDX-FileCopyrightText: Copyright 2015-2026 Rebar3 and its contributors
+%%
+%% SPDX-FileCopyrightText: Copyright 2026 Dipl. Phys. Peer Stritzinger GmbH
+%%
+%% Licensed under the Apache License, Version 2.0 (the "License");
+%% you may not use this file except in compliance with the License.
+%% You may obtain a copy of the License at
+%%
+%%     http://www.apache.org/licenses/LICENSE-2.0
+%%
+%% Unless required by applicable law or agreed to in writing, software
+%% distributed under the License is distributed on an "AS IS" BASIS,
+%% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+%% See the License for the specific language governing permissions and
+%% limitations under the License.
+%%
+%% %CopyrightEnd%
+
 -module(rebar_hex_repos).
 
 -export([from_state/2,
@@ -36,7 +58,7 @@ from_state(BaseConfig, State) ->
     Repos = repos(HexConfig),
     %% auth is stored in a separate config file since the plugin generates and modifies it
     Auth = ?MODULE:auth_config(State),
-    %% add base config entries that are specific to use by rebar3 and not overridable
+    %% add base config entries that are specific to use by rebar and not overridable
     Repos1 = merge_with_base_and_auth(Repos, BaseConfig, Auth),
     %% merge organizations parent repo options into each oraganization repo
     update_organizations(maybe_override_default_repo_url(Repos1, State)).
@@ -95,7 +117,7 @@ repos(HexConfig) ->
             merge_repos(RepoList ++ [HexDefaultConfig])
     end.
 
-%% merge repos must add a field repo_name to work with r3_hex_core 0.5.0
+%% merge repos must add a field repo_name to work with rb_hex_core 0.5.0
 -spec merge_repos([repo()]) -> [repo()].
 merge_repos(Repos) ->
     lists:foldl(fun(R = #{name := Name}, ReposAcc) ->
@@ -147,7 +169,7 @@ update_repo_list(R, []) ->
     [R].
 
 default_repo() ->
-    HexDefaultConfig = r3_hex_core:default_config(),
+    HexDefaultConfig = rb_hex_core:default_config(),
     HexDefaultConfig#{name => ?PUBLIC_HEX_REPO, repo_verify_origin => repo_verify_origin()}.
 
 repo_verify_origin() ->

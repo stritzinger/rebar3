@@ -149,14 +149,14 @@ maybe_namespace(State, Task, Args) ->
 print_namespace_help(default, Providers) ->
     io:format(
         "~ts",
-        [argparse:help(rebar_cli:global_cli(Providers), #{progname => "rebar3"})]
+        [argparse:help(rebar_cli:global_cli(Providers), #{progname => "rebar"})]
     );
 print_namespace_help(Namespace, Providers) ->
     io:format(
         "~ts",
         [argparse:help(
              rebar_cli:global_cli(Providers),
-             #{progname => "rebar3",
+             #{progname => "rebar",
                command => [atom_to_list(Namespace)]}
          )]
     ).

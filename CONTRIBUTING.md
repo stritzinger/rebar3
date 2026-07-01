@@ -1,4 +1,4 @@
-# Contributing to Rebar3
+# Contributing to Rebar
 
 1. [License](#license)
 2. [Submitting a bug](#submitting-a-bug)
@@ -13,7 +13,7 @@
 
 ## License ##
 
-Rebar3 is licensed under the [Apache License 2.0](LICENSE) for all new code.
+Rebar is licensed under the [Apache License 2.0](LICENSE) for all new code.
 However, since it is built from older code bases, some files still hold other
 free licenses (such as BSD). Where it is the case, the license is added in
 comments.
@@ -25,19 +25,19 @@ All files without specific headers can safely be assumed to be under Apache
 
 Bugs can be submitted to the [Github issue page](https://github.com/erlang/rebar3/issues).
 
-Rebar3 is not perfect software and will be buggy. When submitting a bug, be
+Rebar is not perfect software and will be buggy. When submitting a bug, be
 careful to know the following:
 
 - The Erlang version you are running
-- The Rebar3 version you are using
+- The Rebar version you are using
 - The command you were attempting to run
 
 This information can be automatically generated to put into your bug report
-by calling `rebar3 report "my command"`.
+by calling `rebar report "my command"`.
 
 You may be asked for further information regarding:
 
-- Your environment, including the Erlang version used to compile rebar3,
+- Your environment, including the Erlang version used to compile rebar,
   details about your operating system, where your copy of Erlang was installed
   from, and so on;
 - Your project, including its structure, and possibly to remove build
@@ -48,7 +48,7 @@ You may be asked for further information regarding:
 If you can provide an example code base to reproduce the issue on, we will
 generally be able to provide more help, and faster.
 
-All contributors and rebar3 maintainers are generally unpaid developers
+All contributors and rebar maintainers are generally unpaid developers
 working on the project in their own free time with limited resources. We
 ask for respect and understanding and will try to provide the same back.
 
@@ -63,24 +63,24 @@ Before requesting or implementing a new feature, please do the following:
   has already been rejected.
 
 If this is done, open up a ticket. Tell us what is the feature you want,
-why you need it, and why you think it should be in rebar3 itself.
+why you need it, and why you think it should be in rebar itself.
 
 We may discuss details with you regarding the implementation, its inclusion
 within the project or as a plugin. Depending on the feature, we may provide
 full support for it, or ask you to help implement and/or commit to maintaining
 it in the future. We're dedicated to providing a stable build tool, and may
-also ask features to exist as a plugin before being included in core rebar3 --
+also ask features to exist as a plugin before being included in core rebar --
 the migration path from one to the other is fairly simple and little to no code
 needs rewriting.
 
 ## Project Structure
 
-Rebar3 is an escript built around the concept of providers. Providers are the
+Rebar is an escript built around the concept of providers. Providers are the
 modules that do the work to fulfill a user's command. They are documented in
 [the official documentation website](http://www.rebar3.org/docs/plugins#section-provider-interface).
 
 > [!NOTE]
-> The Rebar3 repository uses an [umbrella project structure](https://rebar3.org/docs/basic_usage/).
+> The Rebar repository uses an [umbrella project structure](https://rebar3.org/docs/basic_usage/).
 > Paths shown here are relative to the directory `apps/rebar`.
 
 Example provider:
@@ -129,7 +129,7 @@ Providers are then listed in `rebar.app.src.script`, and can be called from
 the command line or as a programmatical API.
 
 All commands are therefore implemented in standalone modules. If you call
-`rebar3 <task>`, the module in charge of it is likely located in
+`rebar <task>`, the module in charge of it is likely located in
 `src/rebar_prv_<task>.erl`.
 
 Templates are included in `priv/templates/`
@@ -137,7 +137,7 @@ Templates are included in `priv/templates/`
 The official test suite is Common Test, and tests are located in `test/`.
 
 Useful modules include:
-- `rebar_api`, providing an interface for plugins to call into core rebar3
+- `rebar_api`, providing an interface for plugins to call into core rebar
   functionality
 - `rebar_core`, for initial boot and setup of a project
 - `rebar_config`, handling the configuration of each project.
@@ -154,22 +154,22 @@ Useful modules include:
 
 ## Tests
 
-Rebar3 tries to have as many of its features tested as possible. Everything
+Rebar tries to have as many of its features tested as possible. Everything
 that a user can do and should be repeatable in any way should be tested.
 
-Tests are written using the Common Test framework. Tests for rebar3 can be run
+Tests are written using the Common Test framework. Tests for rebar can be run
 by calling:
 
 ```bash
-$ rebar3 escriptize # or bootstrap
-$ ./rebar3 ct
+$ rebar escriptize # or bootstrap
+$ ./rebar ct
 ```
 
 Most tests are named according to their module name followed by the `_SUITE`
 suffix. Providers are made shorter, such that `rebar_prv_new` is tested in
 `rebar_new_SUITE`.
 
-Most tests in the test suite will rely on calling Rebar3 in its API form,
+Most tests in the test suite will rely on calling Rebar in its API form,
 then investigating the build output. Because most tests have similar
 requirements, the `test/rebar_test_utils` file contains common code
 to set up test projects, run tasks, and verify artifacts at once.
@@ -245,7 +245,7 @@ OKRes :: {app, Name}           % name of an app that is in the build directory
        | {tar, Name, Vsn}      % validates a tarball's existence
        | {file, Filename}      % validates the presence of a given file
        | {dir, Dirname}        % validates the presence of a given directory
-Reason :: term() % the exception thrown by rebar3
+Reason :: term() % the exception thrown by rebar
 ```
 
 This generally lets most features be tested fine. Ask for help if you cannot

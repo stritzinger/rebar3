@@ -82,7 +82,7 @@ get_package(Name, Repos) ->
 
 -spec format_error(any()) -> iolist().
 format_error(no_package_arg) ->
-    "Missing package argument to `rebar3 pkgs` command.";
+    "Missing package argument to `rebar pkgs` command.";
 format_error({not_found, Name}) ->
     io_lib:format("Package ~ts not found in any repo.", [Name]);
 format_error(unknown) ->

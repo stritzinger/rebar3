@@ -1,10 +1,12 @@
 %% -*- erlang-indent-level: 4;indent-tabs-mode: nil -*-
 %% ex: ts=4 sw=4 et
-%% -------------------------------------------------------------------
+%% %CopyrightBegin%
 %%
-%% rebar: Erlang Build Tools
+%% SPDX-License-Identifier: MIT
 %%
-%% Copyright (c) 2009 Dave Smith (dizzyd@dizzyd.com)
+%% SPDX-FileCopyrightText: Copyright 2009 Dave Smith (dizzyd@dizzyd.com)
+%%
+%% SPDX-FileCopyrightText: Copyright 2026 Dipl. Phys. Peer Stritzinger GmbH
 %%
 %% Permission is hereby granted, free of charge, to any person obtaining a copy
 %% of this software and associated documentation files (the "Software"), to deal
@@ -23,7 +25,8 @@
 %% LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 %% OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 %% THE SOFTWARE.
-%% -------------------------------------------------------------------
+%%
+%% %CopyrightEnd%
 -module(rebar_log).
 
 -export([init/2,
@@ -100,7 +103,7 @@ get_level() ->
 
 log(diagnostic, Str, Args) ->
     %% The diagnostic level is intended for debug info
-    %% that is useful for rebar3 developers and implementers who
+    %% that is useful for rebar developers and implementers who
     %% understand the internal structure; the debug level
     %% itself should aim to be useful for users themselves.
     %% The underlying library only supports debug at its lowest
@@ -124,7 +127,7 @@ log(Level, Str, Args) ->
     end.
 
 crashdump(Str, Args) ->
-    crashdump("rebar3.crashdump", Str, Args).
+    crashdump("rebar.crashdump", Str, Args).
 crashdump(File, Str, Args) ->
     case application:get_env(rebar, log_caller) of
         {ok, api} ->

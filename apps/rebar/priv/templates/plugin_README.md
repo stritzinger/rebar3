@@ -7,7 +7,7 @@
 Build
 -----
 
-    $ rebar3 compile
+    $ rebar compile
 
 Use
 ---
@@ -21,7 +21,7 @@ Add the plugin to your rebar config:
 Then just call your plugin directly in an existing application:
 
 
-    $ rebar3 @@name@@
+    $ rebar @@name@@
     ===> Fetching @@name@@
     ===> Compiling @@name@@
     <Plugin Output>

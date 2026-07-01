@@ -309,7 +309,7 @@ add_or_replace_all_instance(Opt, Value, RelxConfig) ->
 
 %%
 
-%% Returns a map of all apps that are part of the rebar3 project.
+%% Returns a map of all apps that are part of the rebar project.
 %% This means the project apps and dependencies but not OTP libraries.
 -spec all_apps(rebar_state:t()) -> #{atom() => rlx_app_info:t()}.
 all_apps(State) ->

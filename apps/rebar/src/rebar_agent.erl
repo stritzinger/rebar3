@@ -20,7 +20,7 @@
 %%
 %% %CopyrightEnd%
 
-%%% @doc Runs a process that holds a rebar3 state and can be used
+%%% @doc Runs a process that holds a rebar state and can be used
 %%% to statefully maintain loaded project state into a running VM.
 -module(rebar_agent).
 -export([start_link/1, do/1, do/2, do/3, async_do/1, async_do/2, async_do/3]).
@@ -35,8 +35,8 @@
                 cwd,
                 show_warning=true}).
 
-%% @doc boots an agent server; requires a full rebar3 state already.
-%% By default (within rebar3), this isn't called; `rebar_prv_shell'
+%% @doc boots an agent server; requires a full rebar state already.
+%% By default (within rebar), this isn't called; `rebar_prv_shell'
 %% enters and transforms into this module
 -spec start_link(rebar_state:t()) -> {ok, pid()}.
 start_link(State) ->
@@ -164,7 +164,7 @@ run(Namespace, Command, CmdArgs, RState, Cwd) ->
                 CmdState0 = refresh_state(RState, Cwd),
                 CmdState1 = rebar_state:set(CmdState0, task, atom_to_list(Command)),
                 CmdState = rebar_state:set(CmdState1, caller, api),
-                case rebar3:run(CmdState, Args) of
+                case rebar:run(CmdState, Args) of
                     {ok, TmpState} ->
                         refresh_paths(TmpState),
                         {ok, CmdState};
@@ -192,7 +192,7 @@ maybe_show_warning(S=#state{show_warning=true}) ->
 maybe_show_warning(State) ->
     State.
 
-%% @private based on a rebar3 state term, reload paths in a way
+%% @private based on a rebar state term, reload paths in a way
 %% that makes sense.
 -spec refresh_paths(rebar_state:t()) -> ok.
 refresh_paths(RState) ->
@@ -300,7 +300,7 @@ parse_refresh_paths([], _RState, Acc) ->
 refresh_state(RState, _Dir) ->
     lists:foldl(
         fun(F, State) -> F(State) end,
-        rebar3:init_config(),
+        rebar:init_config(),
         [fun(S) -> rebar_state:apply_profiles(S, rebar_state:current_profiles(RState)) end]
     ).
 

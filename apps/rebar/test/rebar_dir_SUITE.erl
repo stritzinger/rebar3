@@ -1,3 +1,25 @@
+%% %CopyrightBegin%
+%%
+%% SPDX-License-Identifier: Apache-2.0
+%%
+%% SPDX-FileCopyrightText: Copyright 2015-2026 Rebar3 and its contributors
+%%
+%% SPDX-FileCopyrightText: Copyright 2026 Dipl. Phys. Peer Stritzinger GmbH
+%%
+%% Licensed under the Apache License, Version 2.0 (the "License");
+%% you may not use this file except in compliance with the License.
+%% You may obtain a copy of the License at
+%%
+%%     http://www.apache.org/licenses/LICENSE-2.0
+%%
+%% Unless required by applicable law or agreed to in writing, software
+%% distributed under the License is distributed on an "AS IS" BASIS,
+%% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+%% See the License for the specific language governing permissions and
+%% limitations under the License.
+%%
+%% %CopyrightEnd%
+
 -module(rebar_dir_SUITE).
 
 -export([all/0, init_per_testcase/2, end_per_testcase/2]).
@@ -313,7 +335,7 @@ global_cache_dir(Config) ->
 default_global_cache_dir(Config) ->
     RebarConfig = [{erl_opts, []}],
     {ok, State} = rebar_test_utils:run_and_check(Config, RebarConfig, ["compile"], return),
-    Expected = filename:join([rebar_dir:home_dir(), ".cache", "rebar3"]),
+    Expected = filename:join([rebar_dir:home_dir(), ".cache", "rebar"]),
     ?assertEqual(Expected, rebar_dir:global_cache_dir(rebar_state:opts(State))).
 
 overwrite_default_global_cache_dir(Config) ->
@@ -326,12 +348,12 @@ default_global_config(Config) ->
     RebarConfig = [{erl_opts, []}],
     {ok, State} = rebar_test_utils:run_and_check(Config, RebarConfig, ["compile"], return),
     ConfDir = ?config(priv_dir, Config),
-    Expected = filename:join([ConfDir, ".config", "rebar3", "rebar.config"]),
+    Expected = filename:join([ConfDir, ".config", "rebar", "rebar.config"]),
     ?assertEqual(Expected, rebar_dir:global_config(State)).
 
 overwrite_default_global_config(Config) ->
     RebarConfig = [{erl_opts, []}],
     {ok, State} = rebar_test_utils:run_and_check(Config, RebarConfig, ["compile"], return),
-    Expected = filename:join([os:getenv("REBAR_GLOBAL_CONFIG_DIR"), ".config", "rebar3", "rebar.config"]),
+    Expected = filename:join([os:getenv("REBAR_GLOBAL_CONFIG_DIR"), ".config", "rebar", "rebar.config"]),
     rebar_dir:global_config(State),
     ?assertEqual(Expected, rebar_dir:global_config(State)).

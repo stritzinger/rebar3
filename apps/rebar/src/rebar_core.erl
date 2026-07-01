@@ -5,9 +5,11 @@
 %%
 %% SPDX-License-Identifier: MIT
 %%
-%% Copyright (c) 2009 Dave Smith (dizzyd@dizzyd.com)
-%% Copyright (c) 2015-2026 Rebar3 and its contributors
-%% Copyright (c) 2026 Dipl. Phys. Peer Stritzinger GmbH
+%% SPDX-FileCopyrightText: Copyright 2009 Dave Smith (dizzyd@dizzyd.com)
+%%
+%% SPDX-FileCopyrightText: Copyright 2015-2026 Rebar3 and its contributors
+%%
+%% SPDX-FileCopyrightText: Copyright 2026 Dipl. Phys. Peer Stritzinger GmbH
 %%
 %% Permission is hereby granted, free of charge, to any person obtaining a copy
 %% of this software and associated documentation files (the "Software"), to deal
@@ -30,7 +32,7 @@
 %% %CopyrightEnd%
 
 %% @doc Module providing core functionality about command dispatch, namespacing,
-%% and chaining for rebar3.
+%% and chaining for rebar.
 -module(rebar_core).
 
 -export([init_command/2, process_namespace/2, process_command/2, do/2, format_error/1]).
@@ -198,7 +200,7 @@ parse_command_args(CommandProvider, State) ->
     end.
 
 parse_opts() ->
-    #{progname => "rebar3"}.
+    #{progname => "rebar"}.
 
 normalize_parsed_args(ParsedMap) ->
     Rest = maps:get(rest, ParsedMap, []),

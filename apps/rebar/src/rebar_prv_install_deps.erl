@@ -5,9 +5,11 @@
 %%
 %% SPDX-License-Identifier: MIT
 %%
-%% Copyright (c) 2009 Dave Smith (dizzyd@dizzyd.com)
-%% Copyright (c) 2015-2026 Rebar3 and its contributors
-%% Copyright (c) 2026 Dipl. Phys. Peer Stritzinger GmbH
+%% SPDX-FileCopyrightText: Copyright 2009 Dave Smith (dizzyd@dizzyd.com)
+%%
+%% SPDX-FileCopyrightText: Copyright 2015-2026 Rebar3 and its contributors
+%%
+%% SPDX-FileCopyrightText: Copyright 2026 Dipl. Phys. Peer Stritzinger GmbH
 %%
 %% Permission is hereby granted, free of charge, to any person obtaining a copy
 %% of this software and associated documentation files (the "Software"), to deal
@@ -113,13 +115,13 @@ do_(State) ->
 format_error({dep_app_not_found, AppDir, AppName}) ->
     io_lib:format("Dependency failure: Application ~ts not found at the top level of directory ~ts", [AppName, AppDir]);
 format_error({load_registry_fail, Dep}) ->
-    io_lib:format("Error loading registry to resolve version of ~ts. Try fixing by running 'rebar3 update'", [Dep]);
+    io_lib:format("Error loading registry to resolve version of ~ts. Try fixing by running 'rebar update'", [Dep]);
 format_error({bad_constraint, Name, Constraint}) ->
     io_lib:format("Unable to parse version for package ~ts: ~ts", [Name, Constraint]);
 format_error({parse_dep, Dep}) ->
     io_lib:format("Failed parsing dep ~p", [Dep]);
 format_error({not_rebar_package, Package, Version}) ->
-    io_lib:format("Package not buildable with rebar3: ~ts-~ts", [Package, Version]);
+    io_lib:format("Package not buildable with rebar: ~ts-~ts", [Package, Version]);
 format_error({missing_package, Package, Version}) ->
     io_lib:format("Package not found in registry: ~ts-~ts", [Package, Version]);
 format_error({missing_package, Package}) ->
@@ -134,7 +136,7 @@ format_error(Reason) ->
     io_lib:format("~p", [Reason]).
 
 %% @doc Allows other providers to install deps in a given profile
-%% manually, outside of what is provided by rebar3's deps tuple.
+%% manually, outside of what is provided by rebar's deps tuple.
 -spec handle_deps_as_profile(Profile, State, Deps, Upgrade) -> {Apps, State} when
       Profile :: atom(),
       State :: rebar_state:t(),
@@ -219,7 +221,7 @@ maybe_lock(Profile, AppInfo, Seen, State, Level) ->
                             %% shallower than the existing lock, replace the
                             %% existing lock. This prevents weird transient
                             %% lock-tree states (which would self-heal on a
-                            %% later run) after a `rebar3 upgrade <app>'
+                            %% later run) after a `rebar upgrade <app>'
                             %% command when a deep dep switches lineages for
                             %% another newer parent.
                             Locks = rebar_state:lock(State),

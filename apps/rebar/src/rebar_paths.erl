@@ -1,3 +1,25 @@
+%% %CopyrightBegin%
+%%
+%% SPDX-License-Identifier: Apache-2.0
+%%
+%% SPDX-FileCopyrightText: Copyright 2015-2026 Rebar3 and its contributors
+%%
+%% SPDX-FileCopyrightText: Copyright 2026 Dipl. Phys. Peer Stritzinger GmbH
+%%
+%% Licensed under the Apache License, Version 2.0 (the "License");
+%% you may not use this file except in compliance with the License.
+%% You may obtain a copy of the License at
+%%
+%%     http://www.apache.org/licenses/LICENSE-2.0
+%%
+%% Unless required by applicable law or agreed to in writing, software
+%% distributed under the License is distributed on an "AS IS" BASIS,
+%% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+%% See the License for the specific language governing permissions and
+%% limitations under the License.
+%%
+%% %CopyrightEnd%
+
 -module(rebar_paths).
 -include("rebar.hrl").
 
@@ -51,7 +73,7 @@ clashing_apps(Targets, State) ->
 -spec normalize_targets(targets()) -> targets().
 normalize_targets(List) ->
     %% Plan for the eventuality of getting values piped in
-    %% from future versions of rebar3, possibly from plugins and so on,
+    %% from future versions of rebar, possibly from plugins and so on,
     %% which means we'd risk failing kind of violently. We only support
     %% deps, plugins and runtime deps.
     TmpList = lists:foldl(

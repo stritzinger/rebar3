@@ -1,3 +1,25 @@
+%% %CopyrightBegin%
+%%
+%% SPDX-License-Identifier: Apache-2.0
+%%
+%% SPDX-FileCopyrightText: Copyright 2015-2026 Rebar3 and its contributors
+%%
+%% SPDX-FileCopyrightText: Copyright 2026 Dipl. Phys. Peer Stritzinger GmbH
+%%
+%% Licensed under the Apache License, Version 2.0 (the "License");
+%% you may not use this file except in compliance with the License.
+%% You may obtain a copy of the License at
+%%
+%%     http://www.apache.org/licenses/LICENSE-2.0
+%%
+%% Unless required by applicable law or agreed to in writing, software
+%% distributed under the License is distributed on an "AS IS" BASIS,
+%% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+%% See the License for the specific language governing permissions and
+%% limitations under the License.
+%%
+%% %CopyrightEnd%
+
 -module(rebar_plugins_SUITE).
 
 -export([suite/0,
@@ -85,8 +107,8 @@ compile_plugins(Config) ->
 compile_global_plugins(Config) ->
     AppDir = ?config(apps, Config),
     GlobalDir = filename:join(AppDir, "global"),
-    GlobalConfigDir = filename:join([GlobalDir, ".config", "rebar3"]),
-    GlobalConfig = filename:join([GlobalDir, ".config", "rebar3", "rebar.config"]),
+    GlobalConfigDir = filename:join([GlobalDir, ".config", "rebar"]),
+    GlobalConfig = filename:join([GlobalDir, ".config", "rebar", "rebar.config"]),
 
     meck:new(rebar_dir, [passthrough]),
     meck:expect(rebar_dir, global_config, fun() -> GlobalConfig end),
@@ -121,7 +143,7 @@ compile_global_plugins(Config) ->
     {ok, RConf} = file:consult(RConfFile),
 
     %% Runs global plugin install
-    rebar3:init_config(),
+    rebar:init_config(),
 
     %% Build with deps.
     rebar_test_utils:run_and_check(

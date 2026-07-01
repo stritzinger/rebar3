@@ -1,3 +1,25 @@
+%% %CopyrightBegin%
+%%
+%% SPDX-License-Identifier: Apache-2.0
+%%
+%% SPDX-FileCopyrightText: Copyright 2015-2026 Rebar3 and its contributors
+%%
+%% SPDX-FileCopyrightText: Copyright 2026 Dipl. Phys. Peer Stritzinger GmbH
+%%
+%% Licensed under the Apache License, Version 2.0 (the "License");
+%% you may not use this file except in compliance with the License.
+%% You may obtain a copy of the License at
+%%
+%%     http://www.apache.org/licenses/LICENSE-2.0
+%%
+%% Unless required by applicable law or agreed to in writing, software
+%% distributed under the License is distributed on an "AS IS" BASIS,
+%% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+%% See the License for the specific language governing permissions and
+%% limitations under the License.
+%%
+%% %CopyrightEnd%
+
 -module(rebar_pkg_alias_SUITE).
 -compile(export_all).
 -include_lib("common_test/include/ct.hrl").
@@ -197,13 +219,13 @@ mock_config(Name, Config) ->
      {<<"goodpkg">>,[[<<"1.0.0">>]]},
      {<<"topdep">>,[[<<"1.0.0">>]]},
      {<<"transitive">>, [[<<"1.0.0">>]]},
-     {{<<"fakelib">>,<<"1.0.0">>}, [[], ChkFake, [<<"rebar3">>]]},
-     {{<<"goodpkg">>,<<"1.0.0">>}, [[], ChkGood, [<<"rebar3">>]]},
+     {{<<"fakelib">>,<<"1.0.0">>}, [[], ChkFake, [<<"rebar">>]]},
+     {{<<"goodpkg">>,<<"1.0.0">>}, [[], ChkGood, [<<"rebar">>]]},
      {{<<"topdep">>,<<"1.0.0">>},
       [[
         {<<"transitive">>, <<"1.0.0">>, false, <<"transitive_app">>}
-       ], ChkTop, [<<"rebar3">>]]},
-     {{<<"transitive">>,<<"1.0.0">>}, [[], ChkTrans, [<<"rebar3">>]]}
+       ], ChkTop, [<<"rebar">>]]},
+     {{<<"transitive">>,<<"1.0.0">>}, [[], ChkTrans, [<<"rebar">>]]}
     ],
     Tid = ets:new(registry_table, [public]),
     ets:insert_new(Tid, AllDeps),
@@ -242,8 +264,8 @@ mock_config(Name, Config) ->
 
                   end, AllDeps),
 
-    meck:new(r3_hex_repo, [passthrough]),
-    meck:expect(r3_hex_repo, get_package,
+    meck:new(rb_hex_repo, [passthrough]),
+    meck:expect(rb_hex_repo, get_package,
                 fun(_Config, PkgName) ->
                         Matches = ets:match_object(Tid, {{PkgName,'_'}, '_'}),
                         Releases =
@@ -255,7 +277,7 @@ mock_config(Name, Config) ->
                         {ok, {200, #{}, Releases}}
                 end),
 
-    meck:expect(r3_hex_repo, get_tarball, fun(_, _, _) ->
+    meck:expect(rb_hex_repo, get_tarball, fun(_, _, _) ->
                                                {ok, {304, #{<<"etag">> => EtagGood}, <<>>}}
                                        end),
 

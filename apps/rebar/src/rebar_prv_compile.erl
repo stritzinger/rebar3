@@ -354,15 +354,15 @@ extra_virtual_apps(State, VApp0, [Dir|Dirs]) ->
 %% ===================================================================
 
 build_apps(DAGs, Apps, State) ->
-    {Rebar3, Custom} = lists:partition(
+    {Rebar, Custom} = lists:partition(
         fun(AppInfo) ->
             Type = rebar_app_info:project_type(AppInfo),
-            Type =:= rebar3 orelse Type =:= undefined
+            Type =:= rebar orelse Type =:= undefined
         end,
         Apps
     ),
     [build_custom_builder_app(AppInfo, State) || AppInfo <- Custom],
-    build_rebar3_apps(DAGs, Rebar3, State).
+    build_rebar_apps(DAGs, Rebar, State).
 
 build_custom_builder_app(AppInfo, State) ->
     ?INFO("Compiling ~ts", [rebar_app_info:name(AppInfo)]),
@@ -383,12 +383,12 @@ build_custom_builder_app(AppInfo, State) ->
             throw(?PRV_ERROR({unknown_project_type, rebar_app_info:name(AppInfo), Type}))
     end.
 
-build_rebar3_apps(DAGs, Apps, _State) when DAGs =:= []; Apps =:= [] ->
+build_rebar_apps(DAGs, Apps, _State) when DAGs =:= []; Apps =:= [] ->
     %% No apps to actually build, probably just other compile phases
-    %% to run for non-rebar3 apps, someone wanting .app files built,
+    %% to run for non-rebar apps, someone wanting .app files built,
     %% or just needing the hooks to run maybe.
     ok;
-build_rebar3_apps(DAGs, Apps, State) ->
+build_rebar_apps(DAGs, Apps, State) ->
     rebar_paths:set_paths([deps], State),
     %% To maintain output order, we need to mention each app being compiled
     %% in order, even if the order isn't really there anymore due to each

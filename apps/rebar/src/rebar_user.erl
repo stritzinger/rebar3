@@ -3,14 +3,18 @@
 %%% boot or to remove dead comments.
 %%%
 %%% Its usage is required because unlike the standard (new) shell, it is
-%%% not possible to get rid of the old one without killing the rebar3 escript
+%%% not possible to get rid of the old one without killing the rebar escript
 %%% at the same time. As such, this module is being used to duplicate
 %%% the old shell while stealing the usage of the IO driver {fd,0,1}
 %%% (stdio) and then booting our own shell with paths and stuff in it.
 
 %% %CopyrightBegin%
 %%
-%% Copyright Ericsson AB 1996-2013. All Rights Reserved.
+%% SPDX-License-Identifier: Apache-2.0
+%%
+%% SPDX-FileCopyrightText: Copyright 1996-2013 Ericsson AB. All Rights Reserved.
+%%
+%% SPDX-FileCopyrightText: Copyright 2026 Dipl. Phys. Peer Stritzinger GmbH. All Rights Reserved.
 %%
 %% Licensed under the Apache License, Version 2.0 (the "License");
 %% you may not use this file except in compliance with the License.
@@ -754,4 +758,3 @@ wrap_characters_to_binary(Chars, From, To) ->
         _ ->
             error
     end.
-

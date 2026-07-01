@@ -45,7 +45,7 @@ bad_arg_to_flag(Config) ->
                                                     ["compile", "--foo=null"],
                                                     return),
 
-    "rebar3: unknown argument: --foo=null" = lists:flatten(Error).
+    "rebar: unknown argument: --foo=null" = lists:flatten(Error).
 
 missing_arg_to_flag(Config) ->
     AppDir = ?config(apps, Config),
@@ -59,4 +59,4 @@ missing_arg_to_flag(Config) ->
                                                     ["compile", "--foo"],
                                                     return),
 
-    "rebar3: unknown argument: --foo" = lists:flatten(Error).
+    "rebar: unknown argument: --foo" = lists:flatten(Error).

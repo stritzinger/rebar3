@@ -50,8 +50,8 @@ init_per_testcase(http_proxy_settings, Config) ->
     %% Create private rebar.config
     Priv = ?config(priv_dir, Config),
     GlobalDir = filename:join(Priv, "global"),
-    GlobalConfigDir = filename:join([GlobalDir, ".config", "rebar3"]),
-    GlobalConfig = filename:join([GlobalDir, ".config", "rebar3", "rebar.config"]),
+    GlobalConfigDir = filename:join([GlobalDir, ".config", "rebar"]),
+    GlobalConfig = filename:join([GlobalDir, ".config", "rebar", "rebar.config"]),
 
     meck:new(rebar_dir, [passthrough]),
     meck:expect(rebar_dir, global_config, fun() -> GlobalConfig end),
@@ -74,8 +74,8 @@ init_per_testcase(https_proxy_settings, Config) ->
             %% Create private rebar.config
             Priv = ?config(priv_dir, Config),
             GlobalDir = filename:join(Priv, "global"),
-            GlobalConfigDir = filename:join([GlobalDir, ".config", "rebar3"]),
-            GlobalConfig = filename:join([GlobalDir, ".config", "rebar3", "rebar.config"]),
+            GlobalConfigDir = filename:join([GlobalDir, ".config", "rebar"]),
+            GlobalConfig = filename:join([GlobalDir, ".config", "rebar", "rebar.config"]),
 
             meck:new(rebar_dir, [passthrough]),
             meck:expect(rebar_dir, global_config, fun() -> GlobalConfig end),
@@ -93,8 +93,8 @@ init_per_testcase(http_os_proxy_settings, Config) ->
     %% Create private rebar.config
     Priv = ?config(priv_dir, Config),
     GlobalDir = filename:join(Priv, "global"),
-    GlobalConfigDir = filename:join([GlobalDir, ".config", "rebar3"]),
-    GlobalConfig = filename:join([GlobalDir, ".config", "rebar3", "rebar.config"]),
+    GlobalConfigDir = filename:join([GlobalDir, ".config", "rebar"]),
+    GlobalConfig = filename:join([GlobalDir, ".config", "rebar", "rebar.config"]),
 
     meck:new(rebar_dir, [passthrough]),
     meck:expect(rebar_dir, global_config, fun() -> GlobalConfig end),
@@ -116,8 +116,8 @@ init_per_testcase(https_os_proxy_settings, Config) ->
             %% Create private rebar.config
             Priv = ?config(priv_dir, Config),
             GlobalDir = filename:join(Priv, "global"),
-            GlobalConfigDir = filename:join([GlobalDir, ".config", "rebar3"]),
-            GlobalConfig = filename:join([GlobalDir, ".config", "rebar3", "rebar.config"]),
+            GlobalConfigDir = filename:join([GlobalDir, ".config", "rebar"]),
+            GlobalConfig = filename:join([GlobalDir, ".config", "rebar", "rebar.config"]),
 
             meck:new(rebar_dir, [passthrough]),
             meck:expect(rebar_dir, global_config, fun() -> GlobalConfig end),
@@ -403,7 +403,7 @@ no_deps_empty_lock(Config) ->
 http_proxy_settings(_Config) ->
     %% Load config
     rebar_utils:set_httpc_options(),
-    rebar3:init_config(),
+    rebar:init_config(),
 
     %% Assert variable is right
     ?assertEqual({ok,{{"localhost", 1234}, []}},
@@ -412,7 +412,7 @@ http_proxy_settings(_Config) ->
 https_proxy_settings(_Config) ->
     %% Load config
     rebar_utils:set_httpc_options(),
-    rebar3:init_config(),
+    rebar:init_config(),
 
     %% Assert variable is right
     ?assertEqual({ok,{{"localhost", 1234}, []}},
@@ -421,7 +421,7 @@ https_proxy_settings(_Config) ->
 http_os_proxy_settings(_Config) ->
     %% Load config
     rebar_utils:set_httpc_options(),
-    rebar3:init_config(),
+    rebar:init_config(),
 
     %% Assert variable is right
     ?assertEqual({ok,{{"localhost", 1234}, []}},
@@ -430,7 +430,7 @@ http_os_proxy_settings(_Config) ->
 https_os_proxy_settings(_Config) ->
     %% Load config
     rebar_utils:set_httpc_options(),
-    rebar3:init_config(),
+    rebar:init_config(),
 
     %% Assert variable is right
     ?assertEqual({ok,{{"localhost", 1234}, []}},

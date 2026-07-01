@@ -1,3 +1,25 @@
+%% %CopyrightBegin%
+%%
+%% SPDX-License-Identifier: Apache-2.0
+%%
+%% SPDX-FileCopyrightText: Copyright 2015-2026 Rebar3 and its contributors
+%%
+%% SPDX-FileCopyrightText: Copyright 2026 Dipl. Phys. Peer Stritzinger GmbH
+%%
+%% Licensed under the Apache License, Version 2.0 (the "License");
+%% you may not use this file except in compliance with the License.
+%% You may obtain a copy of the License at
+%%
+%%     http://www.apache.org/licenses/LICENSE-2.0
+%%
+%% Unless required by applicable law or agreed to in writing, software
+%% distributed under the License is distributed on an "AS IS" BASIS,
+%% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+%% See the License for the specific language governing permissions and
+%% limitations under the License.
+%%
+%% %CopyrightEnd%
+
 -module(rebar_test_utils).
 -include_lib("common_test/include/ct.hrl").
 -include_lib("eunit/include/eunit.hrl").
@@ -26,7 +48,7 @@ init_rebar_state(Config, Name) ->
     CheckoutsDir = filename:join([AppsDir, "_checkouts"]),
     ok = ec_file:mkdir_p(AppsDir),
     ok = ec_file:mkdir_p(CheckoutsDir),
-    Verbosity = rebar3:log_level(),
+    Verbosity = rebar:log_level(),
     rebar_log:init(command_line, Verbosity),
     GlobalDir = filename:join([DataDir, "cache"]),
     Repos = proplists:get_value(repos, Config, []),
@@ -68,7 +90,7 @@ run_and_check(Config, RebarConfig, Command, Expect) ->
     AppDir = ?config(apps, Config),
     State = ?config(state, Config),
     try
-        Res = rebar3:run(rebar_state:new(State, RebarConfig, AppDir), Command),
+        Res = rebar:run(rebar_state:new(State, RebarConfig, AppDir), Command),
         case Expect of
             {error, Reason} ->
                 ?assertEqual({error, Reason}, Res);
@@ -93,7 +115,7 @@ run_and_check(Config, Command, Expect) ->
     {ok, Cwd} = file:get_cwd(),
     try
         ok = file:set_cwd(AppDir),
-        Res = rebar3:run(Command),
+        Res = rebar:run(Command),
         case Expect of
             {error, Reason} ->
                 ?assertEqual({error, Reason}, Res);
@@ -543,7 +565,7 @@ package_app(AppDir, DestDir, PkgName, PkgVsn) ->
     Files = lists:zip([filename:join("src", F) || F <- Fs], [filename:join(AppSrc,F) || F <- Fs]),
     Metadata = #{<<"app">> => list_to_binary(PkgName),
                  <<"version">> => list_to_binary(PkgVsn)},
-    {ok, #{tarball := Tarball, outer_checksum := <<Checksum:256/big-unsigned-integer>>}} = r3_hex_tarball:create(Metadata, Files),
+    {ok, #{tarball := Tarball, outer_checksum := <<Checksum:256/big-unsigned-integer>>}} = rb_hex_tarball:create(Metadata, Files),
 
     Name = PkgName++"-"++PkgVsn++".tar",
     Archive = filename:join(DestDir, Name),

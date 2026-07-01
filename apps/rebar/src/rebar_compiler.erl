@@ -1,3 +1,25 @@
+%% %CopyrightBegin%
+%%
+%% SPDX-License-Identifier: Apache-2.0
+%%
+%% SPDX-FileCopyrightText: Copyright 2015-2026 Rebar3 and its contributors
+%%
+%% SPDX-FileCopyrightText: Copyright 2026 Dipl. Phys. Peer Stritzinger GmbH
+%%
+%% Licensed under the Apache License, Version 2.0 (the "License");
+%% you may not use this file except in compliance with the License.
+%% You may obtain a copy of the License at
+%%
+%%     http://www.apache.org/licenses/LICENSE-2.0
+%%
+%% Unless required by applicable law or agreed to in writing, software
+%% distributed under the License is distributed on an "AS IS" BASIS,
+%% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+%% See the License for the specific language governing permissions and
+%% limitations under the License.
+%%
+%% %CopyrightEnd%
+
 -module(rebar_compiler).
 
 -export([analyze_all/2,
@@ -220,7 +242,7 @@ prepare_compiler_env(Compiler, Apps) ->
             %% We use code:add_pathz for better caching speed when
             %% dealing with overall projects and deps under profiles,
             %% but for correctness' sake, we also have to
-            %% use code:add_patha to go above rebar3's own dependencies
+            %% use code:add_patha to go above rebar's own dependencies
             %% when they clash to avoid overtaking the project's
             %% path for includes and priv/
             case lists:member(rebar_app_info:name(AppInfo), RebarLibs) of

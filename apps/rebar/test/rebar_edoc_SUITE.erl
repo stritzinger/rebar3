@@ -1,3 +1,25 @@
+%% %CopyrightBegin%
+%%
+%% SPDX-License-Identifier: Apache-2.0
+%%
+%% SPDX-FileCopyrightText: Copyright 2015-2026 Rebar3 and its contributors
+%%
+%% SPDX-FileCopyrightText: Copyright 2026 Dipl. Phys. Peer Stritzinger GmbH
+%%
+%% Licensed under the Apache License, Version 2.0 (the "License");
+%% you may not use this file except in compliance with the License.
+%% You may obtain a copy of the License at
+%%
+%%     http://www.apache.org/licenses/LICENSE-2.0
+%%
+%% Unless required by applicable law or agreed to in writing, software
+%% distributed under the License is distributed on an "AS IS" BASIS,
+%% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+%% See the License for the specific language governing permissions and
+%% limitations under the License.
+%%
+%% %CopyrightEnd%
+
 -module(rebar_edoc_SUITE).
 -include_lib("common_test/include/ct.hrl").
 -include_lib("eunit/include/eunit.hrl").
@@ -12,7 +34,7 @@ init_per_testcase(multiapp, Config) ->
     Name = rebar_test_utils:create_random_name("multiapp"),
     AppsDir = filename:join([PrivDir, rebar_test_utils:create_random_name(Name)]),
     ec_file:copy(filename:join([DataDir, "foo"]), AppsDir, [recursive]),
-    Verbosity = rebar3:log_level(),
+    Verbosity = rebar:log_level(),
     rebar_log:init(command_line, Verbosity),
     State = rebar_state:new([{base_dir, filename:join([AppsDir, "_build"])}
                             ,{root_dir, AppsDir}]),
@@ -25,7 +47,7 @@ init_per_testcase(multiapp_macros, Config) ->
     AppsDir = filename:join([PrivDir, rebar_test_utils:create_random_name(Name)]),
     ec_file:copy(filename:join([DataDir, "foo"]), AppsDir, [recursive]),
     ok = ec_file:remove(filename:join([AppsDir, "apps", "foo"]), [recursive]),
-    Verbosity = rebar3:log_level(),
+    Verbosity = rebar:log_level(),
     rebar_log:init(command_line, Verbosity),
     State = rebar_state:new([{base_dir, filename:join([AppsDir, "_build"])}
                             ,{root_dir, AppsDir}]),
@@ -37,7 +59,7 @@ init_per_testcase(error_survival, Config) ->
     Name = rebar_test_utils:create_random_name("error_survival"),
     AppsDir = filename:join([PrivDir, rebar_test_utils:create_random_name(Name)]),
     ec_file:copy(filename:join([DataDir, "bad"]), AppsDir, [recursive]),
-    Verbosity = rebar3:log_level(),
+    Verbosity = rebar:log_level(),
     rebar_log:init(command_line, Verbosity),
     State = rebar_state:new([{base_dir, filename:join([AppsDir, "_build"])}
                             ,{root_dir, AppsDir}]),

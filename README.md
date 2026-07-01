@@ -40,10 +40,11 @@
 
 ## What is Rebar3
 
-Rebar3 is an Erlang tool that makes it easy to create, develop, and
+Rebar is an Erlang tool that makes it easy to create, develop, and
 release Erlang libraries, applications, and systems in a repeatable manner.
 
-Rebar3 will:
+Rebar will:
+
 - respect and enforce standard Erlang/OTP conventions for project
   structure so they are easily reusable by the community;
 - manage source dependencies and Erlang [packages](https://hex.pm)
@@ -54,7 +55,7 @@ Rebar3 will:
 - treat [documentation](https://rebar3.org/docs/) as a feature,
   and errors or lack of documentation as a bug.
 
-Rebar3 is also a self-contained Erlang script. It is easy to distribute or
+Rebar is also a self-contained Erlang script. It is easy to distribute or
 embed directly in a project. Tasks or behaviours can be modified or expanded
 with a [plugin system](https://rebar3.org/docs/configuration/plugins)
 [flexible enough](https://github.com/lfe-rebar3/rebar3_lfe) that even other languages
@@ -62,50 +63,51 @@ on the Erlang VM will use it as a build tool.
 
 ## Why Rebar3
 
-Rebar3 is the spiritual successor to [rebar
+Rebar is the spiritual successor to [rebar
 2.x](https://github.com/rebar/rebar), which was the first usable build tool
 for Erlang that ended up seeing widespread community adoption. It however
 had several shortcomings that made it difficult to use with larger projects
 or with teams with users new to Erlang.
 
-Rebar3 was our attempt at improving over the legacy of Rebar 2.x, providing the
+Rebar was our attempt at improving over the legacy of Rebar 2.x, providing the
 features we felt it was missing, and to provide a better environment in which
 newcomers joining our teams could develop.
 
 ## Should I use Rebar3?
 
 If your main language for your system is Erlang, that you value repeatable builds
-and want your various tools to integrate together, we do believe Rebar3 is the
+and want your various tools to integrate together, we do believe Rebar is the
 best experience you can get.
 
 ## Getting Started
 
-### Compatibility between Rebar3 and Erlang/OTP
+### Compatibility between Rebar and Erlang/OTP
 
-This list presents the known working version combos between Rebar3 and
+This list presents the known working version combos between Rebar and
 Erlang/OTP. Always use the latest version your project can tolerate for latest
 security fixes.
 
-| Rebar3 | Erlang/OTP Support Range | Notes
-|-       |-      | -
-| 3.25.1 | 26-28 | issues with newer Windows versions were reported on 3.25.0 and OTP-28
-| 3.24.0 | 25-27 |
-| 3.23.0 | 25-27 |
-| 3.22.1 | 25-27 |
-| 3.21.0 | 24-26 |
-| 3.20.0 | 23-25 |
-| 3.19.0 | 23-25 |
-| 3.18.0 | 22-24 |
-| 3.17.0 | 22-24 |
-| 3.16.1 | 22-24 | Don't use 3.16.0, see https://ferd.ca/you-ve-got-to-upgrade-rebar3.html
-| 3.15.2 | 19-23 | Don't use 3.15.0 or 3.15.1, see https://ferd.ca/you-ve-got-to-upgrade-rebar3.html
-| 3.14.1 | 19-23 |
-| 3.13.3 | 19-22 | Don't use 3.13.1 or 3.13.2, see https://ferd.ca/you-ve-got-to-upgrade-rebar3.html
+| Rebar  | Erlang/OTP Support Range | Notes                                                                             |
+| ------ | ------------------------ | --------------------------------------------------------------------------------- |
+| 3.25.1 | 26-28                    | issues with newer Windows versions were reported on 3.25.0 and OTP-28             |
+| 3.24.0 | 25-27                    |
+| 3.23.0 | 25-27                    |
+| 3.22.1 | 25-27                    |
+| 3.21.0 | 24-26                    |
+| 3.20.0 | 23-25                    |
+| 3.19.0 | 23-25                    |
+| 3.18.0 | 22-24                    |
+| 3.17.0 | 22-24                    |
+| 3.16.1 | 22-24                    | Don't use 3.16.0, see https://ferd.ca/you-ve-got-to-upgrade-rebar3.html           |
+| 3.15.2 | 19-23                    | Don't use 3.15.0 or 3.15.1, see https://ferd.ca/you-ve-got-to-upgrade-rebar3.html |
+| 3.14.1 | 19-23                    |
+| 3.13.3 | 19-22                    | Don't use 3.13.1 or 3.13.2, see https://ferd.ca/you-ve-got-to-upgrade-rebar3.html |
 
 A [getting started guide is maintained on the official documentation website](https://rebar3.org/docs/getting-started),
-but installing rebar3 can be done by any of the ways described below
+but installing rebar can be done by any of the ways described below
 
 Latest stable compiled version:
+
 ```bash
 $ wget https://s3.amazonaws.com/rebar3/rebar3 && chmod +x rebar3
 ```
@@ -120,21 +122,21 @@ $ ./bootstrap
 
 Stable versions can also be obtained from the [releases page](https://github.com/erlang/rebar3/releases).
 
-The rebar3 escript can also extract itself with a run script under the user's home directory:
+The rebar escript can also extract itself with a run script under the user's home directory:
 
 ```bash
-$ ./rebar3 local install
-===> Extracting rebar3 libs to ~/.cache/rebar3/lib...
-===> Writing rebar3 run script ~/.cache/rebar3/bin/rebar3...
-===> Add to $PATH for use: export PATH=~/.cache/rebar3/bin:$PATH
+$ ./rebar local install
+===> Extracting rebar libs to ~/.cache/rebar/lib...
+===> Writing rebar run script ~/.cache/rebar/bin/rebar...
+===> Add to $PATH for use: export PATH=~/.cache/rebar/bin:$PATH
 ```
 
-To keep it up to date after you've installed rebar3 this way you can use `rebar3 local upgrade` which
+To keep it up to date after you've installed rebar this way you can use `rebar local upgrade` which
 fetches the latest stable release and extracts to the same place as above. A [nightly version can
 also be obtained](https://s3.amazonaws.com/rebar3-nightly/rebar3) if desired.
 
-Rebar3 may also be available on various OS-specific package managers such as
-FreeBSD Ports. Those are maintained by the community and Rebar3 maintainers
+Rebar may also be available on various OS-specific package managers such as
+FreeBSD Ports. Those are maintained by the community and Rebar maintainers
 themselves are generally not involved in that process.
 
 If you do not have a full Erlang install, we recommend using [erln8](https://erln8.github.io/erln8/)
@@ -143,7 +145,7 @@ by [Erlang Solutions](https://www.erlang-solutions.com/resources/download.html),
 but be sure to choose the "Standard" download option or you'll have issues building
 projects.
 
-Do note that if you are planning to work with multiple Erlang versions on the same machine, you will want to build Rebar3 with the oldest one of them. The 3 newest major Erlang releases are supported at any given time: if the newest version is OTP-27, building with versions as old as OTP-25 will be supported, and produce an executable that will work with those that follow.
+Do note that if you are planning to work with multiple Erlang versions on the same machine, you will want to build Rebar with the oldest one of them. The 3 newest major Erlang releases are supported at any given time: if the newest version is OTP-27, building with versions as old as OTP-25 will be supported, and produce an executable that will work with those that follow.
 
 ## Documentation
 
@@ -151,34 +153,34 @@ Rebar3 documentation is maintained on [https://rebar3.org/docs](https://rebar3.o
 
 ## Features
 
-Rebar3 supports the following features or tools by default, and may provide many
+Rebar supports the following features or tools by default, and may provide many
 others via the plugin ecosystem:
 
-| features             | Description |
-|--------------------- |------------ |
-| Command composition  | Rebar3 allows multiple commands to be run in sequence by calling `rebar3 do <task1>,<task2>,...,<taskN>`. |
-| Command dependencies | Rebar3 commands know their own dependencies. If a test run needs to fetch dependencies and build them, it will do so. |
-| Command namespaces   | Allows multiple tools or commands to share the same name. |
-| Compiling            | Build the project, including fetching all of its dependencies by calling `rebar3 compile` |
-| Clean up artifacts   | Remove the compiled beam files from a project with `rebar3 clean` or just remove the `_build` directory to remove *all* compilation artifacts |
-| Code Coverage        | Various commands can be instrumented to accumulate code coverage data (such as `eunit` or `ct`). Reports can be generated with `rebar3 cover` |
-| Common Test          | The test framework can be run by calling `rebar3 ct` |
-| Dependencies         | Rebar3 maintains local copies of dependencies on a per-project basis. They are fetched deterministically, can be locked, upgraded, fetched from source, packages, or from local directories. See [Dependencies on the documentation website](https://rebar3.org/docs/configuration/dependencies/). Call `rebar3 tree` to show the whole dependency tree. |
-| Documentation        | Print help for rebar3 itself (`rebar3 help`) or for a specific task (`rebar3 help <task>`). Full reference at [rebar3.org](https://rebar3.org/docs). |
-| Dialyzer             | Run the Dialyzer analyzer on the project with `rebar3 dialyzer`. Base PLTs for each version of the language will be cached and reused for faster analysis |
-| Edoc                 | Generate documentation using edoc with `rebar3 edoc` |
-| Escript generation   | Rebar3 can be used to generate [escripts](http://www.erlang.org/doc/man/escript.html) providing an easy way to run all your applications on a system where Erlang is installed |
-| Eunit                | The test framework can be run by calling `rebar3 eunit` |
-| Locked dependencies  | Dependencies are going to be automatically locked to ensure repeatable builds. Versions can be changed with `rebar3 upgrade` or `rebar3 upgrade <app>`, or locks can be released altogether with `rebar3 unlock`. |
-| Packages             | A given [Hex package](https://hex.pm) can be inspected `rebar3 pkgs <name>`. This will output its description and available versions |
-| Path                 | While paths are managed automatically, you can print paths to the current build directories with `rebar3 path`. |
-| Plugins              | Rebar3 can be fully extended with [plugins](https://rebar3.org/docs/configuration/plugins/). List or upgrade plugins by using the plugin namespace (`rebar3 plugins`). |
-| Profiles             | Rebar3 can have subconfiguration options for different profiles, such as `test` or `prod`. These allow specific dependencies or compile options to be used in specific contexts. See [Profiles](https://rebar3.org/docs/configuration/profiles) in the docs. |
-| Releases             | Rebar3 supports [building releases](https://rebar3.org/docs/deployment/releases) with the `relx` tool, providing a way to ship fully self-contained Erlang systems. Release update scripts for live code updates can also be generated. |
-| Shell                | A full shell with your applications available can be started with `rebar3 shell`. From there, call tasks as `r3:do(compile)` to automatically recompile and reload the code without interruption |
-| Tarballs             | Releases can be packaged into tarballs ready to be deployed. |
-| Templates            | Configurable templates ship out of the box (use `rebar3 new help` for a list or `rebar3 new help <template>` for a specific one). [Custom templates](https://rebar3.org/docs/tutorials/templates) are also supported, and plugins can also add their own. |
-| Xref                 | Run cross-reference analysis on the project with [xref](http://www.erlang.org/doc/apps/tools/xref_chapter.html) by calling `rebar3 xref`. |
+| features             | Description                                                                                                                                                                                                                                                                                                                                             |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Command composition  | Rebar allows multiple commands to be run in sequence by calling `rebar do <task1>,<task2>,...,<taskN>`.                                                                                                                                                                                                                                                 |
+| Command dependencies | Rebar commands know their own dependencies. If a test run needs to fetch dependencies and build them, it will do so.                                                                                                                                                                                                                                    |
+| Command namespaces   | Allows multiple tools or commands to share the same name.                                                                                                                                                                                                                                                                                               |
+| Compiling            | Build the project, including fetching all of its dependencies by calling `rebar compile`                                                                                                                                                                                                                                                                |
+| Clean up artifacts   | Remove the compiled beam files from a project with `rebar clean` or just remove the `_build` directory to remove _all_ compilation artifacts                                                                                                                                                                                                            |
+| Code Coverage        | Various commands can be instrumented to accumulate code coverage data (such as `eunit` or `ct`). Reports can be generated with `rebar cover`                                                                                                                                                                                                            |
+| Common Test          | The test framework can be run by calling `rebar ct`                                                                                                                                                                                                                                                                                                     |
+| Dependencies         | Rebar3 maintains local copies of dependencies on a per-project basis. They are fetched deterministically, can be locked, upgraded, fetched from source, packages, or from local directories. See [Dependencies on the documentation website](https://rebar3.org/docs/configuration/dependencies/). Call `rebar tree` to show the whole dependency tree. |
+| Documentation        | Print help for rebar3 itself (`rebar help`) or for a specific task (`rebar help <task>`). Full reference at [rebar3.org](https://rebar3.org/docs).                                                                                                                                                                                                      |
+| Dialyzer             | Run the Dialyzer analyzer on the project with `rebar dialyzer`. Base PLTs for each version of the language will be cached and reused for faster analysis                                                                                                                                                                                                |
+| Edoc                 | Generate documentation using edoc with `rebar edoc`                                                                                                                                                                                                                                                                                                     |
+| Escript generation   | Rebar can be used to generate [escripts](http://www.erlang.org/doc/man/escript.html) providing an easy way to run all your applications on a system where Erlang is installed                                                                                                                                                                           |
+| Eunit                | The test framework can be run by calling `rebar eunit`                                                                                                                                                                                                                                                                                                  |
+| Locked dependencies  | Dependencies are going to be automatically locked to ensure repeatable builds. Versions can be changed with `rebar upgrade` or `rebar upgrade <app>`, or locks can be released altogether with `rebar unlock`.                                                                                                                                          |
+| Packages             | A given [Hex package](https://hex.pm) can be inspected `rebar pkgs <name>`. This will output its description and available versions                                                                                                                                                                                                                     |
+| Path                 | While paths are managed automatically, you can print paths to the current build directories with `rebar path`.                                                                                                                                                                                                                                          |
+| Plugins              | Rebar3 can be fully extended with [plugins](https://rebar3.org/docs/configuration/plugins/). List or upgrade plugins by using the plugin namespace (`rebar plugins`).                                                                                                                                                                                   |
+| Profiles             | Rebar3 can have subconfiguration options for different profiles, such as `test` or `prod`. These allow specific dependencies or compile options to be used in specific contexts. See [Profiles](https://rebar3.org/docs/configuration/profiles) in the docs.                                                                                            |
+| Releases             | Rebar3 supports [building releases](https://rebar3.org/docs/deployment/releases) with the `relx` tool, providing a way to ship fully self-contained Erlang systems. Release update scripts for live code updates can also be generated.                                                                                                                 |
+| Shell                | A full shell with your applications available can be started with `rebar shell`. From there, call tasks as `rb:do(compile)` to automatically recompile and reload the code without interruption                                                                                                                                                         |
+| Tarballs             | Releases can be packaged into tarballs ready to be deployed.                                                                                                                                                                                                                                                                                            |
+| Templates            | Configurable templates ship out of the box (use `rebar new help` for a list or `rebar new help <template>` for a specific one). [Custom templates](https://rebar3.org/docs/tutorials/templates) are also supported, and plugins can also add their own.                                                                                                 |
+| Xref                 | Run cross-reference analysis on the project with [xref](http://www.erlang.org/doc/apps/tools/xref_chapter.html) by calling `rebar xref`.                                                                                                                                                                                                                |
 
 ## Migrating From rebar2
 
@@ -215,4 +217,4 @@ page](https://github.com/erlang/rebar3/issues).
 General rebar community resources and links can be found at
 [rebar3.org/docs/about/about-us/#community](https://rebar3.org/docs/about/about-us/#community)
 
-To contribute to rebar3, please refer to [CONTRIBUTING](CONTRIBUTING.md).
+To contribute to rebar, please refer to [CONTRIBUTING](CONTRIBUTING.md).

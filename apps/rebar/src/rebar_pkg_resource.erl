@@ -1,5 +1,27 @@
 %% -*- erlang-indent-level: 4;indent-tabs-mode: nil -*-
 %% ex: ts=4 sw=4 et
+%% %CopyrightBegin%
+%%
+%% SPDX-License-Identifier: Apache-2.0
+%%
+%% SPDX-FileCopyrightText: Copyright 2015-2026 Rebar3 and its contributors
+%%
+%% SPDX-FileCopyrightText: Copyright 2026 Dipl. Phys. Peer Stritzinger GmbH
+%%
+%% Licensed under the Apache License, Version 2.0 (the "License");
+%% you may not use this file except in compliance with the License.
+%% You may obtain a copy of the License at
+%%
+%%     http://www.apache.org/licenses/LICENSE-2.0
+%%
+%% Unless required by applicable law or agreed to in writing, software
+%% distributed under the License is distributed on an "AS IS" BASIS,
+%% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+%% See the License for the specific language governing permissions and
+%% limitations under the License.
+%%
+%% %CopyrightEnd%
+
 -module(rebar_pkg_resource).
 
 -behaviour(rebar_resource_v2).
@@ -31,7 +53,7 @@ init(Type, State) ->
     {ok, Vsn} = application:get_key(rebar, vsn),
     BaseConfig = #{http_adapter => {rebar_httpc_adapter, #{profile => rebar}},
                    http_user_agent_fragment =>
-                       <<"(rebar3/", (list_to_binary(Vsn))/binary, ") (httpc)">>},
+                       <<"(rebar/", (list_to_binary(Vsn))/binary, ") (httpc)">>},
     Repos = rebar_hex_repos:from_state(BaseConfig, State),
     Resource = rebar_resource_v2:new(Type, ?MODULE, #{repos => Repos,
                                                       base_config => BaseConfig}),
@@ -127,7 +149,7 @@ make_vsn(_, _) ->
 format_error({bad_registry_checksum, Name, Vsn, Expected, Found}) ->
     io_lib:format("The checksum for package at ~ts-~ts (~ts) does not match the "
                   "checksum expected from the registry (~ts). "
-                  "Run `rebar3 do unlock ~ts, update` and then try again.",
+                  "Run `rebar do unlock ~ts, update` and then try again.",
                   [Name, Vsn, Found, Expected, Name]).
 
 %%------------------------------------------------------------------------------
@@ -142,7 +164,7 @@ format_error({bad_registry_checksum, Name, Vsn, Expected, Found}) ->
              -> {ok, cached} | {ok, binary(), binary()} | error.
 request(Config, Name, Version, ETag) ->
     Config1 = Config#{http_etag => ETag},
-    try r3_hex_repo:get_tarball(Config1, Name, Version) of
+    try rb_hex_repo:get_tarball(Config1, Name, Version) of
         {ok, {200, #{<<"etag">> := ETag1}, Tarball}} ->
             {ok, Tarball, ETag1};
         {ok, {304, _Headers, _}} ->
@@ -247,12 +269,12 @@ serve_from_cache(TmpDir, CachePath, Pkg) ->
 serve_from_memory(TmpDir, Binary, {pkg, _Name, _Vsn, OldHash, Hash, _RepoConfig}) ->
     RegistryChecksum = list_to_integer(binary_to_list(Hash), 16),
     OldRegistryChecksum =  maybe_old_registry_checksum(OldHash),
-    case r3_hex_tarball:unpack(Binary, TmpDir) of
+    case rb_hex_tarball:unpack(Binary, TmpDir) of
         {ok, #{outer_checksum := <<Checksum:256/big-unsigned>>} = Res} when RegistryChecksum =/= Checksum ->
             #{inner_checksum := <<OldChecksum:256/big-unsigned>>} = Res,
             %% Not triggerable in tests, but code feels logically wrong without it since inner checksums are not hard
             %% deprecated. This logic should be removed when inner checksums do become hard deprecated and/or no longer
-            %% supported by rebar3.
+            %% supported by rebar.
             case OldRegistryChecksum == OldChecksum of
                 true ->
                     ?DEBUG("Expected hash ~64.16.0B does not match outer checksum of fetched package ~64.16.0B, but

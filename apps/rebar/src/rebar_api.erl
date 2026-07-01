@@ -1,3 +1,25 @@
+%% %CopyrightBegin%
+%%
+%% SPDX-License-Identifier: Apache-2.0
+%%
+%% SPDX-FileCopyrightText: Copyright 2015-2026 Rebar3 and its contributors
+%%
+%% SPDX-FileCopyrightText: Copyright 2026 Dipl. Phys. Peer Stritzinger GmbH
+%%
+%% Licensed under the Apache License, Version 2.0 (the "License");
+%% you may not use this file except in compliance with the License.
+%% You may obtain a copy of the License at
+%%
+%%     http://www.apache.org/licenses/LICENSE-2.0
+%%
+%% Unless required by applicable law or agreed to in writing, software
+%% distributed under the License is distributed on an "AS IS" BASIS,
+%% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+%% See the License for the specific language governing permissions and
+%% limitations under the License.
+%%
+%% %CopyrightEnd%
+
 %%% @doc Packages rebar.hrl features and macros into a more generic API
 %%% that can be used by plugin builders.
 -module(rebar_api).
@@ -89,7 +111,7 @@ unset_paths(List, State) ->
 add_deps_to_path(State) ->
   code:add_pathsa(rebar_state:code_paths(State, all_deps)).
 
-%% @doc Revert to only having the beams necessary for running rebar3 and
+%% @doc Revert to only having the beams necessary for running rebar and
 %% plugins in the path
 -spec restore_code_path(rebar_state:t()) -> true | {error, term()}.
 restore_code_path(State) ->

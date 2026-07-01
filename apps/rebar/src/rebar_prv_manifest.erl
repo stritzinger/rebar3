@@ -136,7 +136,7 @@ get_manifest(State) ->
 -spec is_supported(rebar_app_info:t()) -> boolean().
 is_supported(App) ->
     Type = rebar_app_info:project_type(App),
-    Type =:= rebar3 orelse Type =:= undefined.
+    Type =:= rebar orelse Type =:= undefined.
 
 -spec adapt_context(rebar_app_info:t()) -> app_context().
 adapt_context(App) ->

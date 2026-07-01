@@ -387,18 +387,18 @@ prune_preserve_artifacts(Config) ->
     %% expect all of the artifacts to be kept
     rebar_compiler_dag:prune(G, ".src", [".type1",".type2",".type3"], [Source], AppPaths),
     ?assertEqual([Source, "z-artifact.type1", "z-artifact.type2", "z-derived.type3"],
-                 lists:sort(digraph:vertices(G) -- ['$r3_dirty_bit'])),
+                 lists:sort(digraph:vertices(G) -- ['$rb_dirty_bit'])),
     %% Prune artifacts that no longer belong to the compiler definition
     rebar_compiler_dag:prune(G, ".src", [".type1",".type2"], [Source], AppPaths),
     ?assertEqual([Source, "z-artifact.type1", "z-artifact.type2"],
-                 lists:sort(digraph:vertices(G) -- ['$r3_dirty_bit'])),
+                 lists:sort(digraph:vertices(G) -- ['$rb_dirty_bit'])),
     %% if the source file is gone, prune everything
     ok = file:delete(Source),
     rebar_compiler_dag:prune(G, ".src", [".type1",".type2"], [Source], AppPaths),
     ?assertEqual([Source, "z-artifact.type1", "z-artifact.type2"],
-                 lists:sort(digraph:vertices(G) -- ['$r3_dirty_bit'])),
+                 lists:sort(digraph:vertices(G) -- ['$rb_dirty_bit'])),
     rebar_compiler_dag:prune(G, ".src", [".type1",".type2"], [], AppPaths),
-    ?assertEqual([], lists:sort(digraph:vertices(G) -- ['$r3_dirty_bit'])),
+    ?assertEqual([], lists:sort(digraph:vertices(G) -- ['$rb_dirty_bit'])),
     ok.
 
 %%%%%%%%%%%%%%%
@@ -441,7 +441,7 @@ analyze_apps(G, AppNames, AppDir) ->
     rebar_compiler_dag:populate_deps(G, ".erl", [{".beam", "ebin/"}]),
     rebar_compiler_dag:propagate_stamps(G),
     %% manually clear the dirty bit for ease of validation
-    digraph:del_vertex(G, '$r3_dirty_bit').
+    digraph:del_vertex(G, '$rb_dirty_bit').
 
 populate_app(G, Name, AppNames, AppDir, Sources) ->
     InDirs = [filename:join([AppDir, "apps", AppName, "src"])

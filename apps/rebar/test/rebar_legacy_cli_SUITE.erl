@@ -82,7 +82,7 @@ help_overview_with_legacy_conflicting_short_provider(Config) ->
 global_help_with_legacy_reserved_short_is_valid(Config) ->
     State = add_legacy_reserved_short_provider_state(?config(state, Config)),
     Cli = rebar_cli:global_cli(rebar_state:providers(State)),
-    Help = argparse:help(Cli, #{progname => "rebar3"}),
+    Help = argparse:help(Cli, #{progname => "rebar"}),
     ?assert(is_list(Help) orelse is_binary(Help)).
 
 global_help_with_duplicate_shorts_in_different_providers_is_valid(Config) ->
@@ -90,9 +90,9 @@ global_help_with_duplicate_shorts_in_different_providers_is_valid(Config) ->
     State1 = rebar_state:add_provider(State0, duplicate_short_provider(one, "first")),
     State2 = rebar_state:add_provider(State1, duplicate_short_provider(two, "second")),
     Cli = rebar_cli:global_cli(rebar_state:providers(State2)),
-    Overview = argparse:help(Cli, #{progname => "rebar3"}),
-    HelpOne = argparse:help(Cli, #{progname => "rebar3", command => ["one"]}),
-    HelpTwo = argparse:help(Cli, #{progname => "rebar3", command => ["two"]}),
+    Overview = argparse:help(Cli, #{progname => "rebar"}),
+    HelpOne = argparse:help(Cli, #{progname => "rebar", command => ["one"]}),
+    HelpTwo = argparse:help(Cli, #{progname => "rebar", command => ["two"]}),
     {ok, Parsed1, Path1, _Cmd1} = argparse:parse(["one", "-k", "alpha"], Cli),
     {ok, Parsed2, Path2, _Cmd2} = argparse:parse(["two", "-k", "beta"], Cli),
     ?assert(is_list(Overview) orelse is_binary(Overview)),
@@ -166,7 +166,7 @@ to_command_argparse_matches_legacy_runtime_for_getopt_types(Config) ->
 
 to_command_argparse_accepts_iodata_provider_help(_Config) ->
     Cli = rebar_legacy_cli:to_command(iodata_help_provider()),
-    Help = argparse:help(Cli, #{progname => "rebar3 xref"}),
+    Help = argparse:help(Cli, #{progname => "rebar xref"}),
     ?assert(is_list(Help) orelse is_binary(Help)).
 
 legacy_runtime_accepts_reserved_global_short_options(_Config) ->

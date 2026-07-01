@@ -1,10 +1,12 @@
 %% -*- erlang-indent-level: 4;indent-tabs-mode: nil -*-
 %% ex: ts=4 sw=4 et
-%% -------------------------------------------------------------------
+%% %CopyrightBegin%
 %%
-%% rebar: Erlang Build Tools
+%% SPDX-License-Identifier: MIT
 %%
-%% Copyright (c) 2009 Dave Smith (dizzyd@dizzyd.com)
+%% SPDX-FileCopyrightText: Copyright 2009 Dave Smith (dizzyd@dizzyd.com)
+%%
+%% SPDX-FileCopyrightText: Copyright 2026 Dipl. Phys. Peer Stritzinger GmbH
 %%
 %% Permission is hereby granted, free of charge, to any person obtaining a copy
 %% of this software and associated documentation files (the "Software"), to deal
@@ -23,7 +25,8 @@
 %% LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 %% OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 %% THE SOFTWARE.
-%% -------------------------------------------------------------------
+%%
+%% %CopyrightEnd%
 -module(rebar_templater).
 
 -export([new/4,
@@ -342,7 +345,7 @@ cache_escript_files(State) ->
                     [], rebar_state:escript_path(State)),
     Files.
 
-%% Find all the template indexes hiding in the rebar3 escript.
+%% Find all the template indexes hiding in the rebar escript.
 find_escript_templates(Files) ->
     [{escript, Name}
      || {Name, _Bin} <- Files,

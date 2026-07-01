@@ -57,7 +57,7 @@ cli() ->
 
 -spec do(rebar_state:t()) -> {ok, rebar_state:t()} | {error, string()}.
 do(State) ->
-    rebar3:version(),
+    rebar:version(),
     {ok, State}.
 
 -spec format_error(any()) -> iolist().
