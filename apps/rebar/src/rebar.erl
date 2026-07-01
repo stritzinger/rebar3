@@ -81,7 +81,7 @@ main(Args) ->
 %% @doc Erlang-API entry point
 -spec run(rebar_state:t(), [string()]) -> {ok, rebar_state:t()} | {error, term()}.
 run(BaseState, Commands) ->
-    start_and_load_apps(api),
+    start_and_load_apps(),
     BaseState1 = rebar_state:set(BaseState, task, Commands),
     BaseState2 = rebar_state:set(BaseState1, caller, api),
 
@@ -100,7 +100,7 @@ run(BaseState, Commands) ->
 %% usage.
 -spec run([any(), ...]) -> {ok, rebar_state:t()} | {error, term()}.
 run(RawArgs) ->
-    start_and_load_apps(command_line),
+    start_and_load_apps(),
 
     BaseState = init_config(),
     BaseState1 = rebar_state:set(BaseState, caller, command_line),
@@ -398,26 +398,26 @@ handle_error(Error, StackTrace) ->
 %% stuff the way releases do and we have to do it by hand.
 %% This also lets us detect and show nicer errors when a critical lib is
 %% not supported
--spec start_and_load_apps(command_line|api) -> term().
-start_and_load_apps(Caller) ->
+-spec start_and_load_apps() -> term().
+start_and_load_apps() ->
     _ = application:load(rebar),
     %% Make sure crypto is running
-    ensure_running(crypto, Caller),
-    ensure_running(asn1, Caller),
-    ensure_running(public_key, Caller),
+    ensure_running(crypto),
+    ensure_running(asn1),
+    ensure_running(public_key),
     case os:getenv("REBAR_OFFLINE") of
         "1" ->
             ok;
         _ ->
-            ensure_running(ssl, Caller),
-            ensure_running(inets, Caller),
+            ensure_running(ssl),
+            ensure_running(inets),
             inets:start(httpc, [{profile, rebar}])
     end.
 
 %% @doc Make sure a required app is running, or display an error message
 %% and abort if there's a problem.
--spec ensure_running(atom(), command_line|api) -> ok | no_return().
-ensure_running(App, Caller) ->
+-spec ensure_running(atom()) -> ok | no_return().
+ensure_running(App) ->
     case application:start(App) of
         ok -> ok;
         {error, {already_started, App}} -> ok;
@@ -427,9 +427,8 @@ ensure_running(App, Caller) ->
             %% showing the error message. Bypass this entirely by overriding
             %% the default value (which allows logging to take place)
             %% and shut things down manually.
-            Log = ec_cmd_log:new(warn, Caller),
-            ec_cmd_log:error(Log, "Rebar dependency ~p could not be loaded "
-                                  "for reason ~p~n", [App, Reason]),
+            rebar_log:log(error, "Rebar dependency ~p could not be loaded "
+                              "for reason ~p~n", [App, Reason]),
             throw(rebar_abort)
     end.
 
