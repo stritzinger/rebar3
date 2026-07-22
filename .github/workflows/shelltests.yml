@@ -35,6 +35,8 @@ jobs:
     steps:
     - name: Checkout Repository
       uses: actions/checkout@v7
+      with:
+        path: 'rebar'
     - name: Setup Erlang and Elixir
       uses: erlef/setup-beam@v1
       with:
@@ -51,6 +53,7 @@ jobs:
       with:
           repository: 'stritzinger/rebar3_tests'
           ref: 'maehjam/kickstarter'
+          path: 'rebar3_tests'
 
     - name: Install and run shelltestrunner
       run: |
