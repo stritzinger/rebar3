@@ -24,11 +24,10 @@ name: Shell tests
 
 on:
   pull_request:
-    branches:
-      - 'main'
   push:
     branches:
       - 'main'
+      - 'kickstarter/base'
 
 jobs:
   shelltests:
@@ -37,8 +36,8 @@ jobs:
     - uses: actions/checkout@v2
     - uses: erlef/setup-beam@v1
       with:
-          otp-version: '26.0'
-          elixir-version: '1.14'
+          otp-version: '28.0'
+          elixir-version: '1.19.5'
     - name: Compile
       run: ./bootstrap
     - name: Install
@@ -46,7 +45,7 @@ jobs:
         sudo cp ./rebar /usr/local/bin/
 
     - name: Checkout shell tests
-      run: git clone https://github.com/tsloughter/rebar3_tests
+      run: git clone https://github.com/stritzinger/rebar3_tests
 
     - name: Install and run shelltestrunner
       run: |
