@@ -33,8 +33,10 @@ jobs:
   shelltests:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - uses: erlef/setup-beam@v1
+    - name: Checkout Repository
+      uses: actions/checkout@v7
+    - name: Setup Erlang and Elixir
+      uses: erlef/setup-beam@v1
       with:
           otp-version: '28.0'
           elixir-version: '1.19.5'
@@ -44,8 +46,11 @@ jobs:
       run: |
         sudo cp ./rebar /usr/local/bin/
 
-    - name: Checkout shell tests
-      run: git clone https://github.com/stritzinger/rebar3_tests
+    - name: Checkout Shell Tests
+      uses: actions/checkout@v7
+      with:
+          repository: 'stritzinger/rebar3_tests'
+          ref: 'maehjam/kickstarter'
 
     - name: Install and run shelltestrunner
       run: |
