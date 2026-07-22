@@ -44,9 +44,10 @@ jobs:
           elixir-version: '1.19.5'
     - name: Compile
       run: ./bootstrap
+      working-directory: ./rebar
     - name: Install
       run: |
-        sudo cp ./rebar /usr/local/bin/
+        sudo cp ./rebar/rebar /usr/local/bin/
 
     - name: Checkout Shell Tests
       uses: actions/checkout@v7
