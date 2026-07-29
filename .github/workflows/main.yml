@@ -61,7 +61,8 @@ jobs:
     - uses: actions/checkout@v4
     - name: Install Erlang
       uses: erlef/setup-beam@v1
-      with: otp-version: {{ env.LATEST_OTP_RELEASE }}
+      with:
+        otp-version: {{ env.LATEST_OTP_RELEASE }}
     - name: Compile
       run: ./bootstrap
     - name: CT tests
@@ -75,7 +76,8 @@ jobs:
     - uses: actions/checkout@v4
     - name: Install Erlang
       uses: erlef/setup-beam@v1
-      with: otp-version: {{ env.LATEST_OTP_RELEASE }}
+      with:
+        otp-version: {{ env.LATEST_OTP_RELEASE }}
     - name: Compile
       run: .\bootstrap.ps1
     - name: CT tests
