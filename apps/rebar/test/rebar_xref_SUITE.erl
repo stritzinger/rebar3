@@ -215,7 +215,7 @@ verify_test_results(xref_ignore_test, AppName, XrefResults, _QueryResults) ->
     ?assertNot(lists:keymember(deprecated_function_calls, 1, XrefResults)),
     ?assertNot(lists:member({IgnoreMod, notavailable, 1}, UndefFuns)),
     ?assertNot(lists:member({IgnoreMod2, notavailable, 1}, UndefFuns)),
-    ?assert(lists:member({SomeMod, notavailable, 1}, UndefFuns)),
+    ?assertNot(lists:member({SomeMod, notavailable, 1}, UndefFuns)),
     ok.
 
 write_src_file(Dir, AppName, Module, IgnoreXref) ->
