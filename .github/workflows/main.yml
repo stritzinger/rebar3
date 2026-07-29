@@ -34,7 +34,7 @@ jobs:
 
     strategy:
       matrix:
-        otp_version: [27, 28]
+        otp_version: [28]
         os: [ubuntu-latest]
 
     container:
@@ -59,22 +59,9 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-    - name: Brew Version Check
-      run: brew --version
-    - name: Brew Cleanup
-      run: |
-        brew cleanup --prune=all -s
-        brew autoremove
-    - name: Brew Untap Casks
-      run: brew untap homebrew/cask homebrew/core
-    - name: Keep Brew Fresh
-      run: |
-        brew update || true
-        brew upgrade || true
-    - name: Debug Brew
-      run: brew doctor || true
     - name: Install Erlang
-      run: brew install erlang@${{ env.LATEST_OTP_RELEASE }}
+        uses: erlef/setup-beam@v1
+        with: otp-version: {{ env.LATEST_OTP_RELEASE }}
     - name: Compile
       run: ./bootstrap
     - name: CT tests
@@ -87,7 +74,8 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Install Erlang
-      run: choco install erlang
+        uses: erlef/setup-beam@v1
+        with: otp-version: {{ env.LATEST_OTP_RELEASE }}
     - name: Compile
       run: .\bootstrap.ps1
     - name: CT tests
