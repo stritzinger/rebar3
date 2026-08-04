@@ -37,5 +37,4 @@ TARGET_ERLANG_VERSION=26
 export TARGET_ERLANG_VERSION
 rebar as dev compile
 ./vendor.sh "$REBAR_TOP/src/vendored" rb_
-find src -regex '.*rb_.*' -exec mv -f {} "$REBAR_TOP/src/vendored" \;
 popd
