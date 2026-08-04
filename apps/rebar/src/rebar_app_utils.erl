@@ -1,10 +1,15 @@
 %% -*- erlang-indent-level: 4;indent-tabs-mode: nil -*-
 %% ex: ts=4 sw=4 et
-%% -------------------------------------------------------------------
+
+%% %CopyrightBegin%
 %%
-%% rebar: Erlang Build Tools
+%% SPDX-License-Identifier: MIT
 %%
-%% Copyright (c) 2009 Dave Smith (dizzyd@dizzyd.com)
+%% SPDX-FileCopyrightText: Copyright 2009 Dave Smith (dizzyd@dizzyd.com)
+%%
+%% SPDX-FileCopyrightText: Copyright 2015-2026 Rebar3 and its contributors
+%%
+%% SPDX-FileCopyrightText: Copyright 2026 Dipl. Phys. Peer Stritzinger GmbH
 %%
 %% Permission is hereby granted, free of charge, to any person obtaining a copy
 %% of this software and associated documentation files (the "Software"), to deal
@@ -23,11 +28,15 @@
 %% LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 %% OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 %% THE SOFTWARE.
-%% -------------------------------------------------------------------
+%%
+%% %CopyrightEnd%
+
 -module(rebar_app_utils).
 
 -export([find/2,
          find/3,
+         search/2,
+         search/3,
          is_app_src/1,
          app_src_to_app/3,
          validate_application_info/1,
@@ -49,18 +58,40 @@
 
 %% @doc finds the proper app info record for a given app name in a list of
 %% such records.
+%% @deprecated please use {@link search/2} instead.
 -spec find(binary(), [rebar_app_info:t()]) -> {ok, rebar_app_info:t()} | error.
 find(Name, Apps) ->
-    ec_lists:find(fun(App) -> rebar_app_info:name(App) =:= Name end, Apps).
+    lists:search(fun(App) -> rebar_app_info:name(App) =:= Name end, Apps),
+    case search(Name, Apps) of
+        {value, Value} -> {ok, Value};
+        false -> error
+    end.
 
 %% @doc finds the proper app info record for a given app name at a given version
 %% in a list of such records.
+%% @deprecated please use {@link search/3} instead.
 -spec find(binary(), binary(), [rebar_app_info:t()]) -> {ok, rebar_app_info:t()} | error.
 find(Name, Vsn, Apps) ->
-    ec_lists:find(fun(App) ->
-                          rebar_app_info:name(App) =:= Name
-                              andalso rebar_app_info:original_vsn(App) =:= Vsn
-                  end, Apps).
+    case search(Name, Vsn, Apps) of
+        {value, Value} -> {ok, Value};
+        false -> error
+    end.
+
+
+%% @doc searchs the proper app info record for a given app name in a list of
+%% such records.
+-spec search(binary(), [rebar_app_info:t()]) -> {value, rebar_app_info:t()} | false.
+search(Name, Apps) ->
+    lists:search(fun(App) -> rebar_app_info:name(App) =:= Name end, Apps).
+
+%% @doc searchs the proper app info record for a given app name at a given version
+%% in a list of such records.
+-spec search(binary(), binary(), [rebar_app_info:t()]) -> {value, rebar_app_info:t()} | false.
+search(Name, Vsn, Apps) ->
+    lists:search(fun(App) ->
+                         rebar_app_info:name(App) =:= Name
+                         andalso rebar_app_info:original_vsn(App) =:= Vsn
+                 end, Apps).
 
 %% @doc checks if a given file is .app.src file
 is_app_src(Filename) ->

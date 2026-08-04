@@ -278,9 +278,10 @@ to_list(B) when is_binary(B) -> unicode:characters_to_list(B);
 to_list(I) when is_integer(I) -> integer_to_list(I);
 to_list(Str) -> unicode:characters_to_list(Str).
 
-to_atom(B) when is_binary(B) -> binary_to_atom(B, utf8);
-to_atom(Str) when is_list(Str) -> list_to_atom(Str);
-to_atom(A) when is_atom(A) -> A.
+to_atom(B) when is_binary(B) -> binary_to_existing_atom(B, utf8);
+to_atom(Str) when is_list(Str) -> list_to_existing_atom(Str);
+to_atom(A) when is_atom(A) -> A;
+to_atom(X) -> to_atom(to_list(X)).
 
 tup_dedup(List) ->
     tup_dedup_(tup_sort(List)).
@@ -1158,10 +1159,10 @@ partial_chain(Certs) ->
     Certs1 = [{Cert, public_key:pkix_decode_cert(Cert, otp)} || Cert <- Certs],
     CACerts = public_key:cacerts_get(),
     CACerts1 = [public_key:pkix_decode_cert(Der, otp) || #cert{der = Der} <- CACerts],
-    case ec_lists:find(fun({_, Cert}) ->
+    case lists:search(fun({_, Cert}) ->
                                check_cert(CACerts1, Cert)
-                       end, Certs1) of
-        {ok, Trusted} ->
+                      end, Certs1) of
+        {value, Trusted} ->
             {trusted_ca, element(1, Trusted)};
         _ ->
             unknown_ca

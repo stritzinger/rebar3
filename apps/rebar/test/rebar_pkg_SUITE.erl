@@ -101,7 +101,7 @@ init_per_testcase(bad_to_good=Name, Config0) ->
     Config = mock_config(Name, Config1),
     Source = filename:join(?config(data_dir, Config), <<"badpkg-1.0.0.tar">>),
     Dest = filename:join(?config(cache_dir, Config), <<"goodpkg-1.0.0.tar">>),
-    ec_file:copy(Source, Dest),
+    rebar_file_utils:copy(Source, Dest),
     Config;
 init_per_testcase(good_disconnect=Name, Config0) ->
     Pkg = {<<"goodpkg">>, <<"1.0.0">>},
@@ -315,10 +315,10 @@ mock_config(Name, Config) ->
     catch ets:delete(?PACKAGE_TABLE),
     rebar_packages:new_package_table(),
     lists:foreach(fun({{N, Vsn}, [Deps, InnerChecksum, OuterChecksum, _]}) ->
-                          case ets:member(?PACKAGE_TABLE, {ec_cnv:to_binary(N), Vsn, <<"hexpm">>}) of
+                          case ets:member(?PACKAGE_TABLE, {rebar_utils:to_binary(N), Vsn, <<"hexpm">>}) of
                               false ->
                                   {ok, Parsed} = rebar_semver:parse_version(Vsn),
-                                  ets:insert(?PACKAGE_TABLE, #package{key={ec_cnv:to_binary(N), Parsed, <<"hexpm">>},
+                                  ets:insert(?PACKAGE_TABLE, #package{key={rebar_utils:to_binary(N), Parsed, <<"hexpm">>},
                                                                       dependencies=Deps,
                                                                       retired=false,
                                                                       inner_checksum=InnerChecksum,
@@ -393,4 +393,4 @@ copy_to_cache({Pkg,Vsn}, Config) ->
     Name = <<Pkg/binary, "-", Vsn/binary, ".tar">>,
     Source = filename:join(?config(data_dir, Config), Name),
     Dest = filename:join(?config(cache_dir, Config), Name),
-    ec_file:copy(Source, Dest).
+    rebar_file_utils:copy(Source, Dest).

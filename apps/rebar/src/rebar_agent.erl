@@ -203,7 +203,7 @@ refresh_paths(RState) ->
     ShellBlacklist = proplists:get_value(app_reload_blacklist, ShellOpts, []),
     Blacklist = lists:usort(
         application:get_env(rebar, refresh_paths_blacklist, ShellBlacklist)
-        ++ [rebar, erlware_commons, providers, cf, cth_readable]),
+        ++ [rebar, providers, cf, cth_readable]),
     %% Similar to rebar_utils:update_code/1, but also forces a reload
     %% of used modules. Also forces to reload all of ebin/ instead
     %% of just the modules in the .app file, because 'extra_src_dirs'
@@ -311,9 +311,9 @@ reload_modules(Modules0) ->
     Modules = [M || M <- Modules0, is_changed(M)],
     reload_modules(Modules, erlang:function_exported(code, prepare_loading, 1)).
 
-%% @spec is_changed(atom()) -> boolean()
 %% @doc true if the loaded module is a beam with a vsn attribute
 %%      and does not match the on-disk beam file, returns false otherwise.
+-spec is_changed(atom()) -> boolean().
 is_changed(M) ->
     try
         module_vsn(M:module_info(attributes)) =/= module_vsn(code:get_object_code(M))

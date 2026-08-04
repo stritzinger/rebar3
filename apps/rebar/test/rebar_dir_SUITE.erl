@@ -121,7 +121,7 @@ alt_src_dir_nested(Config) ->
     ModDir = filename:join([AppsDir, "apps", Name1, "alt", "nested"]),
     Mod = "-module(altmod). -export([main/0]). main() -> ok.",
 
-    ec_file:mkdir_path(ModDir),
+    filelib:ensure_path(ModDir),
     ok = file:write_file(filename:join([ModDir, "altmod.erl"]), Mod),
 
     Ebin = filename:join([AppsDir, "_build", "default", "lib", Name1, "ebin", "altmod.beam"]),

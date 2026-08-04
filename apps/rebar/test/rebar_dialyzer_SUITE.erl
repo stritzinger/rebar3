@@ -68,7 +68,7 @@ end_per_group(_Group, _Config) ->
 
 init_per_testcase(Testcase, Config) ->
     PrivDir = ?config(priv_dir, Config),
-    Prefix = ec_cnv:to_list(Testcase),
+    Prefix = rebar_utils:to_list(Testcase),
     BasePrefix = Prefix ++ "_base",
     Opts = [{plt_prefix, Prefix},
             {plt_location, PrivDir},
@@ -270,7 +270,7 @@ build_release_plt(Config) ->
     Name2 = rebar_test_utils:create_random_name("relapp2_"),
     Vsn2 = rebar_test_utils:create_random_vsn(),
     rebar_test_utils:create_app(filename:join([AppDir,"apps",Name2]), Name2, Vsn2,
-                                [erts, ec_cnv:to_atom(Name1)]),
+                                [erts, rebar_utils:to_atom(Name1)]),
 
     rebar_test_utils:run_and_check(Config, RebarConfig, ["dialyzer"],
                                    {ok, [{app, Name1}, {app, Name2}]}),
@@ -294,13 +294,13 @@ plt_apps_option(Config) ->
     Vsn1 = rebar_test_utils:create_random_vsn(),
     rebar_test_utils:create_app(filename:join([AppDir,"deps",Name1]), Name1, Vsn1,
                                 []),
-    App1 = ec_cnv:to_atom(Name1),
+    App1 = rebar_utils:to_atom(Name1),
 
     Name2 = rebar_test_utils:create_random_name("app2_"),
     Vsn2 = rebar_test_utils:create_random_vsn(),
     rebar_test_utils:create_app(filename:join([AppDir,"deps",Name2]), Name2, Vsn2,
                                 [App1]), % App2 depends on App1
-    App2 = ec_cnv:to_atom(Name2),
+    App2 = rebar_utils:to_atom(Name2),
 
     Name3 = rebar_test_utils:create_random_name("app3_"), % the project application
     Vsn3 = rebar_test_utils:create_random_vsn(),
@@ -387,7 +387,7 @@ cli_args(Config) ->
     Name2 = rebar_test_utils:create_random_name("relapp2_"),
     Vsn2 = rebar_test_utils:create_random_vsn(),
     rebar_test_utils:create_app(filename:join([AppDir,"apps",Name2]), Name2, Vsn2,
-                                [erts, ec_cnv:to_atom(Name1)]),
+                                [erts, rebar_utils:to_atom(Name1)]),
 
     rebar_test_utils:run_and_check(Config, RebarConfig, ["dialyzer",
                                                          "--plt-location=" ++ Location,
@@ -419,13 +419,13 @@ single_app_succ_typing(Config) ->
     %% contains warnings in tests
     rebar_test_utils:create_eunit_app(AppDir, Name, Vsn, []),
     %% second app, depending on first, should not produce warnings
-    App1 = ec_cnv:to_atom(Name),
+    App1 = rebar_utils:to_atom(Name),
     %%% second app depends on first
     Name2 = rebar_test_utils:create_random_name("app2_"),
     Vsn2 = rebar_test_utils:create_random_vsn(),
     rebar_test_utils:create_app(filename:join([AppDir,"apps",Name2]), Name2, Vsn2,
         [App1]), % App2 depends on App1
-    App2 = ec_cnv:to_atom(Name2),
+    App2 = rebar_utils:to_atom(Name2),
 
     %% start with building all apps into PLT
     RebarConfig2 = merge_config([{dialyzer, [{plt_apps, all_apps}]}],
@@ -571,7 +571,7 @@ incremental_cli_args(Config) ->
     Name2 = rebar_test_utils:create_random_name("relapp2_"),
     Vsn2 = rebar_test_utils:create_random_vsn(),
     {ok, App2} = rebar_test_utils:create_app(filename:join([AppDir,"apps",Name2]), Name2, Vsn2,
-                                             [erts, ec_cnv:to_atom(Name1)]),
+                                             [erts, rebar_utils:to_atom(Name1)]),
 
     rebar_test_utils:run_and_check(Config, RebarConfig, ["dialyzer",
                                                          "--incremental",
@@ -691,7 +691,7 @@ get_apps_from_beam_files(BeamFiles) ->
       [begin
            AppNameVsn = filename:basename(filename:dirname(filename:dirname(File))),
            [AppName | _] = rebar_string:lexemes(AppNameVsn ++ "-", "-"),
-           ec_cnv:to_atom(AppName)
+           rebar_utils:to_atom(AppName)
        end || File <- BeamFiles]).
 
 -spec is_incremental_available() -> boolean().

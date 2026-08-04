@@ -284,7 +284,7 @@ update_seen_dep(AppInfo, _Profile, _Level, Deps, Apps, State, Upgrade, Seen, Loc
         false when Upgrade ->
             ok;
         false when not Upgrade ->
-            {ok, SeenApp} = rebar_app_utils:find(Name, Apps),
+            {value, SeenApp} = rebar_app_utils:search(Name, Apps),
             Source = rebar_app_info:source(AppInfo),
             case rebar_app_info:source(SeenApp) of
                 Source ->
