@@ -33,9 +33,8 @@ REBAR_TOP=$(pwd)/apps/rebar
 export REBAR_TOP
 pushd "$1"
 touch proto/* # force re-generation of protobuf elements
-TARGET_ERLANG_VERSION=25
+TARGET_ERLANG_VERSION=26
 export TARGET_ERLANG_VERSION
 rebar as dev compile
-./vendor.sh src rb_
-find src -regex '.*rb_.*' -exec mv -f {} "$REBAR_TOP/src/vendored" \;
+./vendor.sh "$REBAR_TOP/src/vendored" rb_
 popd
