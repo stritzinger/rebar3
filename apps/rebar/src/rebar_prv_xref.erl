@@ -125,11 +125,11 @@ run_xref_checks([], _XrefIgnores, Acc) ->
     Acc;
 run_xref_checks([XrefCheck | T], XrefIgnores, Acc) ->
     {ok, Results} = xref:analyze(xref, XrefCheck),
-    case filter_xref_results(XrefCheck, XrefIgnores, Results) of
-        [] ->
-            run_xref_checks(T, XrefIgnores, Acc);
-        FilterResult ->
-            run_xref_checks(T, XrefIgnores, [{XrefCheck, FilterResult} | Acc])
+    case filter_xref_results2(XrefCheck, XrefIgnores, Results) of
+        {Ignores, []} ->
+            run_xref_checks(T, Ignores, Acc);
+        {Ignores, FilterResult} ->
+            run_xref_checks(T, Ignores, [{XrefCheck, FilterResult} | Acc])
     end.
 
 check_query({Query, Value}, Acc) ->
@@ -187,6 +187,9 @@ get_behaviour_callbacks(_XrefCheck, _Attributes) ->
     [].
 
 filter_xref_results(XrefCheck, XrefIgnores, XrefResults) ->
+    element(2, filter_xref_results2(XrefCheck, XrefIgnores, XrefResults)).
+
+filter_xref_results2(XrefCheck, XrefIgnores, XrefResults) ->
     SearchModules = lists:usort(
                       lists:map(
                         fun({Mt,_Ft,_At}) -> Mt;
@@ -197,7 +200,10 @@ filter_xref_results(XrefCheck, XrefIgnores, XrefResults) ->
     Ignores = XrefIgnores ++ lists:flatmap(fun(Module) ->
                                     get_xref_ignorelist(Module, XrefCheck)
                             end, SearchModules),
-    lists:filter( fun(Result) -> pred_xref_result(Result, Ignores) end, XrefResults).
+    Results = lists:filter(
+                fun(Result) -> pred_xref_result(Result, Ignores) end,
+                XrefResults),
+    {Ignores, Results}.
 
 pred_xref_result({Src, Dest}, Ignores) -> pred_xref_result1(Src, Ignores)
     andalso pred_xref_result1(Dest, Ignores);
