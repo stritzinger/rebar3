@@ -24,34 +24,44 @@ name: Shell tests
 
 on:
   pull_request:
-    branches:
-      - 'main'
   push:
     branches:
       - 'main'
+      - 'kickstarter/base'
 
 jobs:
   shelltests:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - uses: erlef/setup-beam@v1
+    - name: Checkout Repository
+      uses: actions/checkout@v7
       with:
-          otp-version: '26.0'
-          elixir-version: '1.14'
+        path: 'rebar'
+    - name: Setup Erlang and Elixir
+      uses: erlef/setup-beam@v1
+      with:
+          otp-version: '28.3'
+          elixir-version: '1.20.3'
     - name: Compile
       run: ./bootstrap
-    - name: Install
+      working-directory: ./rebar
+    - name: Install Rebar
       run: |
-        sudo cp ./rebar /usr/local/bin/
+        sudo cp ./rebar/rebar /usr/local/bin/
 
-    - name: Checkout shell tests
-      run: git clone https://github.com/tsloughter/rebar3_tests
+    - name: Checkout Shell Tests
+      uses: actions/checkout@v7
+      with:
+          repository: 'stritzinger/rebar3_tests'
+          path: 'rebar3_tests'
 
-    - name: Install and run shelltestrunner
+    - name: Install shelltestrunner
       run: |
         sudo apt-get update
         sudo apt-get install -y shelltestrunner build-essential cmake liblz4-dev
-        cd rebar3_tests
+
+    - name: Run Shell Tests
+      run: |
         mix local.hex --force
         ./run_tests.sh
+      working-directory: ./rebar3_tests
