@@ -40,12 +40,12 @@ jobs:
     - name: Setup Erlang and Elixir
       uses: erlef/setup-beam@v1
       with:
-          otp-version: '28.0'
-          elixir-version: '1.19.5'
+          otp-version: '28.3'
+          elixir-version: '1.20.3'
     - name: Compile
       run: ./bootstrap
       working-directory: ./rebar
-    - name: Install
+    - name: Install Rebar
       run: |
         sudo cp ./rebar/rebar /usr/local/bin/
 
@@ -56,10 +56,13 @@ jobs:
           ref: 'maehjam/kickstarter'
           path: 'rebar3_tests'
 
-    - name: Install and run shelltestrunner
+    - name: Install shelltestrunner
       run: |
         sudo apt-get update
         sudo apt-get install -y shelltestrunner build-essential cmake liblz4-dev
-        cd rebar3_tests
+
+    - name: Run Shell Tests
+      run:
         mix local.hex --force
         ./run_tests.sh
+      working-directory: ./rebar3_tests
