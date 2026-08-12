@@ -111,7 +111,7 @@ init_per_testcase(good_disconnect=Name, Config0) ->
     Config = mock_config(Name, Config1),
     copy_to_cache(Pkg, Config),
     %% meck:unload(httpc),
-    meck:new(httpc, [passthrough, unsticky]),
+    meck:new(httpc, [passthrough, unstick]),
     meck:expect(httpc, request, fun(_, _, _, _) -> {error, econnrefused} end),
     Config;
 init_per_testcase(bad_disconnect=Name, Config0) ->
