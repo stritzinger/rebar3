@@ -45,6 +45,7 @@
 
 -export([do_/1,
          handle_deps_as_profile/4,
+         handle_deps_as_profile/5,
          profile_dep_dir/2,
          find_cycles/1,
          cull_compile/2]).
@@ -144,8 +145,10 @@ format_error(Reason) ->
       Upgrade :: boolean(),
       Apps :: [rebar_app_info:t()].
 handle_deps_as_profile(Profile, State, Deps, Upgrade) ->
+    handle_deps_as_profile(Profile, State, Deps, Upgrade, 0).
+
+handle_deps_as_profile(Profile, State, Deps, Upgrade, Level) ->
     Locks = [],
-    Level = 0,
     DepsDir = profile_dep_dir(State, Profile),
     Deps1 = rebar_app_utils:parse_deps(DepsDir, Deps, State, Locks, Level),
     ProfileLevelDeps = [{Profile, Deps1, Level}],
@@ -265,9 +268,31 @@ update_dep(AppInfo, Profile, Level, Deps, Apps, State, Upgrade, Seen, Locks) ->
                             Deps, Apps,
                             State, Upgrade, Seen, Locks);
         false ->
-            update_unseen_dep(AppInfo, Profile, Level,
-                              Deps, Apps,
-                              State, Upgrade, Seen, Locks)
+            case plugin_dep_decision(AppInfo, Level, State, Upgrade) of
+                skip ->
+                    {Deps, Apps, State, Seen};
+                _ ->
+                    update_unseen_dep(AppInfo, Profile, Level, Deps, Apps, State, Upgrade, Seen, Locks)
+            end
+    end.
+
+plugin_dep_decision(_AppInfo, _Level, _State, true) ->
+    new;
+plugin_dep_decision(AppInfo, Level, State, false) ->
+    case rebar_state:get(State, deps_dir, ?DEFAULT_DEPS_DIR) of
+        ?DEFAULT_PLUGINS_DIR ->
+            case rebar_app_utils:search(rebar_app_info:name(AppInfo),
+                                        rebar_state:all_plugin_deps(State)) of
+                {value, Existing} ->
+                    case rebar_app_info:dep_level(Existing) > Level of
+                        true -> replace;
+                        false -> skip
+                    end;
+                false ->
+                    new
+            end;
+        _ ->
+            new
     end.
 
 profile_dep_dir(State, Profile) ->
@@ -301,7 +326,11 @@ update_seen_dep(AppInfo, _Profile, _Level, Deps, Apps, State, Upgrade, Seen, Loc
 
 update_unseen_dep(AppInfo, Profile, Level, Deps, Apps, State, Upgrade, Seen, Locks) ->
     {NewSeen, State1} = maybe_lock(Profile, AppInfo, Seen, State, Level),
-    {_, AppInfo1} = maybe_fetch(AppInfo, Profile, Upgrade, Seen, State1),
+    AppInfo0 = case plugin_dep_decision(AppInfo, Level, State, Upgrade) of
+                   replace -> rebar_app_info:is_available(AppInfo, false);
+                   new -> AppInfo
+               end,
+    {_, AppInfo1} = maybe_fetch(AppInfo0, Profile, Upgrade, Seen, State1),
     DepsDir = profile_dep_dir(State, Profile),
     {AppInfo2, NewDeps, State2} =
         handle_dep(State1, Profile, DepsDir, AppInfo1, Locks, Level),
@@ -316,7 +345,8 @@ handle_dep(State, Profile, DepsDir, AppInfo, Locks, Level) ->
     AppInfo2 = rebar_app_info:apply_profiles(AppInfo1, [default, prod]),
 
     Plugins = rebar_app_info:get(AppInfo2, plugins, []),
-    AppInfo3 = rebar_app_info:set(AppInfo2, {plugins, Profile}, Plugins),
+    AppInfo3a = rebar_app_info:set(AppInfo2, {plugins, Profile}, Plugins),
+    AppInfo3 = rebar_app_info:dep_level(AppInfo3a, Level),
 
     %% Will throw an exception if checks fail
     rebar_app_info:verify_otp_vsn(AppInfo3),
