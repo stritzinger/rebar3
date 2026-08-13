@@ -779,9 +779,11 @@ tree_migration(Config) ->
     AppDir = ?config(apps, Config),
     Lockfile = filename:join([AppDir, "rebar.lock"]),
     case file:consult(Lockfile) of
-        {ok, [{_Vsn, Prop}|_]} -> % packages
+        {ok, [{_Vsn, Groups}|_]} -> % packages
+            Prop = proplists:get_value(deps, Groups, Groups),
             ?assertMatch({<<"E">>, _, 1}, lists:keyfind(<<"E">>, 1, Prop));
-        {ok, [Prop]} -> % git source
+        {ok, [Groups]} -> % git source
+            Prop = proplists:get_value(deps, Groups, Groups),
             ?assertMatch({<<"E">>, _, 1}, lists:keyfind(<<"E">>, 1, Prop))
     end,
     ok.
@@ -834,11 +836,11 @@ rewrite_locks({ok, Expectations}, Config) ->
     LockFile = filename:join([AppDir, "rebar.lock"]),
     Locks = case ?config(deps_type, Config) of
                 git ->
-                    {ok, [LockData]} = file:consult(LockFile),
-                    LockData;
+                    {ok, [{_Vsn, LockGroups}|_]} = file:consult(LockFile),
+                    proplists:get_value(deps, LockGroups, LockGroups);
                 pkg ->
-                    {ok, [{_Vsn, LockData}|_]} = file:consult(LockFile),
-                    LockData
+                    {ok, [{_Vsn, LockGroups}|_]} = file:consult(LockFile),
+                    proplists:get_value(deps, LockGroups, LockGroups)
             end,
     ExpLocks = [{list_to_binary(Name), Vsn}
                || {lock, Name, Vsn} <- Expectations],

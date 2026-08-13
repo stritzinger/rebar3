@@ -97,7 +97,7 @@ unlock_no_args(Config) ->
 read_locks(Config) ->
     case file:consult(?config(lockfile, Config)) of
         {ok, _} ->
-            Locks = rebar_config:consult_lock_file(?config(lockfile, Config)),
+            {Locks, _} = rebar_config:consult_lock_file(?config(lockfile, Config)),
             [binary_to_list(element(1,Lock)) || Lock <- Locks];
         Other ->
             Other

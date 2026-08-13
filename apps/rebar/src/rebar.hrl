@@ -23,8 +23,8 @@
 -define(DEFAULT_PLUGINS_DIR, "plugins").
 -define(DEFAULT_TEST_DEPS_DIR, "test/lib").
 -define(DEFAULT_RELEASE_DIR, "rel").
--define(CONFIG_VERSION, "1.2.0").
--define(SUPPORTED_CONFIG_VERSIONS, ["1.1.0", "1.2.0"]). % older were untagged
+-define(CONFIG_VERSION, "2.0.0").
+-define(SUPPORTED_CONFIG_VERSIONS, ["1.1.0", "1.2.0", "2.0.0"]). % older were untagged
 -define(DEFAULT_CDN, "https://repo.hex.pm").
 -define(LOCK_FILE, "rebar.lock").
 -define(DEFAULT_COMPILER_SOURCE_FORMAT, relative).

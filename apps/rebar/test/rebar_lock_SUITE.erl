@@ -7,12 +7,30 @@
 -include_lib("common_test/include/ct.hrl").
 -include_lib("eunit/include/eunit.hrl").
 
-all() -> [current_version,
+all() -> [current_version, version_1_2, version_1_1,
           beta_version, future_versions_no_attrs, future_versions_attrs].
 
 current_version(Config) ->
-    %% Current version just dumps the locks as is on disk.
     LockFile = filename:join(?config(priv_dir, Config), "current_version"),
+    Deps = [{<<"dep1">>, {pkg, <<"dep1">>, <<"1.0.0">>,
+                           <<"dep1-inner">>, <<"dep1-outer">>}, 0}],
+    Plugins = [{<<"plugin1">>, {git, "https://example.org/plugin1.git",
+                                {ref, "plugin-ref"}}, 0}],
+    Locks = [{deps, Deps}, {plugins, Plugins}],
+    ok = rebar_config:write_lock_file(LockFile, Locks),
+    ?assertEqual({Deps, Plugins}, rebar_config:consult_lock_file(LockFile)),
+    {ok, [{"2.0.0", Written}|Attrs]} = file:consult(LockFile),
+    ?assertEqual([{deps, [{<<"dep1">>, {pkg, <<"dep1">>, <<"1.0.0">>}, 0}]},
+                  {plugins, Plugins}], Written),
+    ?assertEqual([[{pkg_hash, [{deps, [{<<"dep1">>, <<"dep1-inner">>}]},
+                               {plugins, []}]},
+                   {pkg_hash_ext, [{deps, [{<<"dep1">>, <<"dep1-outer">>}]},
+                                   {plugins, []}]}]],
+                 Attrs).
+
+version_1_2(Config) ->
+    %% Current version just dumps the locks as is on disk.
+    LockFile = filename:join(?config(priv_dir, Config), "version_1_2"),
     Locks = [{<<"app1">>, {git,"some_url", {ref,"some_ref"}}, 2},
              {<<"app2">>, {git,"some_url", {ref,"some_ref"}}, 0},
              {<<"app3">>, {hg,"some_url", {ref,"some_ref"}}, 1},
@@ -32,8 +50,7 @@ current_version(Config) ->
     file:write_file(LockFile, io_lib:format("~p.~n", [Locks])),
     %% No properties fetched from a beta lockfile, expand locks
     %% to undefined
-    ?assertEqual(ExpandedNull,
-                 rebar_config:consult_lock_file(LockFile)),
+    ?assertEqual({ExpandedNull, []}, rebar_config:consult_lock_file(LockFile)),
     %% Adding hash data
     Hashes = [{<<"pkg1">>, <<"tarballhash">>},
               {<<"pkg3">>, <<"otherhash">>}],
@@ -51,15 +68,27 @@ current_version(Config) ->
                     io_lib:format("~p.~n~p.~n",
                                   [{"1.2.0", Locks},
                                    [{pkg_hash, Hashes}, {pkg_hash_ext, ExtHashes}]])),
-    ?assertEqual(ExpandedLocks, rebar_config:consult_lock_file(LockFile)),
+    ?assertEqual({ExpandedLocks, []}, rebar_config:consult_lock_file(LockFile)),
     %% Then check that we can reverse that
-    ok = rebar_config:write_lock_file(LockFile, ExpandedLocks),
-    ?assertEqual({ok, [{"1.2.0", Locks}, [{pkg_hash, Hashes}, {pkg_hash_ext, ExtHashes}]]},
-                 file:consult(LockFile)).
+    file:write_file(LockFile,
+                    io_lib:format("~p.~n~p.~n",
+                                  [{"1.2.0", Locks},
+                                   [{pkg_hash, Hashes}, {pkg_hash_ext, ExtHashes}]])),
+    ?assertEqual({ExpandedLocks, []}, rebar_config:consult_lock_file(LockFile)).
+
+version_1_1(Config) ->
+    LockFile = filename:join(?config(priv_dir, Config), "version_1_1"),
+    Locks = [{<<"app1">>, {git, "some_url", {ref, "some_ref"}}, 0},
+             {<<"pkg1">>, {pkg, <<"name">>, <<"0.1.6">>}, 1}],
+    file:write_file(LockFile, io_lib:format("~p.~n", [{"1.1.0", Locks}])),
+    ?assertEqual({[{<<"app1">>, {git, "some_url", {ref, "some_ref"}}, 0},
+                  {<<"pkg1">>, {pkg, <<"name">>, <<"0.1.6">>,
+                                 undefined, undefined}, 1}], []},
+                 rebar_config:consult_lock_file(LockFile)).
 
 beta_version(Config) ->
     %% Current version just dumps the locks as is on disk.
-    LockFile = filename:join(?config(priv_dir, Config), "current_version"),
+    LockFile = filename:join(?config(priv_dir, Config), "beta_version"),
     Locks = [{<<"app1">>, {git,"some_url", {ref,"some_ref"}}, 2},
              {<<"app2">>, {git,"some_url", {ref,"some_ref"}}, 0},
              {<<"app3">>, {hg,"some_url", {ref,"some_ref"}}, 1},
@@ -71,7 +100,7 @@ beta_version(Config) ->
         {<<"pkg1">>,{pkg,<<"name">>,<<"0.1.6">>,undefined, undefined},3}
     ],
     file:write_file(LockFile, io_lib:format("~p.~n", [Locks])),
-    ?assertEqual(ExpandedLocks, rebar_config:consult_lock_file(LockFile)).
+    ?assertEqual({ExpandedLocks, []}, rebar_config:consult_lock_file(LockFile)).
 
 future_versions_no_attrs(Config) ->
     %% Future versions will keep the same core attribute in there, but
@@ -88,7 +117,7 @@ future_versions_no_attrs(Config) ->
                      {<<"pkg1">>, {pkg,<<"name">>,<<"0.1.6">>,undefined, undefined},3}],
     LockData = {"3.5.2", Locks},
     file:write_file(LockFile, io_lib:format("~p.~n", [LockData])),
-    ?assertEqual(ExpandedLocks, rebar_config:consult_lock_file(LockFile)).
+    ?assertEqual({ExpandedLocks, []}, rebar_config:consult_lock_file(LockFile)).
 
 future_versions_attrs(Config) ->
     %% Future versions will keep the same core attribute in there, but
@@ -112,4 +141,4 @@ future_versions_attrs(Config) ->
                                    [{a, x},
                                     {pkg_hash, Hashes},{pkg_hash_ext, ExtHashes},
                                     {b, y}]])),
-    ?assertEqual(ExpandedLocks, rebar_config:consult_lock_file(LockFile)).
+    ?assertEqual({ExpandedLocks, []}, rebar_config:consult_lock_file(LockFile)).

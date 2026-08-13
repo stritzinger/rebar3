@@ -146,20 +146,21 @@ new(ParentState, Config, Deps, Dir) ->
     LocalOpts = dict:from_list(Terms),
 
     NewOpts = rebar_opts:merge_opts(LocalOpts, Opts),
-
     ParentState#state_t{dir=Dir
                        ,opts=NewOpts
-                       ,default=NewOpts}.
+                       ,default=NewOpts
+                       ,plugin_lock=plugin_lock(ParentState)}.
 
 deps_from_config(Dir, Config) ->
     case rebar_config:consult_lock_file(filename:join(Dir, ?LOCK_FILE)) of
-        [] ->
+        {[], []} ->
             [{{deps, default}, proplists:get_value(deps, Config, [])}];
-        D ->
+        {D, PluginLocks} ->
             %% We want the top level deps only from the lock file.
             %% This ensures deterministic overrides for configs.
             Deps = [X || X <- D, element(3, X) =:= 0],
-            [{{locks, default}, D}, {{deps, default}, Deps}]
+            [{{locks, default}, D}, {{deps, default}, Deps},
+             {{plugin_locks, default}, PluginLocks}]
     end.
 
 base_state(Opts) ->

@@ -67,14 +67,17 @@ consult_app_file(File) ->
 
 %% @doc reads the lock file for the project, and re-formats its
 %% content to match the internals for rebar.
--spec consult_lock_file(file:filename()) -> [any()]. % TODO: refine lock()
+-spec consult_lock_file(file:filename()) -> {[any()], [any()]}. % TODO: refine lock()
 consult_lock_file(File) ->
     Terms = consult_file_(File),
     case Terms of
         [] ->
-            [];
+            {[], []};
         [Locks] when is_list(Locks) -> % beta/1.0.0 lock file
-            read_attrs(beta, Locks, []);
+            case is_lock_groups(Locks) of
+                true -> read_lock_groups(?CONFIG_VERSION, Locks, []);
+                false -> {read_attrs(beta, Locks, []), []}
+            end;
         [{Vsn, Locks}|Attrs] when is_list(Locks) -> % versioned lock file
             %% Because this is the first version of rebar to introduce a lock
             %% file, all versioned lock files with a different version have
@@ -94,8 +97,17 @@ consult_lock_file(File) ->
                             warn_vsn_once()
                     end
             end,
-            read_attrs(Vsn, Locks, Attrs)
+            read_lock_groups(Vsn, Locks, Attrs)
     end.
+
+read_lock_groups(Vsn, [{deps, Deps}, {plugins, Plugins}], Attrs) ->
+    {read_attrs(Vsn, Deps, Attrs, deps),
+     read_attrs(Vsn, Plugins, Attrs, plugins)};
+read_lock_groups(Vsn, Locks, Attrs) ->
+    {read_attrs(Vsn, Locks, Attrs), []}.
+
+is_lock_groups([{deps, _}, {plugins, _}]) -> true;
+is_lock_groups(_) -> false.
 
 %% @private outputs a warning for a newer lockfile format than supported
 %% at most once.
@@ -139,17 +151,10 @@ maybe_write_lock_file(LockFile, Locks, Locks) ->
 -spec write_lock_file(file:filename(), [any()]) -> ok | {error, term()}.
 write_lock_file(LockFile, Locks) ->
     {NewLocks, Attrs} = write_attrs(Locks),
-    %% Write locks in the beta format, at least until it's been long
-    %% enough we can start modifying the lock format.
-    case Attrs of
-        [] -> % write the old beta copy to avoid changes
-            file:write_file(LockFile, io_lib:format("~p.~n", [NewLocks]));
-        _ ->
-            file:write_file(LockFile,
-                            io_lib:format("{~p,~n~p}.~n[~n~ts~n].~n",
-                                          [?CONFIG_VERSION, NewLocks,
-                                           format_attrs(Attrs)]))
-    end.
+    file:write_file(LockFile,
+                    io_lib:format("{~p,~n~p}.~n[~n~ts~n].~n",
+                                  [?CONFIG_VERSION, NewLocks,
+                                   format_attrs(Attrs)])).
 
 %% @private Because attributes for packages are fairly large, there is the need
 %% for a special formatting to ensure there's only one entry per lock file
@@ -168,8 +173,13 @@ format_attrs([{pkg_hash_ext, Vals}|T]) ->
 -spec format_hashes([term()]) -> iodata().
 format_hashes([]) -> [];
 format_hashes([{Pkg,Hash}|T]) ->
-    [" {", io_lib:format("~p",[Pkg]), ", ", io_lib:format("~p", [Hash]), "}",
+    [" {", io_lib:format("~p",[Pkg]), ", ", format_hash(Hash), "}",
      maybe_comma(T) | format_hashes(T)].
+
+format_hash({Group, Hashes}) when is_list(Hashes) ->
+    [io_lib:format("~p", [Group]), ", [\n", format_hashes(Hashes), "\n]"];
+format_hash(Hash) ->
+    io_lib:format("~p", [Hash]).
 
 %% @private add a comma if we're not done with the full list of terms
 %% to convert.
@@ -188,6 +198,10 @@ read_attrs(_Vsn, Locks, Attrs) ->
     {OldHashes, NewHashes} =  extract_pkg_hashes(Attrs),
     expand_locks(Locks, OldHashes, NewHashes).
 
+read_attrs(_Vsn, Locks, Attrs, Group) ->
+    {OldHashes, NewHashes} = extract_pkg_hashes(Attrs, Group),
+    expand_locks(Locks, OldHashes, NewHashes).
+
 %% @private extract the package hashes from lockfile attributes, if any.
 -spec extract_pkg_hashes(list()) -> {[binary()], [binary()]}.
 extract_pkg_hashes(Attrs) ->
@@ -195,7 +209,13 @@ extract_pkg_hashes(Attrs) ->
                 [First|_] -> First;
                 [] -> []
             end,
-     { proplists:get_value(pkg_hash, Props, []), proplists:get_value(pkg_hash_ext, Props, [])}.
+     {proplists:get_value(pkg_hash, Props, []),
+      proplists:get_value(pkg_hash_ext, Props, [])}.
+
+extract_pkg_hashes(Attrs, Group) ->
+    {OldHashes, NewHashes} = extract_pkg_hashes(Attrs),
+    {proplists:get_value(Group, OldHashes),
+     proplists:get_value(Group, NewHashes)}.
 
 %% @private extract attributes from the lock file and integrate them
 %% into the full-blow internal lock format
@@ -217,12 +237,27 @@ expand_locks([Lock|Locks], OldHashes, NewHashes) ->
 write_attrs(Locks) ->
     %% No attribute known that needs to be taken out of the structure,
     %% just return terms as is.
-    {NewLocks, OldHashes, NewHashes} = split_locks(Locks, [], [], []),
+    {NewLocks, OldHashes, NewHashes} = split_lock_data(Locks),
     case {OldHashes, NewHashes} of
+        {[{deps, []}, {plugins, []}], [{deps, []}, {plugins, []}]} ->
+            {NewLocks, []};
+        {OldGroups, NewGroups} when is_list(OldGroups), OldGroups =/= [],
+                                    is_tuple(hd(OldGroups)),
+                                    element(1, hd(OldGroups)) =:= deps ->
+            {NewLocks, [{pkg_hash, OldGroups}, {pkg_hash_ext, NewGroups}]};
         {[], []} -> {NewLocks, []};
         _ ->
             {NewLocks, [{pkg_hash, lists:sort(OldHashes)}, {pkg_hash_ext, lists:sort(NewHashes)}]}
     end.
+
+split_lock_data([{deps, Deps}, {plugins, Plugins}]) ->
+    {NewDeps, OldDeps, NewDepsExt} = split_locks(Deps, [], [], []),
+    {NewPlugins, OldPlugins, NewPluginsExt} = split_locks(Plugins, [], [], []),
+    {[{deps, NewDeps}, {plugins, NewPlugins}],
+     [{deps, lists:sort(OldDeps)}, {plugins, lists:sort(OldPlugins)}],
+     [{deps, lists:sort(NewDepsExt)}, {plugins, lists:sort(NewPluginsExt)}]};
+split_lock_data(Locks) ->
+    split_locks(Locks, [], [], []).
 
 %% @private split up extra attributes for locks out of the internal lock
 %% structure for backwards compatibility reasons
@@ -282,11 +317,11 @@ verify_config_format([Term | _]) ->
 
 %% @doc takes an existing configuration and the content of a lockfile
 %% and merges the locks into the config.
--spec merge_locks([{_,_}], list()) -> [{_,_}].
-merge_locks(Config, []) ->
+-spec merge_locks([{_,_}], {[any()], [any()]}) -> [{_,_}].
+merge_locks(Config, {[], []}) ->
 %% no lockfile
     Config;
-merge_locks(Config, Locks) ->
+merge_locks(Config, {Locks, PluginLocks}) ->
     %% lockfile with entries
     ConfigDeps = proplists:get_value(deps, Config, []),
     %% We want the top level deps only from the lock file.
@@ -295,7 +330,12 @@ merge_locks(Config, Locks) ->
     %% since it was locked.
     Deps = [X || X <- Locks, element(3, X) =:= 0],
     NewDeps = find_newly_added(ConfigDeps, Locks),
-    [{{locks, default}, Locks}, {{deps, default}, NewDeps++Deps} | Config].
+    PluginConfig = case PluginLocks of
+                       [] -> [];
+                       _ -> [{{plugin_locks, default}, PluginLocks}]
+                   end,
+    PluginConfig ++ [{{locks, default}, Locks},
+                     {{deps, default}, NewDeps++Deps} | Config].
 
 %% @doc convert a given exception's payload into an io description.
 -spec format_error(any()) -> iolist().

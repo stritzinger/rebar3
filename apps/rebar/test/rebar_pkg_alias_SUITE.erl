@@ -100,7 +100,8 @@ diff_alias(Config) ->
         Config, RebarConfig, ["lock"],
         {ok, [{lock, "fakelib"},{dep, "fakelib"}]}
     ),
-    {ok, [{Vsn, LockData}|_]} = file:consult(Lockfile),
+    {ok, [{Vsn, LockGroups}|_]} = file:consult(Lockfile),
+    LockData = proplists:get_value(deps, LockGroups, LockGroups),
     ?assert(lists:any(fun({<<"fakelib">>,{pkg,<<"goodpkg">>,_},_}) -> true
                       ;  (_) -> false end, LockData)),
     %% An second run yields the same
@@ -108,13 +109,15 @@ diff_alias(Config) ->
         Config, RebarConfig, ["lock"],
         {ok, [{lock, "fakelib"},{dep, "fakelib"}]}
     ),
-    {ok, [{Vsn, LockData}|_]} = file:consult(Lockfile),
+    {ok, [{Vsn, LockGroups2}|_]} = file:consult(Lockfile),
+    LockData = proplists:get_value(deps, LockGroups2, LockGroups2),
     %% So does an upgrade
     rebar_test_utils:run_and_check(
         Config, RebarConfig, ["upgrade", "--all"],
         {ok, [{lock, "fakelib"},{dep, "fakelib"}]}
     ),
-    {ok, [{Vsn, LockData}|_]} = file:consult(Lockfile).
+    {ok, [{Vsn, LockGroups3}|_]} = file:consult(Lockfile),
+    LockData = proplists:get_value(deps, LockGroups3, LockGroups3).
 
 diff_alias_vsn(Config) -> diff_alias(Config).
 
@@ -131,7 +134,8 @@ transitive_alias(Config) ->
         {ok, [{lock, "topdep"},{dep, "topdep"},
               {lock,"transitive_app"},{dep,"transitive_app"}]}
     ),
-    {ok, [{_Vsn, LockData}|_]} = file:consult(Lockfile),
+    {ok, [{_Vsn, LockGroups}|_]} = file:consult(Lockfile),
+    LockData = proplists:get_value(deps, LockGroups, LockGroups),
     ?assert(lists:any(fun({<<"transitive_app">>,{pkg,<<"transitive">>,_},_}) -> true
                       ;  (_) -> false end, LockData)),
     AppDir = ?config(apps, Config),
@@ -145,7 +149,8 @@ transitive_alias(Config) ->
         {ok, [{lock, "topdep"},{dep, "topdep"},
               {lock,"transitive_app"},{dep,"transitive_app"}]}
     ),
-    {ok, [{Vsn, LockData}|_]} = file:consult(Lockfile),
+    {ok, [{Vsn, LockGroups2}|_]} = file:consult(Lockfile),
+    LockData = proplists:get_value(deps, LockGroups2, LockGroups2),
     ?assert(filelib:is_dir(AliasedName)),
     ?assertNot(filelib:is_dir(PkgName)),
     %% So does an upgrade
@@ -154,7 +159,8 @@ transitive_alias(Config) ->
         {ok, [{lock, "topdep"},{dep, "topdep"},
               {lock,"transitive_app"},{dep,"transitive_app"}]}
     ),
-    {ok, [{Vsn, LockData}|_]} = file:consult(Lockfile),
+    {ok, [{Vsn, LockGroups3}|_]} = file:consult(Lockfile),
+    LockData = proplists:get_value(deps, LockGroups3, LockGroups3),
     ?assert(filelib:is_dir(AliasedName)),
     ?assertNot(filelib:is_dir(PkgName)),
     ok.
