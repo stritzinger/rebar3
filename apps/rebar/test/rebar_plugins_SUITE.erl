@@ -103,10 +103,12 @@ compile_plugins(Config) ->
     {ok, RConf} = file:consult(RConfFile),
 
     %% Build with deps.
-    rebar_test_utils:run_and_check(
+    {ok, State} = rebar_test_utils:run_and_check(
         Config, RConf, ["compile"],
         {ok, [{app, Name}, {plugin, PluginName}, {dep, DepName}]}
-    ).
+    ),
+    assert_lock(State, [{DepName, Vsn}]),
+    assert_plugin_lock(State, [{PluginName, Vsn}]).
 
 %% Tests that compiling a project installs and compiles the global plugins
 compile_global_plugins(Config) ->
@@ -151,13 +153,15 @@ compile_global_plugins(Config) ->
     rebar:init_config(),
 
     %% Build with deps.
-    rebar_test_utils:run_and_check(
+    {ok, State} = rebar_test_utils:run_and_check(
         Config, RConf, ["compile"],
         {ok, [{app, Name},
              {global_plugin, PluginName, Vsn},
              {plugin, PluginName, Vsn2},
              {dep, DepName}]}
      ),
+    assert_lock(State, [{DepName, Vsn}]),
+    assert_plugin_lock(State, [{PluginName, Vsn2}]),
 
     meck:unload(rebar_dir).
 
@@ -194,7 +198,7 @@ complex_plugins(Config) ->
     {ok, RConf} = file:consult(RConfFile),
 
     %% Build with deps.
-    rebar_test_utils:run_and_check(
+    {ok, State} = rebar_test_utils:run_and_check(
         Config, RConf, ["compile"],
         {ok, [{app, Name},
               {plugin, PluginName, Vsn2},
@@ -202,6 +206,9 @@ complex_plugins(Config) ->
               {plugin, DepName3},
               {dep, DepName}]}
      ),
+    assert_lock(State, [{DepName, Vsn}]),
+    assert_plugin_lock(State, [{PluginName, Vsn2},
+                               {DepName2, Vsn}, {DepName3, Vsn}]),
 
     meck:unload(rebar_dir).
 
@@ -243,14 +250,17 @@ plugin_and_dep_conflicting_versions(Config) ->
                              ]}]),
     {ok, RConf} = file:consult(RConfFile),
 
-    rebar_test_utils:run_and_check(
+    {ok, State} = rebar_test_utils:run_and_check(
         Config, RConf, ["compile"],
         {ok, [{app, Name},
               {dep, DepName, DepVsn},
               {dep, CommonName, CommonDepVsn},
               {plugin, PluginName, PluginVsn},
               {plugin, CommonName, CommonPluginVsn}]}
-    ).
+    ),
+    assert_lock(State, [{DepName, DepVsn}, {CommonName, CommonDepVsn}]),
+    assert_plugin_lock(State, [{PluginName, PluginVsn},
+                               {CommonName, CommonPluginVsn}]).
 
 %% A plugin dependency is processed before an ordinary dependency at the same
 %% level in the plugin dependencies.
@@ -289,14 +299,16 @@ plugin_dependency_precedes_ordinary(Config) ->
                                rebar_test_utils:expand_deps(
                                  git, [{Plugin1, Vsn, []}]))}]),
     {ok, RConf} = file:consult(RConfFile),
-    rebar_test_utils:run_and_check(
+    {ok, State} = rebar_test_utils:run_and_check(
       Config, RConf, ["compile"],
       {ok, [{app, Name},
             {plugin, Plugin1, Vsn},
             {plugin, Plugin2, Vsn},
             {plugin, Dep1, Vsn},
             {plugin, Dep2, "1.0.0"}]}
-    ).
+    ),
+    assert_plugin_lock(State, [{Plugin1, Vsn}, {Plugin2, Vsn},
+                               {Dep1, Vsn}, {Dep2, "1.0.0"}]).
 
 %% A direct dependency at the plugin's level wins over dependencies below it,
 %% including both plugin and ordinary dependencies.
@@ -336,14 +348,16 @@ plugin_root_dependency_wins(Config) ->
                                rebar_test_utils:expand_deps(
                                  git, [{Plugin1, Vsn, []}]))}]),
     {ok, RConf} = file:consult(RConfFile),
-    rebar_test_utils:run_and_check(
+    {ok, State} = rebar_test_utils:run_and_check(
       Config, RConf, ["compile"],
       {ok, [{app, Name},
             {plugin, Plugin1, Vsn},
             {plugin, Plugin2, Vsn},
             {plugin, Dep1, Vsn},
             {plugin, Dep2, "1.5.0"}]}
-    ).
+    ),
+    assert_plugin_lock(State, [{Plugin1, Vsn}, {Plugin2, Vsn},
+                               {Dep1, Vsn}, {Dep2, "1.5.0"}]).
 
 list(Config) ->
     rebar_test_utils:run_and_check(
@@ -747,3 +761,36 @@ local_plugins_umbrella_only(Config) ->
      ),
 
     meck:unload(rebar_dir).
+
+% --- Helper -------------------------------------------------------------------
+
+assert_plugin_lock(State, Names) ->
+    assert_lock_entries(rebar_state:plugin_lock(State), Names, State).
+
+assert_lock(State, Names) ->
+    assert_lock_entries(rebar_state:lock(State), Names, State).
+
+assert_lock_entries(Locks, Entries, State) ->
+    [?assertMatch({ok, Name, Vsn}, find_lock_entry(Locks, Name, Vsn, State))
+     || {Name, Vsn} <- Entries],
+    ok.
+
+find_lock_entry([], _Name, _Vsn, _State) ->
+    {error, not_found};
+find_lock_entry([App | Apps], Name, Vsn, State) ->
+    case rebar_app_info:name(App) =:= list_to_binary(Name) of
+        true ->
+            BinVsn = list_to_binary(Vsn),
+            case lock_version(App, State) of
+                BinVsn -> {ok, Name, Vsn};
+                Other -> {error, Name, Other}
+            end;
+        false ->
+            find_lock_entry(Apps, Name, Vsn, State)
+    end.
+
+lock_version(App, State) ->
+    case rebar_fetch:lock_source(App, State) of
+      {pkg, _, BinVsn, _, _} when is_binary(BinVsn) -> BinVsn;
+      {git, _, {_, Vsn}} when is_list(Vsn) -> list_to_binary(Vsn)
+    end.

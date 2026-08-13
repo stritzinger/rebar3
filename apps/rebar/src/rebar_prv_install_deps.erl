@@ -148,7 +148,7 @@ handle_deps_as_profile(Profile, State, Deps, Upgrade) ->
     handle_deps_as_profile(Profile, State, Deps, Upgrade, 0).
 
 handle_deps_as_profile(Profile, State, Deps, Upgrade, Level) ->
-    Locks = [],
+    Locks = locks(State),
     DepsDir = profile_dep_dir(State, Profile),
     Deps1 = rebar_app_utils:parse_deps(DepsDir, Deps, State, Locks, Level),
     ProfileLevelDeps = [{Profile, Deps1, Level}],
@@ -227,17 +227,18 @@ maybe_lock(Profile, AppInfo, Seen, State, Level) ->
                             %% later run) after a `rebar upgrade <app>'
                             %% command when a deep dep switches lineages for
                             %% another newer parent.
-                            Locks = rebar_state:lock(State),
+                            Locks = locks(State),
                             case find_app_and_level_by_name(Locks, Name) of
                                 {ok, _App, LockLvl} when LockLvl =< Level ->
                                     {sets:add_element(Name, Seen), State};
                                 {ok, App, _LockLvl} ->
                                     LockedApp = rebar_app_info:dep_level(AppInfo, Level),
                                     {sets:add_element(Name, Seen),
-                                     rebar_state:lock(State, [LockedApp | Locks -- [App]])};
+                                     update_locks(State, [LockedApp | Locks -- [App]])};
                                 false ->
                                     {sets:add_element(Name, Seen),
-                                     rebar_state:lock(State, rebar_app_info:dep_level(AppInfo, Level))}
+                                     update_locks(State,
+                                                       rebar_app_info:dep_level(AppInfo, Level))}
                             end;
                         true ->
                             {Seen, State}
@@ -301,6 +302,20 @@ profile_dep_dir(State, Profile) ->
         _ -> rebar_dir:deps_dir(State)
     end.
 
+locks(State) ->
+    case rebar_state:get(State, deps_dir, ?DEFAULT_DEPS_DIR) of
+        ?DEFAULT_PLUGINS_DIR -> rebar_state:plugin_lock(State);
+        ?DEFAULT_DEPS_DIR -> rebar_state:lock(State);
+        _ -> []
+    end.
+
+update_locks(State, Apps) ->
+    case rebar_state:get(State, deps_dir, ?DEFAULT_DEPS_DIR) of
+        ?DEFAULT_PLUGINS_DIR -> rebar_state:plugin_lock(State, Apps);
+        ?DEFAULT_DEPS_DIR -> rebar_state:lock(State, Apps);
+        _ -> State
+    end.
+
 update_seen_dep(AppInfo, _Profile, _Level, Deps, Apps, State, Upgrade, Seen, Locks) ->
     Name = rebar_app_info:name(AppInfo),
     %% If seen from lock file or user requested an upgrade
@@ -331,7 +346,7 @@ update_unseen_dep(AppInfo, Profile, Level, Deps, Apps, State, Upgrade, Seen, Loc
                    new -> AppInfo
                end,
     {_, AppInfo1} = maybe_fetch(AppInfo0, Profile, Upgrade, Seen, State1),
-    DepsDir = profile_dep_dir(State, Profile),
+    DepsDir = profile_dep_dir(State1, Profile),
     {AppInfo2, NewDeps, State2} =
         handle_dep(State1, Profile, DepsDir, AppInfo1, Locks, Level),
     AppInfo3 = rebar_app_info:dep_level(AppInfo2, Level),
