@@ -22,7 +22,13 @@
 
 name: Common Test
 
-on: [pull_request, push]
+on:
+  pull_request:
+  push:
+    branches:
+      - 'main'
+      - 'kickstarter/base'
+      - 'kickstarter/stretch-1'
 
 env:
   LATEST_OTP_RELEASE: 28
