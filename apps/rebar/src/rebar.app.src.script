@@ -91,6 +91,7 @@
                      rebar_prv_packages,
                      rebar_prv_path,
                      rebar_prv_plugins,
+                     rebar_prv_plugins_unlock,
                      rebar_prv_plugins_upgrade,
                      rebar_prv_release,
                      rebar_prv_relup,

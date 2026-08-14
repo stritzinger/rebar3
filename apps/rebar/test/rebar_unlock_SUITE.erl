@@ -26,7 +26,25 @@
 -compile(export_all).
 
 all() -> [pkgunlock, unlock, unlock_space_args, unlock_all, unlock_no_args,
-          checkout_plugins_are_not_locked].
+          checkout_plugins_are_not_locked,
+          unlock_all_with_plugins, plugin_unlock].
+
+init_per_testcase(unlock_all_with_plugins, Config0) ->
+    Config = rebar_test_utils:init_rebar_state(Config0, "unlock"),
+    Lockfile = filename:join(?config(apps, Config), "rebar.lock"),
+    Deps = [{<<"ordinary">>, {git, "ordinary", {ref, "ordinary"}}, 0}],
+    Plugins = [{<<"plugin1">>, {git, "plugin1", {ref, "plugin1"}}, 0}],
+    ok = rebar_config:write_lock_file(Lockfile, [{deps, Deps}, {plugins, Plugins}]),
+    [{lockfile, Lockfile} | Config];
+
+init_per_testcase(plugin_unlock, Config0) ->
+    Config = rebar_test_utils:init_rebar_state(Config0, "unlock"),
+    Lockfile = filename:join(?config(apps, Config), "rebar.lock"),
+    Deps = [{<<"ordinary">>, {git, "ordinary", {ref, "ordinary"}}, 0}],
+    Plugins = [{<<"plugin1">>, {git, "plugin1", {ref, "plugin1"}}, 0},
+               {<<"plugin2">>, {git, "plugin2", {ref, "plugin2"}}, 0}],
+    ok = rebar_config:write_lock_file(Lockfile, [{deps, Deps}, {plugins, Plugins}]),
+    [{lockfile, Lockfile} | Config];
 
 init_per_testcase(pkgunlock, Config0) ->
     Config = rebar_test_utils:init_rebar_state(Config0, "pkgunlock"),
@@ -88,6 +106,15 @@ unlock_all(Config) ->
     ?assertEqual([], rebar_state:get(State, {locks, default})),
     ok.
 
+unlock_all_with_plugins(Config) ->
+    {ok, State} = rebar_test_utils:run_and_check(
+        Config, [], ["unlock", "--all"], return),
+    ?assert(filelib:is_regular(?config(lockfile, Config))),
+    {[], Plugins} = rebar_config:consult_lock_file(?config(lockfile, Config)),
+    ?assertEqual([<<"plugin1">>], [Name || {Name, _, _} <- Plugins]),
+    ?assertEqual([], rebar_state:get(State, {locks, default})),
+    ok.
+
 unlock_no_args(Config) ->
     try rebar_test_utils:run_and_check(Config, [], ["unlock"], return)
     catch {error, {rebar_prv_unlock, no_arg}} ->
@@ -121,6 +148,21 @@ checkout_plugins_are_not_locked(Config0) ->
     {ok, _} = rebar_test_utils:run_and_check(
                 Config, RConf, ["unlock", PluginName], return),
     ?assertEqual({error, enoent}, file:consult(LockFile)),
+    ok.
+
+plugin_unlock(Config) ->
+    {ok, State} = rebar_test_utils:run_and_check(
+        Config, [], ["plugins", "unlock", "plugin1"], return),
+    {Deps, Plugins} = rebar_config:consult_lock_file(?config(lockfile, Config)),
+    ?assertEqual([{"ordinary", {git, "ordinary", {ref, "ordinary"}}, 0}],
+                 [{binary_to_list(Name), Source, Level} ||
+                     {Name, Source, Level} <- Deps]),
+    ?assertEqual(false, lists:keyfind(<<"plugin1">>, 1, Plugins)),
+    ?assert(lists:keyfind(<<"plugin2">>, 1, Plugins) =/= false),
+    ?assertEqual([], rebar_state:get(State, {plugin_locks, default}) -- Plugins),
+    rebar_test_utils:run_and_check(Config, [], ["plugins", "unlock", "--all"],
+                                   {ok, []}),
+    {Deps, []} = rebar_config:consult_lock_file(?config(lockfile, Config)),
     ok.
 
 read_locks(Config) ->
