@@ -8,7 +8,14 @@
 -include_lib("eunit/include/eunit.hrl").
 
 all() -> [current_version, version_1_2, version_1_1,
-          beta_version, future_versions_no_attrs, future_versions_attrs].
+          beta_version, future_versions_no_attrs, future_versions_attrs,
+          empty_attrs_format, flat_locks_are_grouped].
+
+empty_attrs_format(Config) ->
+    LockFile = filename:join(?config(priv_dir, Config), "empty_attrs"),
+    ok = rebar_config:write_lock_file(LockFile, [{deps, []}, {plugins, []}]),
+    ?assertEqual({ok, <<"{\"2.0.0\",\n[{deps,[]},{plugins,[]}]}\.\n[].\n">>},
+                 file:read_file(LockFile)).
 
 current_version(Config) ->
     LockFile = filename:join(?config(priv_dir, Config), "current_version"),
@@ -26,6 +33,21 @@ current_version(Config) ->
                                {plugins, []}]},
                    {pkg_hash_ext, [{deps, [{<<"dep1">>, <<"dep1-outer">>}]},
                                    {plugins, []}]}]],
+                 Attrs).
+
+flat_locks_are_grouped(Config) ->
+    LockFile = filename:join(?config(priv_dir, Config), "flat_locks"),
+    Locks = [{<<"dep1">>, {pkg, <<"dep1">>, <<"1.0.0">>,
+                             <<"old-hash">>, <<"new-hash">>}, 0}],
+    ok = rebar_config:write_lock_file(LockFile, Locks),
+    ?assertEqual({Locks, []}, rebar_config:consult_lock_file(LockFile)),
+    {ok, [{"2.0.0", Written}, Attrs]} = file:consult(LockFile),
+    ?assertEqual([{deps, [{<<"dep1">>, {pkg, <<"dep1">>, <<"1.0.0">>}, 0}]},
+                  {plugins, []}], Written),
+    ?assertEqual([{pkg_hash, [{deps, [{<<"dep1">>, <<"old-hash">>}]},
+                              {plugins, []}]},
+                  {pkg_hash_ext, [{deps, [{<<"dep1">>, <<"new-hash">>}]},
+                                  {plugins, []}]}],
                  Attrs).
 
 version_1_2(Config) ->

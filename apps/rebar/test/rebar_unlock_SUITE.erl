@@ -106,7 +106,13 @@ read_locks(Config) ->
 read_hashes(Config) ->
     case file:consult(?config(lockfile, Config)) of
         {ok, [{_Vsn, _Locks},Props|_]} ->
-            Hashes = proplists:get_value(pkg_hash, Props, []),
+            HashGroups = proplists:get_value(pkg_hash, Props, []),
+            Hashes = case HashGroups of
+                         [{deps, _}|_] ->
+                             lists:append([Values || {_, Values} <- HashGroups]);
+                         _ ->
+                             HashGroups
+                     end,
             [binary_to_list(element(1,Hash)) || Hash <- Hashes];
         {ok, [{_Vsn, _Locks}]} ->
             [];

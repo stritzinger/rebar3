@@ -151,10 +151,14 @@ maybe_write_lock_file(LockFile, Locks, Locks) ->
 -spec write_lock_file(file:filename(), [any()]) -> ok | {error, term()}.
 write_lock_file(LockFile, Locks) ->
     {NewLocks, Attrs} = write_attrs(Locks),
+    AttrsText = case Attrs of
+                    [] -> "[]";
+                    _ -> ["[\n", format_attrs(Attrs), "\n]"]
+                end,
     file:write_file(LockFile,
-                    io_lib:format("{~p,~n~p}.~n[~n~ts~n].~n",
+                    io_lib:format("{~p,~n~p}.~n~ts.~n",
                                   [?CONFIG_VERSION, NewLocks,
-                                   format_attrs(Attrs)])).
+                                   AttrsText])).
 
 %% @private Because attributes for packages are fairly large, there is the need
 %% for a special formatting to ensure there's only one entry per lock file
@@ -172,14 +176,16 @@ format_attrs([{pkg_hash_ext, Vals}|T]) ->
 %% as possible
 -spec format_hashes([term()]) -> iodata().
 format_hashes([]) -> [];
-format_hashes([{Pkg,Hash}|T]) ->
-    [" {", io_lib:format("~p",[Pkg]), ", ", format_hash(Hash), "}",
+format_hashes([{Group, []}|T]) ->
+    ["{", io_lib:format("~p, []}",[Group]),
+     maybe_comma(T) | format_hashes(T)];
+format_hashes([{Group, Hashes}|T]) when is_list(Hashes) ->
+    ["{", io_lib:format("~p, [~n",[Group]), format_hashes2(Hashes), "]}",
      maybe_comma(T) | format_hashes(T)].
 
-format_hash({Group, Hashes}) when is_list(Hashes) ->
-    [io_lib:format("~p", [Group]), ", [\n", format_hashes(Hashes), "\n]"];
-format_hash(Hash) ->
-    io_lib:format("~p", [Hash]).
+format_hashes2([]) -> [];
+format_hashes2([{Pkg, Hash}|T]) ->
+    [" ", io_lib:format("{~p, ~p}",[Pkg, Hash]), maybe_comma(T) | format_hashes2(T)].
 
 %% @private add a comma if we're not done with the full list of terms
 %% to convert.
@@ -256,8 +262,8 @@ split_lock_data([{deps, Deps}, {plugins, Plugins}]) ->
     {[{deps, NewDeps}, {plugins, NewPlugins}],
      [{deps, lists:sort(OldDeps)}, {plugins, lists:sort(OldPlugins)}],
      [{deps, lists:sort(NewDepsExt)}, {plugins, lists:sort(NewPluginsExt)}]};
-split_lock_data(Locks) ->
-    split_locks(Locks, [], [], []).
+split_lock_data(Deps) ->
+    split_lock_data([{deps, Deps}, {plugins, []}]).
 
 %% @private split up extra attributes for locks out of the internal lock
 %% structure for backwards compatibility reasons
