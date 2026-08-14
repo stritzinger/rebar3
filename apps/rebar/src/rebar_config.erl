@@ -251,7 +251,6 @@ write_attrs(Locks) ->
                                     is_tuple(hd(OldGroups)),
                                     element(1, hd(OldGroups)) =:= deps ->
             {NewLocks, [{pkg_hash, OldGroups}, {pkg_hash_ext, NewGroups}]};
-        {[], []} -> {NewLocks, []};
         _ ->
             {NewLocks, [{pkg_hash, lists:sort(OldHashes)}, {pkg_hash_ext, lists:sort(NewHashes)}]}
     end.
