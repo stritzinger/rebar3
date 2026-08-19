@@ -25,7 +25,8 @@
 -include_lib("eunit/include/eunit.hrl").
 -compile(export_all).
 
-all() -> [pkgunlock, unlock, unlock_space_args, unlock_all, unlock_no_args].
+all() -> [pkgunlock, unlock, unlock_space_args, unlock_all, unlock_no_args,
+          checkout_plugins_are_not_locked].
 
 init_per_testcase(pkgunlock, Config0) ->
     Config = rebar_test_utils:init_rebar_state(Config0, "pkgunlock"),
@@ -92,6 +93,34 @@ unlock_no_args(Config) ->
     catch {error, {rebar_prv_unlock, no_arg}} ->
         ok
     end,
+    ok.
+
+checkout_plugins_are_not_locked(Config0) ->
+    Config = rebar_test_utils:init_rebar_state(Config0, "checkout_plugins_"),
+    AppDir = ?config(apps, Config),
+    CheckoutsDir = ?config(checkouts, Config),
+    AppName = rebar_test_utils:create_random_name("app1_"),
+    PluginName = rebar_test_utils:create_random_name("plugin1_"),
+    PluginDepName = rebar_test_utils:create_random_name("plugindep1_"),
+    Vsn = "1.0.0",
+    rebar_test_utils:create_app(AppDir, AppName, Vsn, [kernel, stdlib]),
+    rebar_test_utils:create_plugin(
+      filename:join(CheckoutsDir, PluginDepName), PluginDepName, Vsn, []),
+    rebar_test_utils:create_plugin(
+      filename:join(CheckoutsDir, PluginName), PluginName, Vsn, []),
+    rebar_test_utils:create_config(
+      filename:join(CheckoutsDir, PluginName),
+      [{deps, [list_to_atom(PluginDepName)]}]),
+    RConfFile = rebar_test_utils:create_config(
+                  AppDir, [{plugins, [list_to_atom(PluginName)]}]),
+    {ok, RConf} = file:consult(RConfFile),
+    {ok, _} = rebar_test_utils:run_and_check(
+                Config, RConf, ["lock"], return),
+    LockFile = filename:join(AppDir, "rebar.lock"),
+    {[], []} = rebar_config:consult_lock_file(LockFile),
+    {ok, _} = rebar_test_utils:run_and_check(
+                Config, RConf, ["unlock", PluginName], return),
+    ?assertEqual({error, enoent}, file:consult(LockFile)),
     ok.
 
 read_locks(Config) ->

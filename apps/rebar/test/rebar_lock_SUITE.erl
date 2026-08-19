@@ -9,7 +9,33 @@
 
 all() -> [current_version, version_1_2, version_1_1,
           beta_version, future_versions_no_attrs, future_versions_attrs,
-          empty_attrs_format, flat_locks_are_grouped].
+          empty_attrs_format, flat_locks_are_grouped,
+          checkout_plugins_are_not_locked].
+
+checkout_plugins_are_not_locked(Config0) ->
+    Config = rebar_test_utils:init_rebar_state(Config0, "checkout_plugins_"),
+    AppDir = ?config(apps, Config),
+    CheckoutsDir = ?config(checkouts, Config),
+    AppName = rebar_test_utils:create_random_name("app1_"),
+    PluginName = rebar_test_utils:create_random_name("plugin1_"),
+    PluginDepName = rebar_test_utils:create_random_name("plugindep1_"),
+    Vsn = "1.0.0",
+    rebar_test_utils:create_app(AppDir, AppName, Vsn, [kernel, stdlib]),
+    rebar_test_utils:create_plugin(
+      filename:join(CheckoutsDir, PluginDepName), PluginDepName, Vsn, []),
+    rebar_test_utils:create_plugin(
+      filename:join(CheckoutsDir, PluginName), PluginName, Vsn, []),
+    rebar_test_utils:create_config(
+      filename:join(CheckoutsDir, PluginName),
+      [{deps, [list_to_atom(PluginDepName)]}]),
+    RConfFile = rebar_test_utils:create_config(
+                  AppDir, [{plugins, [list_to_atom(PluginName)]}]),
+    {ok, RConf} = file:consult(RConfFile),
+    {ok, _} = rebar_test_utils:run_and_check(
+                Config, RConf, ["lock"], return),
+    LockFile = filename:join(AppDir, "rebar.lock"),
+    {[], []} = rebar_config:consult_lock_file(LockFile),
+    ok.
 
 empty_attrs_format(Config) ->
     LockFile = filename:join(?config(priv_dir, Config), "empty_attrs"),

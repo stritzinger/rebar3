@@ -42,6 +42,7 @@
          sub_app_plugin_overrides/1,
          project_plugins/1,
          use_checkout_plugins/1,
+         checkout_plugin_dependencies/1,
          %% project-local plugins
          complex_local_plugins/1,
          complex_local_project_plugins/1,
@@ -87,6 +88,7 @@ all() ->
      plugin_and_dep_conflicting_versions, plugin_dependency_precedes_ordinary,
      plugin_root_dependency_wins, list, upgrade, upgrade_project_plugin,
      sub_app_plugins, sub_app_plugin_overrides, project_plugins, use_checkout_plugins,
+     checkout_plugin_dependencies,
      complex_local_plugins, complex_local_project_plugins, local_plugins_umbrella_only].
 
 %% Tests that compiling a project installs and compiles the plugins of deps
@@ -614,6 +616,32 @@ use_checkout_plugins(Config) ->
                             Config, RConf, ["checkedout"],
                             {ok, []}
                            )).
+
+checkout_plugin_dependencies(Config) ->
+    AppDir = ?config(apps, Config),
+    CheckoutsDir = ?config(checkouts, Config),
+
+    AppName = rebar_test_utils:create_random_name("app1_"),
+    PluginName = rebar_test_utils:create_random_name("plugin1_"),
+    PluginDepName = rebar_test_utils:create_random_name("plugindep1_"),
+    Vsn = "1.0.0",
+    rebar_test_utils:create_app(AppDir, AppName, Vsn, [kernel, stdlib]),
+    rebar_test_utils:create_plugin(
+      filename:join(CheckoutsDir, PluginDepName), PluginDepName, Vsn, []),
+    rebar_test_utils:create_plugin(
+      filename:join(CheckoutsDir, PluginName), PluginName, Vsn, []),
+    rebar_test_utils:create_config(
+      filename:join(CheckoutsDir, PluginName),
+      [{deps, [list_to_atom(PluginDepName)]}]),
+
+    RConfFile = rebar_test_utils:create_config(
+                  AppDir, [{plugins, [list_to_atom(PluginName)]}]),
+    {ok, RConf} = file:consult(RConfFile),
+    {ok, _State} = rebar_test_utils:run_and_check(
+                    Config, RConf, ["compile"],
+                    {ok, [{app, AppName},
+                          {checkout, PluginName},
+                          {checkout, PluginDepName}]}).
 
 complex_local_plugins(Config) ->
     UmbrellaDir = ?config(apps, Config),
