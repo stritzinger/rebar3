@@ -52,6 +52,21 @@
 -include_lib("eunit/include/eunit.hrl").
 -include_lib("kernel/include/file.hrl").
 
+-define(assert_plugin_lock(State, Names),
+        ?assert_lock_entries(rebar_state:plugin_lock(State), Names, State)).
+-define(assert_lock(State, Names),
+        ?assert_lock_entries(rebar_state:lock(State), Names, State)).
+-define(assert_lock_entries(Locks, Entries, State),
+        begin
+            lists:foreach(
+              fun({LockName, LockVsn}) ->
+                  ?assertMatch({ok, LockName, LockVsn},
+                               find_lock_entry(Locks, LockName, LockVsn, State))
+              end,
+              Entries),
+            ok
+        end).
+
 suite() ->
     [].
 
@@ -107,8 +122,8 @@ compile_plugins(Config) ->
         Config, RConf, ["compile"],
         {ok, [{app, Name}, {plugin, PluginName}, {dep, DepName}]}
     ),
-    assert_lock(State, [{DepName, Vsn}]),
-    assert_plugin_lock(State, [{PluginName, Vsn}]).
+    ?assert_lock(State, [{DepName, Vsn}]),
+    ?assert_plugin_lock(State, [{PluginName, Vsn}]).
 
 %% Tests that compiling a project installs and compiles the global plugins
 compile_global_plugins(Config) ->
@@ -160,8 +175,8 @@ compile_global_plugins(Config) ->
              {plugin, PluginName, Vsn2},
              {dep, DepName}]}
      ),
-    assert_lock(State, [{DepName, Vsn}]),
-    assert_plugin_lock(State, [{PluginName, Vsn2}]),
+    ?assert_lock(State, [{DepName, Vsn}]),
+    ?assert_plugin_lock(State, [{PluginName, Vsn2}]),
 
     meck:unload(rebar_dir).
 
@@ -206,8 +221,8 @@ complex_plugins(Config) ->
               {plugin, DepName3},
               {dep, DepName}]}
      ),
-    assert_lock(State, [{DepName, Vsn}]),
-    assert_plugin_lock(State, [{PluginName, Vsn2},
+    ?assert_lock(State, [{DepName, Vsn}]),
+    ?assert_plugin_lock(State, [{PluginName, Vsn2},
                                {DepName2, Vsn}, {DepName3, Vsn}]),
 
     meck:unload(rebar_dir).
@@ -258,8 +273,8 @@ plugin_and_dep_conflicting_versions(Config) ->
               {plugin, PluginName, PluginVsn},
               {plugin, CommonName, CommonPluginVsn}]}
     ),
-    assert_lock(State, [{DepName, DepVsn}, {CommonName, CommonDepVsn}]),
-    assert_plugin_lock(State, [{PluginName, PluginVsn},
+    ?assert_lock(State, [{DepName, DepVsn}, {CommonName, CommonDepVsn}]),
+    ?assert_plugin_lock(State, [{PluginName, PluginVsn},
                                {CommonName, CommonPluginVsn}]).
 
 %% A plugin dependency is processed before an ordinary dependency at the same
@@ -307,7 +322,7 @@ plugin_dependency_precedes_ordinary(Config) ->
             {plugin, Dep1, Vsn},
             {plugin, Dep2, "1.0.0"}]}
     ),
-    assert_plugin_lock(State, [{Plugin1, Vsn}, {Plugin2, Vsn},
+    ?assert_plugin_lock(State, [{Plugin1, Vsn}, {Plugin2, Vsn},
                                {Dep1, Vsn}, {Dep2, "1.0.0"}]).
 
 %% A direct dependency at the plugin's level wins over dependencies below it,
@@ -356,7 +371,7 @@ plugin_root_dependency_wins(Config) ->
             {plugin, Dep1, Vsn},
             {plugin, Dep2, "1.5.0"}]}
     ),
-    assert_plugin_lock(State, [{Plugin1, Vsn}, {Plugin2, Vsn},
+    ?assert_plugin_lock(State, [{Plugin1, Vsn}, {Plugin2, Vsn},
                                {Dep1, Vsn}, {Dep2, "1.5.0"}]).
 
 list(Config) ->
@@ -763,17 +778,6 @@ local_plugins_umbrella_only(Config) ->
     meck:unload(rebar_dir).
 
 % --- Helper -------------------------------------------------------------------
-
-assert_plugin_lock(State, Names) ->
-    assert_lock_entries(rebar_state:plugin_lock(State), Names, State).
-
-assert_lock(State, Names) ->
-    assert_lock_entries(rebar_state:lock(State), Names, State).
-
-assert_lock_entries(Locks, Entries, State) ->
-    [?assertMatch({ok, Name, Vsn}, find_lock_entry(Locks, Name, Vsn, State))
-     || {Name, Vsn} <- Entries],
-    ok.
 
 find_lock_entry([], _Name, _Vsn, _State) ->
     {error, not_found};
