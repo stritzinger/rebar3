@@ -27,7 +27,9 @@
 -export([init/1,
          cli/0,
          do/1,
-         format_error/1]).
+         format_error/1,
+         build_locks/1,
+         build_locks/2]).
 
 -include("rebar.hrl").
 

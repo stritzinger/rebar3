@@ -78,8 +78,8 @@ do(State) ->
         {error, Reason} ->
             ?PRV_ERROR({file,Reason});
         {ok, _} ->
-            {Locks, _PluginLocks} = rebar_config:consult_lock_file(LockFile),
-            {ok, NewLocks} = handle_unlocks(State, Locks, LockFile),
+            {Locks, PluginLocks} = rebar_config:consult_lock_file(LockFile),
+            {ok, NewLocks} = handle_unlocks(State, Locks, PluginLocks, LockFile),
             {ok, rebar_state:set(State, {locks, default}, NewLocks)}
     end.
 
@@ -93,29 +93,37 @@ format_error(no_arg) ->
 format_error(Reason) ->
     io_lib:format("~p", [Reason]).
 
-handle_unlocks(State, Locks, LockFile) ->
+handle_unlocks(State, Locks, PluginLocks, LockFile) ->
     case handle_args(State) of
         %% a list of dependencies or --all is required
         {false, []} -> 
             throw(?PRV_ERROR(no_arg));
         %% if --all is specified, delete the lock file
         {true, _} -> 
-            file:delete(LockFile),
+            write_locks(LockFile, [], PluginLocks),
             {ok, []};
         %% otherwise, unlock the given list of dependency names. if none are left, delete the lock file
         {false, Names} -> 
             case [Lock || Lock = {Name, _, _} <- Locks, not lists:member(Name, Names)] of
                 [] ->
-                    file:delete(LockFile),
+                    write_locks(LockFile, [], PluginLocks),
                     {ok, []};
                 _ when Names =:= [] -> % implicitly all locks
-                    file:delete(LockFile),
+                    write_locks(LockFile, [], PluginLocks),
                     {ok, []};
                 NewLocks -> 
-                    rebar_config:write_lock_file(LockFile, NewLocks),
+                    write_locks(LockFile, NewLocks, PluginLocks),
                     {ok, NewLocks}
             end
     end.
+
+write_locks(LockFile, [], []) ->
+    file:delete(LockFile);
+write_locks(LockFile, Locks, []) ->
+    rebar_config:write_lock_file(LockFile, Locks);
+write_locks(LockFile, Locks, PluginLocks) ->
+    rebar_config:write_lock_file(LockFile,
+                                 [{deps, Locks}, {plugins, PluginLocks}]).
 
 handle_args(State) -> 
     {Args, _} = rebar_state:command_parsed_args(State),

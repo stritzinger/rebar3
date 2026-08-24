@@ -53,6 +53,14 @@
 -include_lib("eunit/include/eunit.hrl").
 -include_lib("kernel/include/file.hrl").
 
+-define(assert_plugin_lock_file(AppDir, Name, Vsn),
+        (fun() ->
+            LockFile = filename:join(AppDir, "rebar.lock"),
+            {_, PluginLocks} = rebar_config:consult_lock_file(LockFile),
+            {_, Source, _} = lists:keyfind(list_to_binary(Name), 1, PluginLocks),
+            ?assertEqual(Vsn, element(3, Source)),
+            ok
+        end)()).
 -define(assert_plugin_lock(State, Names),
         ?assert_lock_entries(rebar_state:plugin_lock(State), Names, State)).
 -define(assert_lock(State, Names),
@@ -409,6 +417,7 @@ upgrade(Config) ->
         Config, RConf, ["compile"],
         {ok, [{app, Name, valid}, {file, PluginBeam}, {plugin, PkgName, <<"0.1.1">>}]}
      ),
+    ?assert_plugin_lock_file(AppDir, PkgName, <<"0.1.1">>),
 
     catch mock_pkg_resource:unmock(),
     mock_pkg_resource:mock([
@@ -424,6 +433,7 @@ upgrade(Config) ->
         Config, RConf, ["plugins", "upgrade", PkgName],
         {ok, [{app, Name, valid}, {file, PluginBeam}, {plugin, PkgName, <<"0.1.3">>}]}
      ),
+    ?assert_plugin_lock_file(AppDir, PkgName, <<"0.1.3">>),
 
     rebar_test_utils:run_and_check(
         Config, RConf, ["plugins", "upgrade", "--all"],
@@ -453,6 +463,7 @@ upgrade_project_plugin(Config) ->
         Config, RConf, ["compile"],
         {ok, [{app, Name}, {plugin, PkgName, <<"0.1.1">>}]}
      ),
+    ?assert_plugin_lock_file(AppDir, PkgName, <<"0.1.1">>),
 
     catch mock_pkg_resource:unmock(),
     mock_pkg_resource:mock([
@@ -467,7 +478,8 @@ upgrade_project_plugin(Config) ->
     rebar_test_utils:run_and_check(
         Config, RConf, ["plugins", "upgrade", PkgName],
         {ok, [{app, Name}, {plugin, PkgName, <<"0.1.3">>}]}
-     ).
+     ),
+    ?assert_plugin_lock_file(AppDir, PkgName, <<"0.1.3">>).
 
 upgrade_no_args(Config) ->
     try rebar_test_utils:run_and_check(Config, [], ["plugins", "upgrade"], return)

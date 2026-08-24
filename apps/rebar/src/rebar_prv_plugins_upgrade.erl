@@ -130,7 +130,14 @@ do_upgrade(State, P, Profile) ->
     %% Build plugin and its deps
     _ = build_plugin(ToBuild, State2),
 
-    {ok, State}.
+    PluginLocks = lists:keysort(1, rebar_prv_lock:build_locks(plugin_lock, State2)),
+    Dir = rebar_state:dir(State2),
+    LockFile = filename:join(Dir, ?LOCK_FILE),
+    {DepLocks, _} = rebar_config:consult_lock_file(LockFile),
+    ok = rebar_config:write_lock_file(LockFile,
+                                      [{deps, DepLocks}, {plugins, PluginLocks}]),
+    State3 = rebar_state:set(State2, {plugin_locks, default}, PluginLocks),
+    {ok, State3}.
 
 find_plugin(_, [], _) ->
     not_found;
