@@ -18,11 +18,13 @@ mock() -> mock([]).
     Option :: {update, [App]}
             | {default_vsn, Vsn}
             | {override_vsn, [{App, Vsn}]}
-            | {deps, [{App, [Dep]}]},
+            | {deps, [{App, [Dep]}]}
+            | {app_config, [{{App, Vsn}, Config}]},
     App :: string(),
     Dep :: {App, string(), {git, string()} | {git, string(), term()}}
          | {pkg, App, term()},
-    Vsn :: string().
+    Vsn :: string(),
+    Config :: [term()].
 mock(Opts) ->
     mock(Opts, create_app).
 
@@ -106,6 +108,7 @@ mock_vsn(Opts) ->
 mock_download(Opts, CreateType) ->
     Deps = proplists:get_value(deps, Opts, []),
     Config = proplists:get_value(config, Opts, []),
+    AppConfigs = proplists:get_value(app_config, Opts, []),
     Default = proplists:get_value(default_vsn, Opts, "0.0.0"),
     Overrides = proplists:get_value(override_vsn, Opts, []),
     meck:expect(
@@ -116,11 +119,12 @@ mock_download(Opts, CreateType) ->
             {git, Url, {_, Vsn}} = normalize_git(Git, Overrides, Default),
             App = app(Url),
             AppDeps = proplists:get_value({App,Vsn}, Deps, []),
+            AppConfig = proplists:get_value({App,Vsn}, AppConfigs, Config),
             rebar_test_utils:CreateType(
                 Dir, App, Vsn,
                 [kernel, stdlib] ++ [element(1,D) || D  <- AppDeps]
             ),
-            rebar_test_utils:create_config(Dir, [{deps, AppDeps}]++Config),
+            rebar_test_utils:create_config(Dir, [{deps, AppDeps}]++AppConfig),
             ok
         end).
 

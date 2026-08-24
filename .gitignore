@@ -1,6 +1,5 @@
 _checkouts
 .rebar
-rebar
 rebar.cmd
 rebar.ps1
 _build

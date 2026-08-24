@@ -22,28 +22,6 @@
 %%
 %% %CopyrightEnd%
 
-%% %CopyrightBegin%
-%%
-%% SPDX-License-Identifier: Apache-2.0
-%%
-%% SPDX-FileCopyrightText: Copyright 2015-2026 Rebar3 and its contributors
-%%
-%% SPDX-FileCopyrightText: Copyright 2026 Dipl. Phys. Peer Stritzinger GmbH
-%%
-%% Licensed under the Apache License, Version 2.0 (the "License");
-%% you may not use this file except in compliance with the License.
-%% You may obtain a copy of the License at
-%%
-%%     http://www.apache.org/licenses/LICENSE-2.0
-%%
-%% Unless required by applicable law or agreed to in writing, software
-%% distributed under the License is distributed on an "AS IS" BASIS,
-%% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-%% See the License for the specific language governing permissions and
-%% limitations under the License.
-%%
-%% %CopyrightEnd%
-
 -module(rebar_plugins).
 
 -export([project_plugins_install/1
@@ -112,7 +90,8 @@ install(State, AppInfo) ->
     State2 = lists:foldl(fun(Profile, StateAcc) ->
                              Plugins = rebar_app_info:get(AppInfo, {plugins, Profile}, []),
                              Plugins1 = filter_existing_plugins(Plugins, StateAcc),
-                             handle_plugins(Profile, Plugins1, StateAcc)
+                             Level = rebar_app_info:dep_level(AppInfo) + 1,
+                             handle_plugins(Profile, Plugins1, StateAcc, false, Level)
                          end, State1, Profiles),
 
     %% Reset the overrides after processing the dep
@@ -134,6 +113,9 @@ handle_plugins(Profile, Plugins, State) ->
     handle_plugins(Profile, Plugins, State, false).
 
 handle_plugins(Profile, Plugins, State, Upgrade) ->
+    handle_plugins(Profile, Plugins, State, Upgrade, 0).
+
+handle_plugins(Profile, Plugins, State, Upgrade, Level) ->
     %% Set deps dir to plugins dir so apps are installed there
     Locks = rebar_state:lock(State),
     DepsDir = rebar_state:get(State, deps_dir, ?DEFAULT_DEPS_DIR),
@@ -142,7 +124,8 @@ handle_plugins(Profile, Plugins, State, Upgrade) ->
     %% Install each plugin individually so if one fails to install it doesn't effect the others
     {_PluginProviders, State2} =
         lists:foldl(fun(Plugin, {PluginAcc, StateAcc}) ->
-                            {NewPlugins, NewState} = handle_plugin(Profile, Plugin, StateAcc, SrcPlugins, Upgrade),
+                            {NewPlugins, NewState} = handle_plugin(Profile, Plugin, StateAcc,
+                                                                      SrcPlugins, Upgrade, Level),
                             NewState1 = rebar_state:create_logic_providers(NewPlugins, NewState),
                             {PluginAcc++NewPlugins, NewState1}
                       end, {[], State1}, Plugins),
@@ -151,7 +134,7 @@ handle_plugins(Profile, Plugins, State, Upgrade) ->
     State3 = rebar_state:set(State2, deps_dir, DepsDir),
     rebar_state:lock(State3, Locks).
 
-handle_plugin(Profile, Plugin, State, SrcPlugins, Upgrade) ->
+handle_plugin(Profile, Plugin, State, SrcPlugins, Upgrade, Level) ->
     try
         %% Inject top-level src plugins as project apps, so that they get skipped
         %% by the installation as already seen
@@ -161,7 +144,8 @@ handle_plugin(Profile, Plugin, State, SrcPlugins, Upgrade) ->
         %% directly to make sure they are installed if they were not also at the top level
         TopDeps = top_level_deps(State, SrcPlugins),
         %% Install the plugins
-        {Apps, State1} = rebar_prv_install_deps:handle_deps_as_profile(Profile, State0, [Plugin|TopDeps], Upgrade),
+        {Apps, State1} = rebar_prv_install_deps:handle_deps_as_profile(
+                           Profile, State0, [Plugin|TopDeps], Upgrade, Level),
         {no_cycle, Sorted} = rebar_prv_install_deps:find_cycles(SrcPlugins++Apps),
         ToBuild = rebar_prv_install_deps:cull_compile(Sorted, []),
         %% Return things to normal

@@ -31,6 +31,9 @@
          compile_plugins/1,
          compile_global_plugins/1,
          complex_plugins/1,
+         plugin_and_dep_conflicting_versions/1,
+         plugin_dependency_precedes_ordinary/1,
+         plugin_root_dependency_wins/1,
          list/1,
          upgrade/1,
          upgrade_project_plugin/1,
@@ -65,7 +68,9 @@ end_per_testcase(_, _Config) ->
     catch meck:unload().
 
 all() ->
-    [compile_plugins, compile_global_plugins, complex_plugins, list, upgrade, upgrade_project_plugin,
+    [compile_plugins, compile_global_plugins, complex_plugins,
+     plugin_and_dep_conflicting_versions, plugin_dependency_precedes_ordinary,
+     plugin_root_dependency_wins, list, upgrade, upgrade_project_plugin,
      sub_app_plugins, sub_app_plugin_overrides, project_plugins, use_checkout_plugins,
      complex_local_plugins, complex_local_project_plugins, local_plugins_umbrella_only].
 
@@ -199,6 +204,146 @@ complex_plugins(Config) ->
      ),
 
     meck:unload(rebar_dir).
+
+%% Tests that regular deps and plugin deps can keep conflicting versions isolated
+plugin_and_dep_conflicting_versions(Config) ->
+    AppDir = ?config(apps, Config),
+
+    Name = rebar_test_utils:create_random_name("app1_"),
+    RootVsn = rebar_test_utils:create_random_vsn(),
+    DepVsn = rebar_test_utils:create_random_vsn(),
+    PluginVsn = rebar_test_utils:create_random_vsn(),
+    CommonDepVsn = rebar_test_utils:create_random_vsn(),
+    CommonPluginVsn = rebar_test_utils:create_random_vsn(),
+    rebar_test_utils:create_app(AppDir, Name, RootVsn, [kernel, stdlib]),
+
+    DepName = rebar_test_utils:create_random_name("dep1_"),
+    CommonName = rebar_test_utils:create_random_name("common_"),
+    PluginName = rebar_test_utils:create_random_name("plugin1_"),
+
+    Deps = rebar_test_utils:expand_deps(
+             git,
+             [{PluginName, PluginVsn, [{CommonName, CommonPluginVsn, []}]},
+              {DepName, DepVsn, [{CommonName, CommonDepVsn, []}]}]
+            ),
+    {SrcDeps, _} = rebar_test_utils:flat_deps(Deps),
+    mock_git_resource:mock([{deps, SrcDeps}]),
+
+    RConfFile = rebar_test_utils:create_config(
+                  AppDir,
+                  [{deps, [
+                           {list_to_atom(DepName),
+                            {git, "http://site.com/user/"++DepName++".git",
+                             {tag, DepVsn}}}
+                          ]},
+                   {plugins, [
+                              {list_to_atom(PluginName),
+                               {git, "http://site.com/user/"++PluginName++".git",
+                                {tag, PluginVsn}}}
+                             ]}]),
+    {ok, RConf} = file:consult(RConfFile),
+
+    rebar_test_utils:run_and_check(
+        Config, RConf, ["compile"],
+        {ok, [{app, Name},
+              {dep, DepName, DepVsn},
+              {dep, CommonName, CommonDepVsn},
+              {plugin, PluginName, PluginVsn},
+              {plugin, CommonName, CommonPluginVsn}]}
+    ).
+
+%% A plugin dependency is processed before an ordinary dependency at the same
+%% level in the plugin dependencies.
+%% root
+%% └─ plugin1
+%%    ├─ plugin2 // required to fetch dep1
+%%    │   └─ dep2 v1.0
+%%    └─ dep1
+%%        └─ dep2 v2.0
+
+plugin_dependency_precedes_ordinary(Config) ->
+    AppDir = ?config(apps, Config),
+    Name = rebar_test_utils:create_random_name("app1_"),
+    Vsn = "1.0.0",
+    rebar_test_utils:create_app(AppDir, Name, Vsn, [kernel, stdlib]),
+
+    Plugin1 = rebar_test_utils:create_random_name("plugin1_"),
+    Plugin2 = rebar_test_utils:create_random_name("plugin2_"),
+    Dep1 = rebar_test_utils:create_random_name("dep1_"),
+    Dep2 = rebar_test_utils:create_random_name("dep2_"),
+    Deps = rebar_test_utils:expand_deps(
+             git,
+             [{Plugin1, Vsn, [{Dep1, Vsn, [{Dep2, "2.0.0", []}]}]},
+              {Plugin2, Vsn, [{Dep2, "1.0.0", []}]}]
+            ),
+    {AppDeps, _} = rebar_test_utils:flat_deps(Deps),
+    AppConfigs = [{{Plugin1, Vsn},
+                   [{plugins, rebar_test_utils:top_level_deps(
+                                rebar_test_utils:expand_deps(
+                                  git, [{Plugin2, Vsn, []}]))}]}],
+    mock_git_resource:mock([{deps, AppDeps}, {app_config, AppConfigs}]),
+
+    RConfFile = rebar_test_utils:create_config(
+                  AppDir,
+                  [{plugins, rebar_test_utils:top_level_deps(
+                               rebar_test_utils:expand_deps(
+                                 git, [{Plugin1, Vsn, []}]))}]),
+    {ok, RConf} = file:consult(RConfFile),
+    rebar_test_utils:run_and_check(
+      Config, RConf, ["compile"],
+      {ok, [{app, Name},
+            {plugin, Plugin1, Vsn},
+            {plugin, Plugin2, Vsn},
+            {plugin, Dep1, Vsn},
+            {plugin, Dep2, "1.0.0"}]}
+    ).
+
+%% A direct dependency at the plugin's level wins over dependencies below it,
+%% including both plugin and ordinary dependencies.
+%% root
+%% └─ plugin1
+%%     ├─ plugin2 // required to fetch dep1 
+%%     │   └─ dep2 v1.0
+%%     ├─ dep1
+%%     │   └─ dep2 v2.0
+%%     └─ dep2 v1.5
+plugin_root_dependency_wins(Config) ->
+    AppDir = ?config(apps, Config),
+    Name = rebar_test_utils:create_random_name("app1_"),
+    Vsn = "1.0.0",
+    rebar_test_utils:create_app(AppDir, Name, Vsn, [kernel, stdlib]),
+
+    Plugin1 = rebar_test_utils:create_random_name("plugin1_"),
+    Plugin2 = rebar_test_utils:create_random_name("plugin2_"),
+    Dep1 = rebar_test_utils:create_random_name("dep1_"),
+    Dep2 = rebar_test_utils:create_random_name("dep2_"),
+    Deps = rebar_test_utils:expand_deps(
+             git,
+             [{Plugin1, Vsn, [{Dep1, Vsn, [{Dep2, "2.0.0", []}]},
+                              {Dep2, "1.5.0", []}]},
+              {Plugin2, Vsn, [{Dep2, "1.0.0", []}]}]
+            ),
+    {AppDeps, _} = rebar_test_utils:flat_deps(Deps),
+    AppConfigs = [{{Plugin1, Vsn},
+                   [{plugins, rebar_test_utils:top_level_deps(
+                                rebar_test_utils:expand_deps(
+                                  git, [{Plugin2, Vsn, []}]))}]}],
+    mock_git_resource:mock([{deps, AppDeps}, {app_config, AppConfigs}]),
+
+    RConfFile = rebar_test_utils:create_config(
+                  AppDir,
+                  [{plugins, rebar_test_utils:top_level_deps(
+                               rebar_test_utils:expand_deps(
+                                 git, [{Plugin1, Vsn, []}]))}]),
+    {ok, RConf} = file:consult(RConfFile),
+    rebar_test_utils:run_and_check(
+      Config, RConf, ["compile"],
+      {ok, [{app, Name},
+            {plugin, Plugin1, Vsn},
+            {plugin, Plugin2, Vsn},
+            {plugin, Dep1, Vsn},
+            {plugin, Dep2, "1.5.0"}]}
+    ).
 
 list(Config) ->
     rebar_test_utils:run_and_check(
