@@ -273,9 +273,9 @@ update_opts_deps(AppInfo=#app_info_t{opts=Opts}, Deps) ->
 -spec deps_from_config(file:filename(), [any()]) -> [{tuple(), any()}, ...].
 deps_from_config(Dir, ConfigDeps) ->
     case rebar_config:consult_lock_file(filename:join(Dir, ?LOCK_FILE)) of
-        [] ->
+        {[], _} ->
             [{{deps, default}, ConfigDeps}];
-        D ->
+        {D, _} ->
             %% We want the top level deps only from the lock file.
             %% This ensures deterministic overrides for configs.
             Deps = [X || X <- D, element(3, X) =:= 0],

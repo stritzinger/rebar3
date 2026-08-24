@@ -78,7 +78,7 @@ do(State) ->
         {error, Reason} ->
             ?PRV_ERROR({file,Reason});
         {ok, _} ->
-            Locks = rebar_config:consult_lock_file(LockFile),
+            {Locks, _PluginLocks} = rebar_config:consult_lock_file(LockFile),
             {ok, NewLocks} = handle_unlocks(State, Locks, LockFile),
             {ok, rebar_state:set(State, {locks, default}, NewLocks)}
     end.
