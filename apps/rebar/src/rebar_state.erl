@@ -38,6 +38,7 @@
          escript_path/1, escript_path/2,
 
          lock/1, lock/2,
+         plugin_lock/1, plugin_lock/2,
 
          current_profiles/1, current_profiles/2,
 
@@ -84,6 +85,7 @@
                   escript_path                      :: undefined | file:filename_all(),
 
                   lock                = [],
+                  plugin_lock         = [],
                   current_profiles    = [default]   :: [atom()],
                   namespace           = default     :: atom(),
 
@@ -255,6 +257,15 @@ lock(State=#state_t{}, Apps) when is_list(Apps) ->
     State#state_t{lock=Apps};
 lock(State=#state_t{lock=Lock}, App) ->
     State#state_t{lock=[App | Lock]}.
+
+plugin_lock(#state_t{plugin_lock=PluginLock}) ->
+    PluginLock.
+
+plugin_lock(State=#state_t{}, Apps) when is_list(Apps) ->
+    State#state_t{plugin_lock=Apps};
+
+plugin_lock(State=#state_t{plugin_lock=PluginLock}, App) ->
+    State#state_t{plugin_lock=[App | PluginLock]}.
 
 escript_path(#state_t{escript_path=EscriptPath}) ->
     EscriptPath.
