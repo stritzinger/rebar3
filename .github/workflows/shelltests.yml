@@ -30,19 +30,22 @@ on:
       - 'kickstarter/base'
       - 'kickstarter/stretch-1'
 
+permissions:
+  contents: read
+
 jobs:
   shelltests:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout Repository
-      uses: actions/checkout@v7
+      uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4.4.0
       with:
         path: 'rebar'
     - name: Setup Erlang and Elixir
-      uses: erlef/setup-beam@v1
+      uses: erlef/setup-beam@54075bcc5e249e4758d363f27d099f55d843f124  # v1.24.1
       with:
-          otp-version: '28.3'
-          elixir-version: '1.20.3'
+          otp-version: '29'
+          elixir-version: '1.20.4'
     - name: Compile
       run: ./bootstrap
       working-directory: ./rebar
@@ -51,7 +54,7 @@ jobs:
         sudo cp ./rebar/rebar /usr/local/bin/
 
     - name: Checkout Shell Tests
-      uses: actions/checkout@v7
+      uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4.4.0
       with:
           repository: 'stritzinger/rebar3_tests'
           path: 'rebar3_tests'
