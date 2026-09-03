@@ -1,4 +1,4 @@
-%% Vendored from hex_core v0.12.2, do not edit manually
+%% Vendored from hex_core v0.19.0, do not edit manually
 
 %% @doc
 %% Repo API.
@@ -7,10 +7,15 @@
     get_names/1,
     get_versions/1,
     get_package/2,
+    get_policy/2,
     get_tarball/3,
+    get_tarball_to_file/4,
     get_docs/3,
+    get_docs_to_file/4,
     get_public_key/1,
-    get_hex_installs/1
+    get_hex_installs/1,
+    fingerprint/1,
+    fingerprint_equal/2
 ]).
 
 %%====================================================================
@@ -87,13 +92,42 @@ get_package(Config, Name) when is_binary(Name) and is_map(Config) ->
     get_protobuf(Config, <<"packages/", Name/binary>>, Decoder).
 
 %% @doc
+%% Gets policy resource from the repository.
+%%
+%% Like the other resources, the URL is built from `repo_url' (with
+%% `repo_organization' inserting the `/repos/:org' segment when set), so the
+%% caller controls the layout through the config rather than this function
+%% requiring a particular field.
+%%
+%% Examples:
+%%
+%% ```
+%% > Config = (rb_hex_core:default_config())#{repo_organization => <<"myorg">>},
+%% > rb_hex_repo:get_policy(Config, <<"strict-prod">>).
+%% {ok, {200, ...,
+%%       #{repository => <<"myorg">>,
+%%         name => <<"strict-prod">>,
+%%         visibility => 'VISIBILITY_PUBLIC'}}}
+%% '''
+%% @end
+get_policy(Config, Name) when is_binary(Name) and is_map(Config) ->
+    Verify = maps:get(repo_verify_origin, Config, true),
+    Decoder = fun(Data) ->
+        case Verify of
+            true -> rb_hex_registry:decode_policy(Data, repo_name(Config), Name);
+            false -> rb_hex_registry:decode_policy(Data, no_verify, no_verify)
+        end
+    end,
+    get_protobuf(Config, <<"policies/", Name/binary>>, Decoder).
+
+%% @doc
 %% Gets tarball from the repository.
 %%
 %% Examples:
 %%
 %% ```
 %% > {ok, {200, _, Tarball}} = rb_hex_repo:get_tarball(rb_hex_core:default_config(), <<"package1">>, <<"1.0.0">>),
-%% > {ok, #{metadata := Metadata}} = rb_hex_tarball:unpack(Tarball, memory).
+%% > {ok, #{metadata := Metadata}} = rb_hex_tarball:unpack(Tarball, "/tmp/package").
 %% '''
 %% @end
 get_tarball(Config, Name, Version) ->
@@ -107,14 +141,34 @@ get_tarball(Config, Name, Version) ->
     end.
 
 %% @doc
+%% Gets tarball from the repository and writes it to a file.
+%%
+%% Examples:
+%%
+%% ```
+%% > {ok, {200, _}} = rb_hex_repo:get_tarball_to_file(rb_hex_core:default_config(), <<"package1">>, <<"1.0.0">>, "/tmp/package.tar"),
+%% > {ok, #{metadata := Metadata}} = rb_hex_tarball:unpack({file, "/tmp/package.tar"}, "/tmp/package").
+%% '''
+%% @end
+get_tarball_to_file(Config, Name, Version, Filename) ->
+    ReqHeaders = make_headers(Config),
+
+    case get_to_file(Config, tarball_url(Config, Name, Version), ReqHeaders, Filename) of
+        {ok, {200, RespHeaders}} ->
+            {ok, {200, RespHeaders}};
+        Other ->
+            Other
+    end.
+
+%% @doc
 %% Gets docs tarball from the repository.
 %%
 %% Examples:
 %%
 %% ```
 %% > {ok, {200, _, Docs}} = rb_hex_repo:get_docs(rb_hex_core:default_config(), <<"package1">>, <<"1.0.0">>),
-%% > rb_hex_tarball:unpack_docs(Docs, memory)
-%% {ok, [{"index.html", <<"<!doctype>">>}, ...]}
+%% > rb_hex_tarball:unpack_docs(Docs, "/tmp/docs")
+%% ok
 %% '''
 get_docs(Config, Name, Version) ->
     ReqHeaders = make_headers(Config),
@@ -122,6 +176,25 @@ get_docs(Config, Name, Version) ->
     case get(Config, docs_url(Config, Name, Version), ReqHeaders) of
         {ok, {200, RespHeaders, Docs}} ->
             {ok, {200, RespHeaders, Docs}};
+        Other ->
+            Other
+    end.
+
+%% @doc
+%% Gets docs tarball from the repository and writes it to a file.
+%%
+%% Examples:
+%%
+%% ```
+%% > {ok, {200, _}} = rb_hex_repo:get_docs_to_file(rb_hex_core:default_config(), <<"package1">>, <<"1.0.0">>, "/tmp/docs.tar.gz"),
+%% > ok = rb_hex_tarball:unpack_docs({file, "/tmp/docs.tar.gz"}, "/tmp/docs").
+%% '''
+get_docs_to_file(Config, Name, Version, Filename) ->
+    ReqHeaders = make_headers(Config),
+
+    case get_to_file(Config, docs_url(Config, Name, Version), ReqHeaders, Filename) of
+        {ok, {200, RespHeaders}} ->
+            {ok, {200, RespHeaders}};
         Other ->
             Other
     end.
@@ -167,6 +240,66 @@ get_hex_installs(Config) ->
             Other
     end.
 
+%% @doc
+%% Computes a SHA256 fingerprint of a PEM-encoded public key.
+%%
+%% Returns a string in the format "SHA256:" followed by base64, which can be used
+%% to verify public keys out-of-band.
+%%
+%% Examples:
+%%
+%% ```
+%% > rb_hex_repo:fingerprint(PublicKeyPem).
+%% "SHA256:abc123..."
+%% '''
+%% @end
+-spec fingerprint(binary()) -> string().
+fingerprint(PublicKeyPem) when is_binary(PublicKeyPem) ->
+    [PemEntry] = public_key:pem_decode(PublicKeyPem),
+    PublicKey = public_key:pem_entry_decode(PemEntry),
+    application:ensure_all_started(ssh),
+    ssh:hostkey_fingerprint(sha256, PublicKey).
+
+%% @doc
+%% Compares a PEM-encoded public key against an expected fingerprint.
+%%
+%% Uses constant-time comparison to prevent timing attacks.
+%%
+%% Examples:
+%%
+%% ```
+%% > rb_hex_repo:fingerprint_equal(PublicKeyPem, "SHA256:abc123...").
+%% true
+%% '''
+%% @end
+-spec fingerprint_equal(binary(), iodata()) -> boolean().
+fingerprint_equal(PublicKeyPem, ExpectedFingerprint) when is_binary(PublicKeyPem) ->
+    ActualFingerprint = fingerprint(PublicKeyPem),
+    constant_time_compare(
+        list_to_binary(ActualFingerprint),
+        iolist_to_binary(ExpectedFingerprint)
+    ).
+
+%% @private
+%% Constant-time comparison to prevent timing attacks.
+%% Uses crypto:hash_equals/2 on OTP 25+, falls back to manual comparison on older versions.
+-if(?OTP_RELEASE >= 25).
+constant_time_compare(A, B) when byte_size(A) =/= byte_size(B) ->
+    false;
+constant_time_compare(A, B) ->
+    crypto:hash_equals(A, B).
+-else.
+constant_time_compare(A, B) when byte_size(A) =:= byte_size(B) ->
+    constant_time_compare(A, B, 0);
+constant_time_compare(_, _) ->
+    false.
+
+constant_time_compare(<<X, RestA/binary>>, <<Y, RestB/binary>>, Acc) ->
+    constant_time_compare(RestA, RestB, Acc bor (X bxor Y));
+constant_time_compare(<<>>, <<>>, Acc) ->
+    Acc =:= 0.
+-endif.
+
 %%====================================================================
 %% Internal functions
 %%====================================================================
@@ -174,6 +307,10 @@ get_hex_installs(Config) ->
 %% @private
 get(Config, URI, Headers) ->
     rb_hex_http:request(Config, get, URI, Headers, undefined).
+
+%% @private
+get_to_file(Config, URI, Headers, Filename) ->
+    rb_hex_http:request_to_file(Config, get, URI, Headers, undefined, Filename).
 
 %% @private
 get_protobuf(Config, Path, Decoder) ->
