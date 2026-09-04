@@ -360,7 +360,7 @@ update_source(AppInfo, {pkg, PkgName, PkgVsn, OldHash, Hash}, State) ->
                      dependencies=Deps,
                      retired=Retired} = Package,
             maybe_warn_retired(PkgName, PkgVsn1, Hash, Retired),
-            Advisories = maybe_warn_advisories(PkgName, PkgVsn1, Package),
+            Advisories = maybe_warn_advisories(PkgName, PkgVsn1, Package, State),
             PkgVsn2 = rebar_semver:format(PkgVsn1),
             AppInfo1 = rebar_app_info:source(AppInfo, {pkg, PkgName, PkgVsn2, OldHash1, Hash1, RepoConfig}),
             AppInfo2 = rebar_app_info:update_opts_deps(AppInfo1, Deps),
@@ -402,19 +402,29 @@ maybe_warn_retired(Name, Vsn, _, R=#{reason := Reason}) ->
 maybe_warn_retired(_, _, _, _) ->
     ok.
 
-maybe_warn_advisories(_, _, #package{advisory_indexes=[]}) ->
+maybe_warn_advisories(_, _, #package{advisory_indexes=[]}, _) ->
     [];
-maybe_warn_advisories(Name, Vsn, Package) ->
+maybe_warn_advisories(Name, Vsn, Package, State) ->
     Advisories = rebar_packages:get_advisories(Package, ?PACKAGE_TABLE),
     case Advisories of
         [] ->
             [];
         _ ->
+            warn_advisories(Name, Vsn, Advisories, State),
+            Advisories
+    end.
+
+warn_advisories(Name, Vsn, Advisories, State) ->
+    case rebar_state:get(State, task, undefined) of
+        'get-deps' ->
+            ok;
+        tree ->
+            ok;
+        _ ->
             ?WARN("Warning: package ~ts-~ts has known vulnerabilities:~n~ts"
                   "  For more details run rebar get-deps or rebar tree",
                   [Name, rebar_semver:format(Vsn),
-                   format_advisory_ids(Advisories)]),
-            Advisories
+                   format_advisory_ids(Advisories)])
     end.
 
 format_advisory_ids(Advisories) ->
