@@ -46,6 +46,7 @@
          parse_dep/6,
          expand_deps_sources/2,
          dep_to_app/7,
+         print_advisory_footnotes/1,
          lint_app_info/1,
          format_error/1]).
 
@@ -359,9 +360,11 @@ update_source(AppInfo, {pkg, PkgName, PkgVsn, OldHash, Hash}, State) ->
                      dependencies=Deps,
                      retired=Retired} = Package,
             maybe_warn_retired(PkgName, PkgVsn1, Hash, Retired),
+            Advisories = maybe_warn_advisories(PkgName, PkgVsn1, Package),
             PkgVsn2 = rebar_semver:format(PkgVsn1),
             AppInfo1 = rebar_app_info:source(AppInfo, {pkg, PkgName, PkgVsn2, OldHash1, Hash1, RepoConfig}),
-            rebar_app_info:update_opts_deps(AppInfo1, Deps);
+            AppInfo2 = rebar_app_info:update_opts_deps(AppInfo1, Deps),
+            rebar_app_info:set(AppInfo2, advisories, Advisories);
         not_found ->
             throw(?PRV_ERROR({missing_package, PkgName, PkgVsn}));
         {error, {invalid_vsn, InvalidVsn}} ->
@@ -398,6 +401,72 @@ maybe_warn_retired(Name, Vsn, _, R=#{reason := Reason}) ->
           [Name, rebar_semver:format(Vsn), retire_reason(Reason), Message]);
 maybe_warn_retired(_, _, _, _) ->
     ok.
+
+maybe_warn_advisories(_, _, #package{advisory_indexes=[]}) ->
+    [];
+maybe_warn_advisories(Name, Vsn, Package) ->
+    Advisories = rebar_packages:get_advisories(Package, ?PACKAGE_TABLE),
+    case Advisories of
+        [] ->
+            [];
+        _ ->
+            ?WARN("Warning: package ~ts-~ts has known vulnerabilities:~n~ts"
+                  "  For more details run rebar get-deps or rebar tree",
+                  [Name, rebar_semver:format(Vsn),
+                   format_advisory_ids(Advisories)]),
+            Advisories
+    end.
+
+format_advisory_ids(Advisories) ->
+    lists:flatten([io_lib:format("  ~ts (~ts)~ts~n",
+                                 [maps:get(id, Advisory, <<"unknown">>),
+                                  severity(maps:get(severity, Advisory,
+                                                   'SEVERITY_NONE')),
+                                  format_aliases(maps:get(aliases, Advisory, []))])
+                   || Advisory <- Advisories]).
+
+format_aliases([]) ->
+    "";
+format_aliases(Aliases) ->
+    io_lib:format(" (aka: ~ts)", [string:join([rebar_utils:to_list(Alias)
+                                                || Alias <- Aliases], ", ")]).
+
+severity('SEVERITY_LOW') -> "LOW";
+severity('SEVERITY_MEDIUM') -> "MEDIUM";
+severity('SEVERITY_HIGH') -> "HIGH";
+severity('SEVERITY_CRITICAL') -> "CRITICAL";
+severity(_) -> "UNKNOWN".
+
+-spec print_advisory_footnotes([rebar_app_info:t()]) -> ok.
+print_advisory_footnotes(SrcDeps) ->
+    Advisories = [{rebar_app_info:name(App),
+                   rebar_app_info:original_vsn(App),
+                   rebar_app_info:get(App, advisories, [])}
+                  || App <- SrcDeps,
+                     rebar_app_info:get(App, advisories, []) =/= []],
+    print_advisory_footnotes_(Advisories).
+
+print_advisory_footnotes_([]) ->
+    ok;
+print_advisory_footnotes_(Advisories) ->
+    io:format("~nSecurity advisories:~n"),
+    lists:foreach(fun({Name, Vsn, PackageAdvisories}) ->
+                          io:format("  ~ts-~ts:~n", [Name, Vsn]),
+                          lists:foreach(fun(Advisory) ->
+                                io:format("    ~ts (~ts)~n      ~ts~n      ~ts~n",
+                                    [maps:get(id, Advisory, <<"unknown">>),
+                                     colored_severity(maps:get(severity, Advisory,
+                                                                'SEVERITY_NONE')),
+                                     maps:get(summary, Advisory, <<>>),
+                                     maps:get(html_url, Advisory, <<>>)])
+                          end, PackageAdvisories)
+                  end, Advisories).
+
+colored_severity('SEVERITY_LOW') -> "LOW";
+colored_severity('SEVERITY_MEDIUM') -> cf:format("~!y~ts~!!", ["MEDIUM"]);
+colored_severity('SEVERITY_HIGH') -> cf:format("~!R~ts~!!", ["HIGH"]);
+colored_severity('SEVERITY_CRITICAL') -> cf:format("~!R~ts~!!", ["CRITICAL"]);
+colored_severity(_) -> "UNKNOWN".
 
 %% TODO: move to hex_core
 retire_reason('RETIRED_OTHER') ->
