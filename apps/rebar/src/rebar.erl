@@ -129,44 +129,47 @@ run_aux(State, RawArgs) ->
       {error, _} -> io:setopts([{encoding, unicode}])
     end,
 
+    {Task, Args} = parse_args(RawArgs),
+    State1 = rebar_state:set(State, task, Task),
+
     %% Profile override; can only support one profile
-    State1 = case os:getenv("REBAR_PROFILE") of
+    State2 = case os:getenv("REBAR_PROFILE") of
                  false ->
-                     State;
+                     State1;
                  "" ->
-                     State;
+                     State1;
                  Profile ->
-                     rebar_state:apply_profiles(State, [list_to_atom(Profile)])
+                     rebar_state:apply_profiles(State1, [list_to_atom(Profile)])
              end,
 
-    MinimumOTPVsn = rebar_state:get(State1, minimum_otp_vsn, undefined),
-    App0 = rebar_state:current_app(State1),
+    MinimumOTPVsn = rebar_state:get(State2, minimum_otp_vsn, undefined),
+    App0 = rebar_state:current_app(State2),
     App = case App0 of
               undefined -> undefined;
               _ -> rebar_app_info:name(App0)
           end,
     rebar_utils:check_min_otp_version(MinimumOTPVsn, App),
-    rebar_utils:check_blacklisted_otp_versions(rebar_state:get(State1, blacklisted_otp_vsns, undefined)),
+    rebar_utils:check_blacklisted_otp_versions(rebar_state:get(State2, blacklisted_otp_vsns, undefined)),
 
     %% Maybe change the default hex CDN
-    State2 = case hex_cdn() of
+    State3 = case hex_cdn() of
                  "" ->
-                     State1;
+                     State2;
                  CDN ->
-                     rebar_state:set(State1, rebar_packages_cdn, CDN)
+                     rebar_state:set(State2, rebar_packages_cdn, CDN)
              end,
 
     Compilers = application:get_env(rebar, compilers, []),
-    State0 = rebar_state:compilers(State2, Compilers),
+    State4 = rebar_state:compilers(State3, Compilers),
 
     %% TODO: this means use of REBAR_PROFILE=profile will replace the repos with
     %% the repos defined in the profile. But it will not work with `as profile`.
     %% Maybe it shouldn't work with either to be consistent?
     Resources = application:get_env(rebar, resources, []),
-    State2_ = rebar_state:create_resources(Resources, State0),
+    State5 = rebar_state:create_resources(Resources, State4),
 
     %% bootstrap test profile
-    State3 = rebar_state:add_to_profile(State2_, test, test_state(State1)),
+    State6 = rebar_state:add_to_profile(State5, test, test_state(State2)),
 
     BaseDir = case os:getenv("REBAR_BASE_DIR") of
                   D when D =:= false orelse D =:= "" ->
@@ -174,33 +177,32 @@ run_aux(State, RawArgs) ->
                   Dir ->
                       Dir
               end,
-    State4 = rebar_state:set(State3, base_dir,
-                             filename:join(filename:absname(rebar_state:dir(State3)), BaseDir)),
+    State7 = rebar_state:set(State6, base_dir,
+                             filename:join(filename:absname(rebar_state:dir(State6)), BaseDir)),
 
-    State5 = case os:getenv("REBAR_CACHE_DIR") of
+    State8 = case os:getenv("REBAR_CACHE_DIR") of
                 false ->
-                    State4;
+                    State7;
                 CachePath ->
-                    rebar_state:set(State4, global_rebar_dir, CachePath)
+                    rebar_state:set(State7, global_rebar_dir, CachePath)
             end,
 
     {ok, Providers} = application:get_env(rebar, providers),
     %% Providers can modify profiles stored in opts, so set default after initializing providers
-    State6 = rebar_state:create_logic_providers(Providers, State5),
+    State9 = rebar_state:create_logic_providers(Providers, State8),
 
-    State7 = case os:getenv("REBAR_SKIP_PROJECT_PLUGINS") of
+    State10 = case os:getenv("REBAR_SKIP_PROJECT_PLUGINS") of
                  false ->
                      %% Initializing project_plugins which can override default providers
-                     rebar_plugins:project_plugins_install(State6);
+                     rebar_plugins:project_plugins_install(State9);
                  _ ->
-                     State6
+                     State9
              end,
 
-    State8 = rebar_plugins:top_level_install(State7),
+    State11 = rebar_plugins:top_level_install(State10),
 
-    State9 = rebar_state:default(State8, rebar_state:opts(State8)),
+    State12 = rebar_state:default(State11, rebar_state:opts(State11)),
 
-    {Task, Args} = parse_args(RawArgs),
     Offline = case lists:member("--offline", Args) of
                   true ->
                       %% We store this redundantly in env, because some APIs
@@ -210,18 +212,18 @@ run_aux(State, RawArgs) ->
                   false ->
                       os:getenv("REBAR_OFFLINE") =:= "1"
               end,
-    State10 = rebar_state:set(State9, offline, Offline),
+    State13 = rebar_state:set(State12, offline, Offline),
 
-    State11 = rebar_state:code_paths(State10, default, code:get_path()),
+    State14 = rebar_state:code_paths(State13, default, code:get_path()),
 
-    case rebar_core:init_command(rebar_state:command_args(State11, Args), Task) of
-        {ok, State12} ->
-            case rebar_state:get(State11, caller, command_line) of
+    case rebar_core:init_command(rebar_state:command_args(State14, Args), Task) of
+        {ok, State15} ->
+            case rebar_state:get(State14, caller, command_line) of
                 api ->
-                    rebar_paths:unset_paths([deps, plugins], State11),
-                    {ok, State12};
+                    rebar_paths:unset_paths([deps, plugins], State14),
+                    {ok, State15};
                 _ ->
-                    {ok, State12}
+                    {ok, State15}
             end;
         Other ->
             Other

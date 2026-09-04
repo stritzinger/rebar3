@@ -29,7 +29,7 @@
 -define(LOCK_FILE, "rebar.lock").
 -define(DEFAULT_COMPILER_SOURCE_FORMAT, relative).
 -define(DEFAULT_COMPILER_ERROR_FORMAT, rich). % 'minimal' for default values as of 3.23.0 and earlier
--define(PACKAGE_INDEX_VERSION, 7).
+-define(PACKAGE_INDEX_VERSION, 8).
 -define(PACKAGE_TABLE, package_index).
 -define(INDEX_FILE, "packages.idx").
 -define(HEX_AUTH_FILE, "hex.config").
@@ -52,7 +52,11 @@
                   outer_checksum :: binary() | ms_field(),
                   retired :: boolean() | ms_field() | #{reason := atom()},
                   dependencies :: [#{package => unicode:unicode_binary(),
-                                     requirement => unicode:unicode_binary()}] | ms_field()}).
+                                     requirement => unicode:unicode_binary()}] | ms_field(),
+                  advisory_indexes = [] :: [non_neg_integer()] | ms_field()}).
+
+-record(advisories, {key :: {advisory, term()},
+                     value :: [map()]}).
 
 -record(resource, {type :: atom(),
                    module :: module(),

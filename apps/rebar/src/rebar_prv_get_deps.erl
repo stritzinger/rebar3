@@ -54,7 +54,9 @@ cli() ->
       arguments => []}. 
 
 -spec do(rebar_state:t()) -> {ok, rebar_state:t()}.
-do(State) -> {ok, State}.
+do(State) ->
+    rebar_app_utils:print_advisory_footnotes(rebar_state:all_deps(State)),
+    {ok, State}.
 
 -spec format_error(any()) -> iolist().
 format_error(Reason) ->
