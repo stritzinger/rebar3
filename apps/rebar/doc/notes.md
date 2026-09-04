@@ -48,6 +48,13 @@ longer depend on Getopt.
 
   [PR-22], [PR-23], [PR-25], [PR-26]
 
+- Upgrade hex\_core to version 0.19.0.
+
+  [PR-30]
+
+- Show vulnerability warnings and security advisories.
+
+  [PR-31]
 
 ### Changes
 
@@ -112,3 +119,5 @@ is no longer supported. Use `rb:do(clean, ["-p", "test"])` instead of `rb:do(cle
 [PR-23]: https://github.com/stritzinger/rebar3/pull/23
 [PR-25]: https://github.com/stritzinger/rebar3/pull/25
 [PR-26]: https://github.com/stritzinger/rebar3/pull/26
+[PR-30]: https://github.com/stritzinger/rebar3/pull/30
+[PR-31]: https://github.com/stritzinger/rebar3/pull/31
