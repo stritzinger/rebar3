@@ -30,6 +30,7 @@
         ,verify_table/1
         ,format_error/1
         ,update_package/3
+        ,get_advisories/2
         ,resolve_version/6]).
 
 -ifdef(TEST).
@@ -252,7 +253,8 @@ update_package(Name, RepoConfig=#{name := Repo}, State) ->
     try rb_hex_repo:get_package(get_package_repo_config(RepoConfig), Name) of
         {ok, {200, _Headers, Package}} ->
             #{releases := Releases} = Package,
-            _ = insert_releases(Name, Releases, Repo, ?PACKAGE_TABLE),
+            _ = insert_releases(Name, Releases, Repo, ?PACKAGE_TABLE,
+                                 maps:get(advisories, Package, [])),
             {ok, RegistryDir} = rebar_packages:registry_dir(State),
             PackageIndex = filename:join(RegistryDir, ?INDEX_FILE),
             case ets:tab2file(?PACKAGE_TABLE, PackageIndex) of
@@ -286,8 +288,8 @@ unverified_repo_message() ->
     "security reasons. The repository should be updated in order to be safer. "
     "You can disable this check by setting REBAR_NO_VERIFY_REPO_ORIGIN=1".
 
-insert_releases(_, [], _, _) -> nil;
-insert_releases(Name, [Release|Releases], Repo, Table) ->
+insert_releases(_, [], _, _, _) -> nil;
+insert_releases(Name, [Release|Releases], Repo, Table, PackageAdvisories) ->
     #{
         inner_checksum := InnerChecksum,
         outer_checksum := OuterChecksum,
@@ -295,15 +297,32 @@ insert_releases(Name, [Release|Releases], Repo, Table) ->
         dependencies := Dependencies
     } = Release,
     {ok, Parsed} = rebar_semver:parse_version(Version),
+    AdvisoryIndexes = maps:get(advisory_indexes, Release, []),
     Package = #package{
         key={Name, Parsed, Repo},
         inner_checksum=parse_checksum(InnerChecksum),
         outer_checksum=parse_checksum(OuterChecksum),
         retired=maps:get(retired, Release, false),
-        dependencies=parse_deps(Dependencies)
+        dependencies=parse_deps(Dependencies),
+        advisory_indexes=AdvisoryIndexes
     },
     true = ets:insert(Table, Package),
-    insert_releases(Name, Releases, Repo, Table).
+    true = ets:insert(Table, #advisories{
+                                key={advisory, {Name, Parsed, Repo}},
+                                value=advisories(PackageAdvisories,
+                                                 AdvisoryIndexes)}),
+    insert_releases(Name, Releases, Repo, Table, PackageAdvisories).
+
+advisories(Advisories, Indexes) ->
+    [lists:nth(Index + 1, Advisories) || Index <- Indexes, Index >= 0,
+                                          Index < length(Advisories)].
+
+-spec get_advisories(#package{}, ets:tab()) -> [map()].
+get_advisories(#package{key=Key}, Table) ->
+    case ets:lookup(Table, {advisory, Key}) of
+        [#advisories{key={advisory, Key}, value=Value}] -> Value;
+        _ -> []
+    end.
 
 -spec resolve_version(unicode:unicode_binary(), unicode:unicode_binary() | undefined,
                       binary() | undefined,

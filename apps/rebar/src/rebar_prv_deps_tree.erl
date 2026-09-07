@@ -74,22 +74,27 @@ print_deps_tree(SrcDeps, Verbose, State) ->
                             Vsn1 = rebar_utils:vcs_vsn(App, Vsn, State),
                             Source  = rebar_app_info:source(App),
                             Parent = rebar_app_info:parent(App),
-                            dict:append_list(Parent, [{Name, Vsn1, Source}], Dict)
+                            Advisories = rebar_app_info:get(App, advisories, []),
+                            dict:append_list(Parent,
+                                             [{Name, Vsn1, Source, Advisories}],
+                                             Dict)
                     end, dict:new(), SrcDeps),
     ProjectAppNames = [{rebar_app_info:name(App)
                        ,rebar_utils:vcs_vsn(App, rebar_app_info:original_vsn(App), State)
-                       ,project} || App <- rebar_state:project_apps(State)],
+                       ,project, []} || App <- rebar_state:project_apps(State)],
     case dict:find(root, D) of
         {ok, Children} ->
             print_children("", lists:keysort(1, ProjectAppNames), D, Verbose),
-            print_children("   ", lists:keysort(1, Children), D, Verbose);
+            print_children("   ", lists:keysort(1, Children), D, Verbose),
+            rebar_app_utils:print_advisory_footnotes(SrcDeps);
         error ->
-            print_children("", lists:keysort(1, ProjectAppNames), D, Verbose)
+            print_children("", lists:keysort(1, ProjectAppNames), D, Verbose),
+            rebar_app_utils:print_advisory_footnotes(SrcDeps)
     end.
 
 print_children(_, [], _, _) ->
     ok;
-print_children(Prefix, [{Name, Vsn, Source} | Rest], Dict, Verbose) ->
+print_children(Prefix, [{Name, Vsn, Source, Advisories} | Rest], Dict, Verbose) ->
     Prefix1 = case Rest of
                   [] ->
                       io:format("~ts~ts", [Prefix, <<226,148,148,226,148,128,32>>]), %Binary for └─ utf8%
@@ -98,7 +103,12 @@ print_children(Prefix, [{Name, Vsn, Source} | Rest], Dict, Verbose) ->
                       io:format("~ts~ts", [Prefix, <<226,148,156,226,148,128,32>>]), %Binary for ├─ utf8%
                       [Prefix, <<226,148,130,32,32>>] %Binary for │  utf8%
               end,
-    io:format("~ts~ts~ts (~ts)~n", [Name, <<226,148,128>>, Vsn, type(Source, Verbose)]), %Binary for ─ utf8%
+    Marker = case Advisories of
+                 [] -> "";
+                 _ -> [" ", cf:format("~!R~ts~!!", ["VULNERABLE!"])]
+             end,
+    io:format("~ts~ts~ts (~ts)~ts~n", [Name, <<226,148,128>>, Vsn,
+                                       type(Source, Verbose), Marker]), %Binary for ─ utf8%
     case dict:find(Name, Dict) of
         {ok, Children} ->
             print_children(Prefix1, lists:keysort(1, Children), Dict, Verbose),

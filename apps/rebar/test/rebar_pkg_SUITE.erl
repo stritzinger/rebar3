@@ -39,7 +39,7 @@
 all() -> [good_uncached, good_cached, badpkg, badhash_nocache,
           badindexchk, badhash_cache, bad_to_good, good_disconnect,
           bad_disconnect, pkgs_provider, find_highest_matching,
-          parse_deps_ignores_optional].
+          parse_deps_ignores_optional, advisories_are_release_specific].
 
 init_per_suite(Config) ->
     application:start(meck),
@@ -289,6 +289,60 @@ parse_deps_ignores_optional(_Config) ->
                   {<<"exp">>, {pkg, <<"exp">>, <<"~> 3.0">>, _, _}},
                   {<<"alias">>, {pkg, <<"ali">>, <<"4.0">>, _, _}}],
                  Result).
+
+advisories_are_release_specific(Config) ->
+    Advisory0 = #{id => <<"CVE-2026-0001">>,
+                  summary => <<"First vulnerability">>,
+                  html_url => <<"https://osv.dev/vulnerability/CVE-2026-0001">>,
+                  api_url => <<"https://api.osv.dev/vulnerability/CVE-2026-0001">>,
+                  severity => 'SEVERITY_HIGH'},
+    Advisory1 = #{id => <<"GHSA-test-test-test">>,
+                  summary => <<"Second vulnerability">>,
+                  html_url => <<"https://osv.dev/vulnerability/GHSA-test-test-test">>,
+                  api_url => <<"https://api.osv.dev/vulnerability/GHSA-test-test-test">>,
+                  severity => 'SEVERITY_LOW'},
+    Releases = [#{outer_checksum => <<"outer-1">>,
+                  inner_checksum => <<"inner-1">>,
+                  version => <<"1.0.0">>,
+                  dependencies => [],
+                  advisory_indexes => [1]},
+                #{outer_checksum => <<"outer-2">>,
+                  inner_checksum => <<"inner-2">>,
+                  version => <<"2.0.0">>,
+                  dependencies => [],
+                  advisory_indexes => [0]},
+                #{outer_checksum => <<"outer-3">>,
+                  inner_checksum => <<"inner-3">>,
+                  version => <<"3.0.0">>,
+                  dependencies => []}],
+    meck:expect(rb_hex_repo, get_package,
+                fun(_, _) ->
+                        {ok, {200, #{}, #{releases => Releases,
+                                          advisories => [Advisory0, Advisory1]}}}
+                end),
+    State = ?config(state, Config),
+    ?assertEqual(ok, rebar_packages:update_package(<<"advisorypkg">>,
+                                                    #{name => <<"hexpm">>},
+                                                    State)),
+    {ok, Vsn1} = rebar_semver:parse_version(<<"1.0.0">>),
+    {ok, Vsn2} = rebar_semver:parse_version(<<"2.0.0">>),
+    {ok, Vsn3} = rebar_semver:parse_version(<<"3.0.0">>),
+    [Package1] = ets:lookup(?PACKAGE_TABLE, {<<"advisorypkg">>, Vsn1,
+                                             <<"hexpm">>}),
+    [Package2] = ets:lookup(?PACKAGE_TABLE, {<<"advisorypkg">>, Vsn2,
+                                             <<"hexpm">>}),
+    [Package3] = ets:lookup(?PACKAGE_TABLE, {<<"advisorypkg">>, Vsn3,
+                                             <<"hexpm">>}),
+    ?assertMatch(#package{advisory_indexes=[1]}, Package1),
+    ?assertMatch(#package{advisory_indexes=[0]}, Package2),
+    ?assertMatch(#package{advisory_indexes=[]}, Package3),
+    ?assertEqual([Advisory1], rebar_packages:get_advisories(Package1,
+                                                             ?PACKAGE_TABLE)),
+    ?assertEqual([Advisory0], rebar_packages:get_advisories(Package2,
+                                                             ?PACKAGE_TABLE)),
+    ?assertEqual([], rebar_packages:get_advisories(Package3,
+                                                   ?PACKAGE_TABLE)),
+    ok.
 
 %%%%%%%%%%%%%%%
 %%% Helpers %%%
