@@ -27,8 +27,7 @@
     is_valid/1,
     is_prerelease_or_build/1,
     match/2,
-    cmp/2,
-    format/1
+    cmp/2
 ]).
 
 -export_type([version/0, constraint/0]).
@@ -58,7 +57,16 @@
 %% OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 %% THE SOFTWARE.
 %%
-%% SPDX-SnippetComment: Types derived from ec_semver.erl in erlware_commons.
+%% SPDX-SnippetComment: Exports and types from ec_semver.erl in erlware_commons.
+
+-export([parse/1,
+         format/1,
+         eql/2,
+         gt/2,
+         gte/2,
+         lt/2,
+         lte/2,
+         pes/2]).
 
 -type version_element() :: non_neg_integer() | binary().
 
