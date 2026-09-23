@@ -294,14 +294,17 @@ init_config() ->
 -spec parse_args([string()]) -> {atom(), [string()]}.
 parse_args([]) ->
     parse_args(["help"]);
-parse_args([H | Rest]) when H =:= "-h"
-                          ; H =:= "--help" ->
-    parse_args(["help" | Rest]);
-parse_args([H | Rest]) when H =:= "-v"
-                          ; H =:= "--version" ->
-    parse_args(["version" | Rest]);
-parse_args([Task | RawRest]) ->
-    {list_to_atom(Task), RawRest}.
+parse_args(Args) when is_list(Args) ->
+    Flags = ["-h", "--help", "-v", "--version"],
+    maybe
+        false ?= lists:search(fun(E) -> lists:member(E, Flags) end, Args),
+        {list_to_atom(hd(Args)), tl(Args)}
+    else
+        {value, H} when H =:= "-h" ; H =:= "--help" ->
+            parse_args(["help" | lists:subtract(Args, [H])]);
+        {value, V} when V =:= "-v" ; V =:= "--version" ->
+            parse_args(["version" | lists:subtract(Args, [V])])
+    end.
 
 %% @private actually not too sure what this does anymore.
 -spec set_options(rebar_state:t(),{[any()],[any()]}) -> {rebar_state:t(),[any()]}.

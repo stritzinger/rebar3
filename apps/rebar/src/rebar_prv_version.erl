@@ -53,10 +53,17 @@ init(State) ->
 -spec cli() -> argparse:command().
 cli() ->
     #{help => "Print version for rebar and current Erlang.",
-      arguments => []}. 
+      arguments => [
+        #{name => args,
+          type => string,
+          nargs => list,
+          required => false,
+          help => hidden}]}.
 
 -spec do(rebar_state:t()) -> {ok, rebar_state:t()} | {error, string()}.
 do(State) ->
+    %% Version arguments are ignored for now.
+    %% In the future they might be used to show plugin versions.
     rebar:version(),
     {ok, State}.
 
