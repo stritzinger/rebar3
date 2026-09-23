@@ -25,7 +25,7 @@
 
 This document describes the changes made in Rebar starting with version 4.0.0.
 
-## Rebar 4.0.0-rc2
+## Rebar 4.0.0-rc3
 
 ### Improvements and New Features
 
@@ -90,10 +90,10 @@ is no longer supported. Use `rb:do(clean, ["-p", "test"])` instead of `rb:do(cle
 
   [PR-13]
 
-- To list available templates, use `rebar new help`. Passing no template to
+- To list available templates, use `rebar new --list`. Passing no template to
 `rebar new` is no longer supported.
 
-  [PR-8]
+  [PR-8], [PR-33]
 
 
 [PR-1]: https://github.com/stritzinger/rebar3/pull/1
@@ -116,3 +116,4 @@ is no longer supported. Use `rb:do(clean, ["-p", "test"])` instead of `rb:do(cle
 [PR-25]: https://github.com/stritzinger/rebar3/pull/25
 [PR-26]: https://github.com/stritzinger/rebar3/pull/26
 [PR-31]: https://github.com/stritzinger/rebar3/pull/31
+[PR-33]: https://github.com/stritzinger/rebar3/pull/33

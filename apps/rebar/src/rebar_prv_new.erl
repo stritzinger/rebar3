@@ -27,6 +27,7 @@
 -export([init/1,
          cli/0,
          do/1,
+         help/2,
          format_error/1]).
 
 -include("rebar.hrl").
@@ -53,6 +54,11 @@ init(State) ->
 cli() ->
     #{help => "Create new project from templates.",
       arguments => [
+        #{name => list,
+          short => $l,
+          long => "-list",
+          type => boolean,
+          help => "list available templates"},
         #{name => force,
           short => $f,
           long => "-force",
@@ -60,9 +66,9 @@ cli() ->
           help => "overwrite existing files"},
         #{name => template,
           type => string,
-          required => true,
+          required => false,
           help => "Template name. "
-                  "See available templates with: `rebar new help`"},
+                  "See available templates with: `rebar new --list`"},
         #{name => vars,
           type => string,
           nargs => list,
@@ -75,37 +81,49 @@ cli() ->
 -spec do(rebar_state:t()) -> {ok, rebar_state:t()} | {error, string()}.
 do(State) ->
     {Args, _} = rebar_state:command_parsed_args(State),
-    TemplateName = proplists:get_value(template, Args),
-    Opts = lists:append(proplists:get_value(vars, Args, [])),
-    case {TemplateName, Opts} of
-        {"help", []} ->
-            ?CONSOLE("Call `rebar new help <template>` for a detailed description~n", []),
+    case proplists:get_value(list, Args, false) of
+        true ->
             show_short_templates(list_templates(State)),
             {ok, State};
-        {"help", [HelpTemplate]} ->
-            case lists:keyfind(HelpTemplate, 1, list_templates(State)) of
-                false ->
-                    ?PRV_ERROR({template_not_found, HelpTemplate});
-                Term ->
-                    show_template(Term),
-                    {ok, State}
-            end;
-        {TemplateName, Opts} ->
-            case lists:keyfind(TemplateName, 1, list_templates(State)) of
-                false ->
-                    ?PRV_ERROR({template_not_found, TemplateName});
-                _ ->
-                    Force = is_forced(State),
-                    ok = rebar_templater:new(TemplateName, parse_opts(Opts), Force, State),
-                    {ok, State}
+        false ->
+            TemplateName = proplists:get_value(template, Args),
+            Opts = lists:append(proplists:get_value(vars, Args, [])),
+            case {TemplateName, Opts} of
+                {undefined, _} ->
+                    ?PRV_ERROR(template_required);
+                {TemplateName1, Opts1} ->
+                    case lists:keyfind(TemplateName1, 1, list_templates(State)) of
+                        false ->
+                            ?PRV_ERROR({template_not_found, TemplateName1});
+                        _ ->
+                            Force = is_forced(State),
+                            ok = rebar_templater:new(TemplateName1, parse_opts(Opts1), Force, State),
+                            {ok, State}
+                    end
             end
     end.
+
+-spec help([string()], rebar_state:t()) -> {ok, rebar_state:t()} | {error, term()}.
+help([TemplateName], State) ->
+    case lists:keyfind(TemplateName, 1, list_templates(State)) of
+        false ->
+            ?PRV_ERROR({template_not_found, TemplateName});
+        Term ->
+            show_template(Term),
+            {ok, State}
+    end;
+help(Args, _State) ->
+    ?PRV_ERROR({invalid_help_args, Args}).
 
 -spec format_error(any()) -> iolist().
 format_error({consult, File, Reason}) ->
     io_lib:format("Error consulting file at ~ts for reason ~p", [File, Reason]);
 format_error({template_not_found, Name}) ->
-    io_lib:format("Template '~ts' not found.", [Name]);
+    io_lib:format("Template '~ts' not found. See available templates with: `rebar new --list`.", [Name]);
+format_error(template_required) ->
+    "Template name is required unless --list is used.";
+format_error({invalid_help_args, Args}) ->
+    io_lib:format("Expected one template name, got ~p.", [Args]);
 format_error(Reason) ->
     io_lib:format("~p", [Reason]).
 

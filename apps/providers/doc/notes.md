@@ -26,6 +26,15 @@
 This document describes the changes made in the Providers library starting with
 version 2.0.0.
 
+## Providers 2.0.1
+
+### Changes
+
+- The Providers library now supports an optional `help/2` callback for
+  provider-specific help for command arguments.
+
+  [PR-33]
+
 ## Providers 2.0.0
 
 ### Changes
@@ -65,3 +74,4 @@ new `cli/0` callback function and are likely not working for legacy providers.
 [PR-10]: https://github.com/stritzinger/rebar3/pull/10
 [PR-12]: https://github.com/stritzinger/rebar3/pull/12
 [PR-13]: https://github.com/stritzinger/rebar3/pull/13
+[PR-33]: https://github.com/stritzinger/rebar3/pull/33
