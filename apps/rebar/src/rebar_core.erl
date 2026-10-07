@@ -122,8 +122,7 @@ process_command(State, Command) ->
                     Profiles = providers:profiles(CommandProvider),
                     State1 = rebar_state:apply_profiles(State, Profiles),
                     case parse_command_args(CommandProvider, State1) of
-                        {ok, ParsedMap, _Path, _Cmd} ->
-                            ParsedArgs = normalize_parsed_args(ParsedMap),
+                        {ok, ParsedArgs} ->
                             State2 = rebar_state:command_parsed_args(State1, ParsedArgs),
                             do(TargetProviders, State2);
                         {error, ParseError} ->
@@ -188,7 +187,8 @@ friendly_provider(P) -> P.
 
 parse_command_args(CommandProvider, State) ->
     Module = providers:module(CommandProvider),
-    case erlang:function_exported(Module, cli, 0) of
+    HasCli = erlang:function_exported(Module, cli, 0),
+    Result = case HasCli of
         true ->
             argparse:parse(rebar_state:command_args(State), Module:cli(), parse_opts());
         false ->
@@ -197,7 +197,38 @@ parse_command_args(CommandProvider, State) ->
               rebar_legacy_cli:to_parse_command(CommandProvider),
               parse_opts()
             )
+    end,
+    case Result of
+        {ok, ParsedMap, _Path, _Cmd} ->
+            {Opts, Rest} = normalize_parsed_args(ParsedMap),
+            case HasCli of
+                true -> {ok, {Opts, Rest}};
+                false ->
+                    Specs = providers:opts(CommandProvider),
+                    {ok, {[legacy_parsed_option(Opt, Specs) || Opt <- Opts], Rest}}
+            end;
+        {error, _} = Error ->
+            Error
     end.
+
+%% Only argumentless getopt switches are bare atoms; typed booleans keep
+%% their values. Binary types were parsed as strings by the CLI adapter.
+legacy_parsed_option({Name, Value} = Opt, Specs) ->
+    case lists:keyfind(Name, 1, Specs) of
+        {Name, _, _, undefined, _} -> Name;
+        {Name, _, _, {Type, _Default}, _} ->
+            legacy_parsed_value(Name, Value, Type);
+        {Name, _, _, Type, _} ->
+            legacy_parsed_value(Name, Value, Type);
+        false -> Opt
+    end.
+
+legacy_parsed_value(Name, Value, binary) when is_list(Value) ->
+    {Name, list_to_binary(Value)};
+legacy_parsed_value(Name, Value, utf8_binary) when is_list(Value) ->
+    {Name, unicode:characters_to_binary(Value)};
+legacy_parsed_value(Name, Value, _Type) ->
+    {Name, Value}.
 
 parse_opts() ->
     #{progname => "rebar"}.
