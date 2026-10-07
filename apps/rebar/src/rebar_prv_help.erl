@@ -90,28 +90,60 @@ command_help(Path, State) ->
     Providers = rebar_state:providers(State),
     Cli = rebar_cli:global_cli(Providers),
     case command_exists(Path, Cli) of
-        true ->
-            HelpText = argparse:help(Cli, #{progname => "rebar", command => Path}),
-            io:format("~ts", [HelpText]),
+        {ok, CommandPath, []} ->
+            print_command_help(CommandPath, Cli),
             {ok, State};
+        {ok, CommandPath, Args} ->
+            provider_help(CommandPath, Args, Providers, State);
         false ->
             help_not_found(Path)
     end.
 
 command_exists([], _Cli) ->
-    true;
+    {ok, [], []};
 command_exists([Segment | Rest], Cli) ->
-    case maps:find(commands, Cli) of
-        {ok, Commands} ->
-            case maps:find(Segment, Commands) of
-                {ok, Subcommand} ->
+    maybe
+        {ok, Commands} ?= maps:find(commands, Cli),
+        {ok, Subcommand} ?= maps:find(Segment, Commands),
+        {ok, CommandPath, Args} ?=
+            case maps:is_key(commands, Subcommand) of
+                true ->
                     command_exists(Rest, Subcommand);
-                error ->
-                    false
-            end;
-        error ->
+                false ->
+                    {ok, [], Rest}
+            end,
+        {ok, [Segment | CommandPath], Args}
+    else
+        _ ->
             false
     end.
+
+print_command_help(CommandPath, Cli) ->
+    HelpText = argparse:help(Cli, #{progname => "rebar", command => CommandPath}),
+    io:format("~ts", [HelpText]).
+
+provider_help([ProviderName], Args, Providers, State) ->
+    provider_help(providers:get_provider(list_to_atom(ProviderName), Providers),
+                  Args, State);
+provider_help([Namespace, ProviderName], Args, Providers, State) ->
+    provider_help(providers:get_provider({list_to_atom(Namespace),
+                                          list_to_atom(ProviderName)}, Providers),
+                  Args, State).
+
+provider_help(not_found, _Args, _State) ->
+    {error, "Provider not found"};
+provider_help(Provider, Args, State) ->
+    Module = providers:module(Provider),
+    {module, Module} = code:ensure_loaded(Module),
+    case erlang:function_exported(Module, help, 2) of
+        true ->
+            Module:help(Args, State);
+        false ->
+            help_argument_not_found(atom_to_list(providers:impl(Provider)), Args)
+    end.
+
+help_argument_not_found(Task, [Argument | _]) ->
+    {error, "Command " ++ Argument ++ " not found in task " ++ Task}.
 
 help_not_found([Command]) ->
     {error, "Command " ++ Command ++ " not found"};

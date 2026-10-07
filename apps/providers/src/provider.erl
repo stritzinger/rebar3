@@ -27,5 +27,6 @@
 -callback init(any()) -> {ok, any()}.
 -callback cli() -> argparse:command().
 -callback do(any()) -> {ok, any()} | {error, string()} | {error, {module(), any()}}.
+-callback help([string()], any()) -> {ok, any()} | {error, string()} | {error, {module(), any()}}.
 -callback format_error(any()) -> iolist().
--optional_callbacks([cli/0]).
+-optional_callbacks([cli/0, help/2]).

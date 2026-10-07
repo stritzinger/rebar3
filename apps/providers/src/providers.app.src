@@ -22,7 +22,7 @@
 
 {application,providers,
              [{description,"Providers provider."},
-              {vsn,"1.9.0"},
+              {vsn,"2.0.1"},
               {registered,[]},
               {applications,[kernel,stdlib]},
               {licenses,["Apache 2.0"]},

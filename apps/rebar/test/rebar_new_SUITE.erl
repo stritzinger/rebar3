@@ -30,6 +30,7 @@
 
 all() -> [app_git_user, app_hg_user, app_with_fallbacks,
           app_with_flags1, app_with_flags2, plugin_tpl,
+          list_templates, list_templates_short_flag, template_help,
           missing_template_uses_rebar_progname, unknown_template].
 
 
@@ -182,18 +183,24 @@ plugin_tpl(Config) ->
     {ok, Bin} = file:read_file(Result),
     {match, _} = re:run(Bin, Name, [multiline,global]).
 
+list_templates(Config) ->
+    rebar_test_utils:run_and_check(Config, [], ["new", "--list"], {ok, []}).
+
+list_templates_short_flag(Config) ->
+    rebar_test_utils:run_and_check(Config, [], ["new", "-l"], {ok, []}).
+
+template_help(Config) ->
+    rebar_test_utils:run_and_check(Config, [], ["new", "test_app", "--help"], {ok, []}).
+
 missing_template_uses_rebar_progname(Config) ->
-    ?assertEqual({error, "rebar: required argument missing: template"},
-                 case rebar_test_utils:run_and_check(Config, [], ["new"], return) of
-                     {error, Msg} -> {error, lists:flatten(Msg)};
-                     Other -> Other
-                 end).
+    ?assertEqual({error, {rebar_prv_new, template_required}},
+                 rebar_test_utils:run_and_check(Config, [], ["new"], return)).
 
 unknown_template(Config) ->
     Name = float_to_list(rand:uniform()),
     rebar_test_utils:run_and_check(Config, [], ["new", Name],
                                    {error, {rebar_prv_new, {template_not_found, Name}}}),
-    rebar_test_utils:run_and_check(Config, [], ["new", "help", Name],
+    rebar_test_utils:run_and_check(Config, [], ["new", Name, "--help"],
                                    {error, {rebar_prv_new, {template_not_found, Name}}}),
     ok.
 

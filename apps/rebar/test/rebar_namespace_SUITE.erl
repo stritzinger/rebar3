@@ -28,7 +28,8 @@
 all() -> [implicit_compile, default_compile, do_compile,
           as_default_compile, as_do_compile,
           notfound, do_notfound, default_notfound, ns_notfound, ns_found,
-          help_notfound, help_ns_notfound,
+          help_notfound, help_ns_notfound, help_provider_args_notfound,
+          version_preserves_command_args, version_ignores_task_args,
           as_ns_invalid,
           do_ns_chain, do_ns_chain2, do_ns_noarg, do_ns_badcmd].
 
@@ -122,6 +123,21 @@ help_ns_notfound(Config) ->
       add_fake_ns_provider(Config), [], Command,
       {error, "Command fakecommand not found in namespace ns"}
     ).
+
+help_provider_args_notfound(Config) ->
+    Command = ["help", "compile", "unexpected_argument"],
+    rebar_test_utils:run_and_check(
+      Config, [], Command,
+      {error, "Command unexpected_argument not found in task compile"}
+    ).
+
+version_preserves_command_args(_Config) ->
+    ?assertEqual({version, ["compile"]}, rebar:parse_args(["compile", "--version"])),
+    ?assertEqual({version, ["hex"]}, rebar:parse_args(["hex", "--version"])),
+    ?assertEqual({version, ["compile"]}, rebar:parse_args(["compile", "-v"])).
+
+version_ignores_task_args(Config) ->
+    rebar_test_utils:run_and_check(Config, [], ["new", "--version"], {ok, []}).
 
 as_ns_invalid(Config) ->
     %% The as namespace is not valid
