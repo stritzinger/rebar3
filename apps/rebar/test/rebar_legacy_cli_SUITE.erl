@@ -38,6 +38,8 @@ all() ->
      to_command_argparse_matches_legacy_runtime_for_getopt_types,
      to_command_argparse_accepts_iodata_provider_help,
      legacy_runtime_accepts_reserved_global_short_options,
+     legacy_runtime_returns_getopt_options,
+     modern_runtime_keeps_argparse_options,
      legacy_runtime_keeps_positional_rest_for_subcommand_style_provider].
 
 init_per_testcase(Case, Config0) ->
@@ -150,8 +152,8 @@ to_command_argparse_matches_legacy_runtime_for_getopt_types(Config) ->
     ?assertEqual(3, proplists:get_value(count, LegacyOpts)),
     ?assertEqual(1.5, proplists:get_value(ratio, LegacyOpts)),
     ?assertEqual(fast, proplists:get_value(mode, LegacyOpts)),
-    ?assertEqual("bin-data", proplists:get_value(blob, LegacyOpts)),
-    ?assertEqual("utf8-data", proplists:get_value(utf8, LegacyOpts)),
+    ?assertEqual(<<"bin-data">>, proplists:get_value(blob, LegacyOpts)),
+    ?assertEqual(<<"utf8-data">>, proplists:get_value(utf8, LegacyOpts)),
     ?assertEqual(512, proplists:get_value(block_size, LegacyOpts)),
     ?assertEqual(true, proplists:get_value(force, LegacyOpts, false)),
     ?assertEqual(proplists:get_value(term, LegacyOpts), maps:get(term, ParsedMap)),
@@ -159,8 +161,8 @@ to_command_argparse_matches_legacy_runtime_for_getopt_types(Config) ->
     ?assertEqual(proplists:get_value(count, LegacyOpts), maps:get(count, ParsedMap)),
     ?assertEqual(proplists:get_value(ratio, LegacyOpts), maps:get(ratio, ParsedMap)),
     ?assertEqual(proplists:get_value(mode, LegacyOpts), maps:get(mode, ParsedMap)),
-    ?assertEqual(proplists:get_value(blob, LegacyOpts), maps:get(blob, ParsedMap)),
-    ?assertEqual(proplists:get_value(utf8, LegacyOpts), maps:get(utf8, ParsedMap)),
+    ?assertEqual(binary_to_list(proplists:get_value(blob, LegacyOpts)), maps:get(blob, ParsedMap)),
+    ?assertEqual(binary_to_list(proplists:get_value(utf8, LegacyOpts)), maps:get(utf8, ParsedMap)),
     ?assertEqual(proplists:get_value(block_size, LegacyOpts), maps:get(block_size, ParsedMap)),
     ?assertEqual(proplists:get_value(force, LegacyOpts, false), maps:get(force, ParsedMap)).
 
@@ -178,6 +180,44 @@ legacy_runtime_accepts_reserved_global_short_options(_Config) ->
         argparse:parse(["-v"], Cli),
     ?assertEqual(true, maps:get(help, HelpMap, false)),
     ?assertEqual(true, maps:get(version, VersionMap, false)).
+
+legacy_runtime_returns_getopt_options(Config) ->
+    Provider = providers:create(
+      [{name, legacy_options}, {module, ?MODULE}, {bare, true},
+       {opts, [{flag, $f, "flag", undefined, "Flag"},
+               {enabled, $e, "enabled", boolean, "Enabled"},
+               {disabled, $d, "disabled", {boolean, false}, "Disabled"},
+               {blob, $b, "blob", {binary, <<"default">>}, "Binary"},
+               {utf8, $u, "utf8", utf8_binary, "UTF-8"}]}]),
+    {DefaultOpts, []} = parsed_opts_via_runtime(
+      Config, Provider, legacy_options, []),
+    ?assertEqual([{blob, <<"default">>}, {disabled, false}],
+                 lists:sort(DefaultOpts)),
+    {Opts, Rest} = parsed_opts_via_runtime(
+      Config, Provider, legacy_options,
+      ["--flag", "--enabled", "--blob", "data", "--utf8", [16#E9], "task", "extra"]),
+    ?assertEqual([flag, {blob, <<"data">>}, {disabled, false}, {enabled, true},
+                  {task, "task"}, {utf8, <<16#C3, 16#A9>>}], lists:sort(Opts)),
+    ?assertEqual(["extra"], Rest).
+
+modern_runtime_keeps_argparse_options(Config) ->
+    Module = modern_cli_provider,
+    meck:new(Module, [non_strict]),
+    try
+        meck:expect(Module, cli, fun() ->
+            #{arguments => [#{name => flag, long => "-flag", type => boolean},
+                            #{name => rest, nargs => list, required => false}]}
+        end),
+        meck:expect(Module, do, fun(State) -> {ok, State} end),
+        Provider = providers:create(
+          [{name, modern_options}, {module, Module}, {bare, true},
+           {opts, [{flag, undefined, "flag", undefined, "Legacy flag"}]}]),
+        ?assertEqual({[{flag, true}], ["extra"]},
+          parsed_opts_via_runtime(Config, Provider, modern_options,
+                                  ["--flag", "extra"]))
+    after
+        meck:unload(Module)
+    end.
 
 legacy_runtime_keeps_positional_rest_for_subcommand_style_provider(_Config) ->
     Provider = subcommand_style_legacy_provider(),
